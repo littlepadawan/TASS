@@ -1,0 +1,1 @@
+Place Turbospectrum in this directory, or add the path to where Turbospectrum is located on your machine in the configuration file.

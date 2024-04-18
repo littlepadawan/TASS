@@ -1,0 +1,1 @@
+The generated output will be placed here, if not otherwise specified in the configuration file.
