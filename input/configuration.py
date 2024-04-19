@@ -2,6 +2,23 @@ from configparser import ConfigParser
 import os
 
 class Configuration:
+    '''
+    Represents the configuration settings for the Turbospectrum wrapper.
+    
+    Attributes:
+        config_file (str): The absolute path to the configuration file.
+        config_parser (ConfigParser): The configuration parser object.
+        compiler (str): The TurboSpectrum compiler.
+        path_turbospectrum (str): The absolute path to the TurboSpectrum directory.
+        path_turbospectrum_compiled (str): The absolute path to the compiled TurboSpectrum executable.
+        path_linelists (str): The absolute path to the linelists directory.
+        path_model_atmospheres (str): The absolute path to the model atmospheres directory.
+        path_input_parameters (str): The absolute path to the input parameters file.
+        path_output_directory (str): The absolute path to the output directory.
+        wavelength_min (float): The minimum wavelength in Å.
+        wavelength_max (float): The maximum wavelength in Å.
+        wavelength_step (float): The wavelength step.
+    '''
     def __init__(self, config_path = 'input/configuration.cfg'):
         self.config_file = os.path.abspath(config_path)
         if not os.path.exists(self.config_file):
