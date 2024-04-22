@@ -1,2 +1,18 @@
 __pycache__/
 *.pyc
+
+# Ignore everything in the output folder, except the readme
+output/*
+!output/readme.md
+
+# Ignore everything in the turbospectrum folder, except the readme
+turbospectrum/*
+!turbospectrum/readme.md
+
+# Ignore everything in the input/linelist folder, except the readme
+input/linelist/*
+!input/linelist/readme.md
+
+# Ignore everything in the input/model_atmosphere folder, except the readme
+input/model_atmosphere/*
+!input/model_atmosphere/readme.md
