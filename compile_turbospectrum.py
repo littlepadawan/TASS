@@ -3,7 +3,6 @@ import os  # TODO: Maybe dont import entire os module
 from input.configuration import Configuration
 
 
-# TODO: Add tests
 # TODO: Where to place this file?
 def compile_turbospectrum(config: Configuration):
     """
