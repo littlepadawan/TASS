@@ -1,5 +1,8 @@
 import unittest
+from unittest.mock import patch, MagicMock
+import subprocess
 from input.configuration import Configuration
+import compile_turbospectrum
 import os
 from shutil import rmtree
 
@@ -204,6 +207,53 @@ class TestConfig(unittest.TestCase):
         config.wavelength_step = 0
         with self.assertRaises(ValueError):
             config._validate_configuration()
+
+
+class TestCompile(unittest.TestCase):
+    def setUp(self):
+        # Set up a Configuration object
+        self.config = Configuration()
+
+    @patch("compile_turbospectrum.os.chdir")
+    @patch("compile_turbospectrum.subprocess.run")
+    def test_compile_turbospectrum_success(self, mock_run, mock_chdir):
+        """
+        Test that Turbospectrum is compiled successfully
+        """
+        # Mock subprocess.run to somulate a successful command
+        mock_run.return_value = MagicMock(check=True)
+
+        compile_turbospectrum.compile_turbospectrum(self.config)
+
+        # Check if subprocess.run was called correclty
+        mock_run.assert_called_once_with(
+            ["make"], check=True, text=True, capture_output=True
+        )
+
+    @patch("compile_turbospectrum.os.chdir")
+    @patch("compile_turbospectrum.subprocess.run")
+    def test_compile_turbospectrum_failure(self, mock_run, mock_chdir):
+        """
+        Test that an error is raised if Turbospectrum compilation fails
+        """
+        # Mock subprocess.run to somulate a failed command
+        mock_run.side_effect = subprocess.CalledProcessError(1, "make", "Error")
+
+        with self.assertRaises(subprocess.CalledProcessError):
+            compile_turbospectrum.compile_turbospectrum(self.config)
+
+    @patch("compile_turbospectrum.os.chdir")
+    @patch("compile_turbospectrum.subprocess.run")
+    def test_return_to_original_directory(self, mock_run, mock_chdir):
+        """
+        Test that the working directory is changed back to the original directory
+        """
+        original_directory = "/original/directory"
+        with patch("compile_turbospectrum.os.getcwd", return_value=original_directory):
+            compile_turbospectrum.compile_turbospectrum(self.config)
+
+        # Make sure os.chdir is called to return to the original directory
+        mock_chdir.assert_called_with(original_directory)
 
 
 if __name__ == "__main__":
