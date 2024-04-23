@@ -16,3 +16,7 @@ input/linelist/*
 # Ignore everything in the input/model_atmosphere folder, except the readme
 input/model_atmosphere/*
 !input/model_atmosphere/readme.md
+
+# Ignore coverage files
+.coverage
+htmlcov/

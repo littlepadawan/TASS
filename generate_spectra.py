@@ -15,6 +15,7 @@ def set_up_output_directory(config: Configuration):
 
     # Create the directory
     os.makedirs(config.path_output_directory)
+    os.makedirs(f"{config.path_output_directory}/opac")
 
 
 def generate_spectrum(config: Configuration, input_parameters: dict):
