@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 import os
+import sys
 
 
 class Configuration:
@@ -41,8 +42,20 @@ class Configuration:
         self.wavelength_max = 0
         self.wavelength_step = 0
 
+        self.read_stellar_parameters_from_file = False
+        self.teff_min = 0
+        self.teff_max = 0
+        self.logg_min = 0
+        self.logg_max = 0
+        self.feh_min = 0
+        self.feh_max = 0
+
         self._load_configuration_file()
-        self._validate_configuration()
+        try:
+            self._validate_configuration()
+        except (FileNotFoundError, ValueError) as e:
+            print(e)
+            sys.exit(1)
 
     def _load_configuration_file(self):
         # Read configuration file
@@ -78,6 +91,20 @@ class Configuration:
         self.wavelength_step = config_parser.getfloat(
             "Atmosphere_parameters", "wavelength_step"
         )
+
+        self.read_stellar_parameters_from_file = config_parser.getboolean(
+            "Stellar_parameters", "read_from_file"
+        )
+
+        # Only load these parameters if we are not reading them from a file,
+        # since they're not needed if we are reading them from a file
+        if self.read_stellar_parameters_from_file == False:
+            self.teff_min = config_parser.getint("Stellar_parameters", "teff_min")
+            self.teff_max = config_parser.getint("Stellar_parameters", "teff_max")
+            self.logg_min = config_parser.getfloat("Stellar_parameters", "logg_min")
+            self.logg_max = config_parser.getfloat("Stellar_parameters", "logg_max")
+            self.feh_min = config_parser.getfloat("Stellar_parameters", "feh_min")
+            self.feh_max = config_parser.getfloat("Stellar_parameters", "feh_max")
 
     def _validate_configuration(self):
         # TODO: Improve error messages so user knows how to fix them
@@ -132,3 +159,44 @@ class Configuration:
             or self.wavelength_step <= 0
         ):
             raise ValueError(f"The wavelength parameters must be positive.")
+
+        # Stellar parameters
+        if self.read_stellar_parameters_from_file == False:
+            # Effective temperature
+            if self.teff_min < 0:
+                raise ValueError(
+                    f"The minimum effective temperature {self.teff_min} must be positive."
+                )
+
+            if self.teff_max < 0:
+                raise ValueError(
+                    f"The maximum effective temperature {self.teff_max} must be positive."
+                )
+
+            if self.teff_min >= self.teff_max:
+                raise ValueError(
+                    f"The minimum effective temperature {self.teff_min} must be smaller than the maximum effective temperature {self.teff_max}."
+                )
+
+            # Surface gravity
+
+            if self.logg_min < 0:
+                raise ValueError(
+                    f"The minimum surface gravity {self.logg_min} must be positive."
+                )
+
+            if self.logg_max < 0:
+                raise ValueError(
+                    f"The maximum surface gravity {self.logg_max} must be positive."
+                )
+
+            if self.logg_min >= self.logg_max:
+                raise ValueError(
+                    f"The minimum surface gravity {self.logg_min} must be smaller than the maximum surface gravity {self.logg_max}."
+                )
+
+            # Metallicity
+            if self.feh_min >= self.feh_max:
+                raise ValueError(
+                    f"The minimum metallicity {self.feh_min} must be smaller than the maximum metallicity {self.feh_max}."
+                )

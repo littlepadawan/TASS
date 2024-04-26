@@ -50,8 +50,10 @@ def read_parameters_from_file(config: Configuration):
     return all_stellar_parameters
 
 
-def generate_random_parameters():
-    pass
+def generate_random_parameters(config: Configuration):
+    """
+    Generate random stellar parameters
+    """
 
 
 def generate_uniform_parameters():

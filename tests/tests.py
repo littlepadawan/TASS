@@ -36,6 +36,14 @@ class TestConfigSetup(unittest.TestCase):
             f.write("wavelength_min = 5700\n")
             f.write("wavelength_max = 7000\n")
             f.write("wavelength_step = 0.05\n")
+            f.write("[Stellar_parameters]\n")
+            f.write("read_from_file = False\n")
+            f.write("teff_min = 5000\n")
+            f.write("teff_max = 7000\n")
+            f.write("logg_min = 4.0\n")
+            f.write("logg_max = 5.0\n")
+            f.write("feh_min = -2.0\n")
+            f.write("feh_max = 0.5\n")
 
     def tearDown(self):
         # Remove dummy directories and files
@@ -209,6 +217,122 @@ class TestConfigSetup(unittest.TestCase):
         with self.assertRaises(ValueError):
             config._validate_configuration()
 
+    def test_valid_stellar_parameters(self):
+        """
+        Test that the stellar parameters are set correctly
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        self.assertFalse(config.read_stellar_parameters_from_file)
+        self.assertEqual(config.teff_min, 5000)
+        self.assertEqual(config.teff_max, 7000)
+        self.assertEqual(config.logg_min, 4.0)
+        self.assertEqual(config.logg_max, 5.0)
+        self.assertEqual(config.feh_min, -2.0)
+        self.assertEqual(config.feh_max, 0.5)
+
+    def test_invalid_teff_min_larger_than_max(self):
+        """
+        Test that an error is raised if the min effective temperature is greater than the max effective temperature
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.teff_min = 7000
+        config.teff_max = 5000
+        with self.assertRaises(ValueError):
+            config._validate_configuration()
+
+    def test_invalid_teff_min_negative(self):
+        """
+        Test that an error is raised if the min effective temperature is negative
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.teff_min = -1
+        with self.assertRaises(ValueError):
+            config._validate_configuration()
+
+    def test_invalid_teff_max_negative(self):
+        """
+        Test that an error is raised if the max effective temperature is negative
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.teff_max = -1
+        with self.assertRaises(ValueError):
+            config._validate_configuration()
+
+    def test_invalid_logg_min_larger_than_max(self):
+        """
+        Test that an error is raised if the min surface gravity is greater than the max surface gravity
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.logg_min = 5.0
+        config.logg_max = 4.0
+        with self.assertRaises(ValueError):
+            config._validate_configuration()
+
+    def test_invalid_logg_min_negative(self):
+        """
+        Test that an error is raised if the min surface gravity is negative
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.logg_min = -1
+        with self.assertRaises(ValueError):
+            config._validate_configuration()
+
+    def test_invalid_logg_max_negative(self):
+        """
+        Test that an error is raised if the max surface gravity is negative
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.logg_max = -1
+        with self.assertRaises(ValueError):
+            config._validate_configuration()
+
+    def test_invalid_feh_min_larger_than_max(self):
+        """
+        Test that an error is raised if the min metallicity is greater than the max metallicity
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.feh_min = 0.5
+        config.feh_max = -2.0
+        with self.assertRaises(ValueError):
+            config._validate_configuration()
+
+    def test_no_stellar_parameters_loaded_if_read_from_file(self):
+        """
+        Test that no stellar parameters are loaded from configuration file if they are supposed to be read from a file
+        """
+        with open(
+            "tests/test_input/configuration_read_stellar_parameters_from_file.cfg", "w"
+        ) as f:
+            f.write("[Turbospectrum_compiler]\n")
+            f.write("Compiler = gfortran\n")
+            f.write("[Paths]\n")
+            f.write("turbospectrum = ./tests/test_input/turbospectrum/\n")
+            f.write("linelists = ./tests/test_input/linelists/\n")
+            f.write("model_atmospheres = ./tests/test_input/model_atmospheres/\n")
+            f.write("input_parameters = ./tests/test_input/input_parameters.txt\n")
+            f.write("output_directory = ./tests/test_input/output\n")
+            f.write("[Atmosphere_parameters]\n")
+            f.write("wavelength_min = 5700\n")
+            f.write("wavelength_max = 7000\n")
+            f.write("wavelength_step = 0.05\n")
+            f.write("[Stellar_parameters]\n")
+            f.write("read_from_file = True\n")
+            f.write("teff_min = 5000\n")
+            f.write("teff_max = 7000\n")
+            f.write("logg_min = 4.0\n")
+            f.write("logg_max = 5.0\n")
+            f.write("feh_min = -2.0\n")
+            f.write("feh_max = 0.5\n")
+        config = Configuration(
+            "tests/test_input/configuration_read_stellar_parameters_from_file.cfg"
+        )
+        self.assertEqual(config.teff_max, 0)
+        self.assertEqual(config.teff_min, 0)
+        self.assertEqual(config.logg_max, 0)
+        self.assertEqual(config.logg_min, 0)
+        self.assertEqual(config.feh_max, 0)
+        self.assertEqual(config.feh_min, 0)
+
 
 class TestTurbospectrumIntegration(unittest.TestCase):
     def setUp(self):
@@ -284,6 +408,8 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("wavelength_min = 5700\n")
             f.write("wavelength_max = 7000\n")
             f.write("wavelength_step = 0.05\n")
+            f.write("[Stellar_parameters]\n")
+            f.write("read_from_file = True\n")
 
         # Create file with stellar parameters for testing
         with open("tests/test_input/input_parameters.txt", "w") as f:
