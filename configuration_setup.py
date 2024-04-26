@@ -51,7 +51,8 @@ class Configuration:
 
         # Set configuration parameters found in the configuration file
         # Parameters in the configuration file must be explicity set here,
-        # so if you add something to the configuration file, you must also add it here
+        # so if you add something to the configuration file, you must also add it here,
+        # otherwise it will not be recognized by the program.
         self.compiler = config_parser.get("Turbospectrum_compiler", "compiler").lower()
 
         self.path_turbospectrum = os.path.abspath(
