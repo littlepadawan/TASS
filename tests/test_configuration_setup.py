@@ -7,8 +7,8 @@ from shutil import rmtree
 
 # Run tests with this command: python3 -m unittest tests.test_config
 class TestConfigurationSetup(unittest.TestCase):
-
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         # Set up dummy directories and files for testing
         os.makedirs("tests/test_input", exist_ok=True)
         os.makedirs("tests/test_input/turbospectrum", exist_ok=True)
@@ -43,7 +43,8 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("feh_min = -2.0\n")
             f.write("feh_max = 0.5\n")
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         # Remove dummy directories and files
         rmtree("tests/test_input")
 
@@ -83,61 +84,22 @@ class TestConfigurationSetup(unittest.TestCase):
             Configuration()
         self.assertEqual(cm.exception.code, 1)
 
-    def test_path_validation_success(self):
+    @patch("configuration_setup.os.path.exists", return_value=True)
+    def test_validate_turbospectrum_path_success(self, mock_exists):
         """
-        Test that the path validation works when the paths exist
+        Test that an error is not raised if the path to Turbospectrum exists
         """
         config = Configuration("tests/test_input/configuration.cfg")
         self.assertTrue(os.path.exists(config.path_turbospectrum))
-        self.assertTrue(os.path.exists(config.path_linelists))
-        self.assertTrue(os.path.exists(config.path_model_atmospheres))
-        self.assertTrue(os.path.isfile(config.path_input_parameters))
-        self.assertTrue(os.path.exists(config.path_output_directory))
 
-    def test_invalid_path_turbospectrum(self):
+    def test_validate_turbospectrum_path_failure(self):
         """
         Test that an error is raised if the path to Turbospectrum does not exist
         """
         config = Configuration("tests/test_input/configuration.cfg")
         config.path_turbospectrum = "tests/non_existing_turbospectrum"
         with self.assertRaises(FileNotFoundError):
-            config._validate_configuration()
-
-    def test_invalid_path_linelists(self):
-        """
-        Test that an error is raised if the path to linelists does not exist
-        """
-        config = Configuration("tests/test_input/configuration.cfg")
-        config.path_linelists = "tests/non_existing_linelists"
-        with self.assertRaises(FileNotFoundError):
-            config._validate_configuration()
-
-    def test_invalid_path_model_atmospheres(self):
-        """
-        Test that an error is raised if the path to model atmospheres does not exist
-        """
-        config = Configuration("tests/test_input/configuration.cfg")
-        config.path_model_atmospheres = "tests/non_existing_model_atmospheres"
-        with self.assertRaises(FileNotFoundError):
-            config._validate_configuration()
-
-    def test_invalid_path_input_parameters(self):
-        """
-        Test that an error is raised if the path to input parameters does not exist
-        """
-        config = Configuration("tests/test_input/configuration.cfg")
-        config.path_input_parameters = "tests/non_existing_input_parameters"
-        with self.assertRaises(FileNotFoundError):
-            config._validate_configuration()
-
-    def test_invalid_path_output_directory(self):
-        """
-        Test that an error is raised if the path to the output directory does not exist
-        """
-        config = Configuration("tests/test_input/configuration.cfg")
-        config.path_output_directory = "tests/non_existing_output"
-        with self.assertRaises(FileNotFoundError):
-            config._validate_configuration()
+            config._validate_turbospectrum_path()
 
     def test_compiler_gfortran(self):
         """
@@ -145,7 +107,7 @@ class TestConfigurationSetup(unittest.TestCase):
         """
         config = Configuration("tests/test_input/configuration.cfg")
         config.compiler = "gfortran"
-        config._validate_configuration()
+        config._validate_compiler()
         self.assertEqual(
             config.path_turbospectrum_compiled,
             os.path.abspath("tests/test_input/turbospectrum/exec-gf"),
@@ -157,7 +119,7 @@ class TestConfigurationSetup(unittest.TestCase):
         """
         config = Configuration("tests/test_input/configuration.cfg")
         config.compiler = "intel"
-        config._validate_configuration()
+        config._validate_compiler()
         self.assertEqual(
             config.path_turbospectrum_compiled,
             os.path.abspath("tests/test_input/turbospectrum/exec"),
@@ -170,7 +132,55 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.compiler = "invalid_compiler"
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_compiler()
+
+    @patch("configuration_setup.os.path.exists", return_value=True)
+    def test_validate_path_to_directories_success(self, mock_exists):
+        """
+        Test that the path validation works when the paths exist
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        self.assertTrue(os.path.exists(config.path_turbospectrum))
+        self.assertTrue(os.path.exists(config.path_linelists))
+        self.assertTrue(os.path.exists(config.path_model_atmospheres))
+        self.assertTrue(os.path.exists(config.path_output_directory))
+
+    def test_invalid_path_linelists(self):
+        """
+        Test that an error is raised if the path to linelists does not exist
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.path_linelists = "tests/non_existing_linelists"
+        with self.assertRaises(FileNotFoundError):
+            config._validate_paths_to_directories()
+
+    def test_invalid_path_model_atmospheres(self):
+        """
+        Test that an error is raised if the path to model atmospheres does not exist
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.path_model_atmospheres = "tests/non_existing_model_atmospheres"
+        with self.assertRaises(FileNotFoundError):
+            config._validate_paths_to_directories()
+
+    def test_invalid_path_output_directory(self):
+        """
+        Test that an error is raised if the path to the output directory does not exist
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.path_output_directory = "tests/non_existing_output"
+        with self.assertRaises(FileNotFoundError):
+            config._validate_paths_to_directories()
+
+    def test_invalid_path_input_parameters(self):
+        """
+        Test that an error is raised if the path to input parameters does not exist
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.read_stellar_parameters_from_file = True
+        config.path_input_parameters = "tests/non_existing_input_parameters"
+        with self.assertRaises(FileNotFoundError):
+            config._validate_path_to_input_parameters()
 
     def test_invalid_wavelength_min_larger_than_max(self):
         """
@@ -180,7 +190,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config.wavelength_min = 7000
         config.wavelength_max = 5700
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_wavelength_range()
 
     def test_invalid_wavelength_min_equals_max(self):
         """
@@ -190,7 +200,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config.wavelength_min = 5700
         config.wavelength_max = 5700
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_wavelength_range()
 
     def test_invalid_wavelength_negative_min(self):
         """
@@ -199,7 +209,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.wavelength_min = -1
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_wavelength_range()
 
     def test_invalid_wavelength_negative_max(self):
         """
@@ -208,7 +218,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.wavelength_max = -1
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_wavelength_range()
 
     def test_invalid_wavelegth_negative_step(self):
         """
@@ -217,7 +227,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.wavelength_step = -1
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_wavelength_range()
 
     def test_invalid_wavelength_step_zero(self):
         """
@@ -226,7 +236,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.wavelength_step = 0
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_wavelength_range()
 
     def test_valid_stellar_parameters(self):
         """
@@ -234,6 +244,7 @@ class TestConfigurationSetup(unittest.TestCase):
         """
         config = Configuration("tests/test_input/configuration.cfg")
         self.assertFalse(config.read_stellar_parameters_from_file)
+        self.assertEqual(config.num_spectra, 10)
         self.assertEqual(config.teff_min, 5000)
         self.assertEqual(config.teff_max, 7000)
         self.assertEqual(config.logg_min, 4.0)
@@ -248,7 +259,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.num_spectra = -5
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_number_of_spectra()
 
     def test_zero_num_spectra(self):
         """
@@ -257,7 +268,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.num_spectra = 0
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_number_of_spectra()
 
     def test_invalid_teff_min_larger_than_max(self):
         """
@@ -267,7 +278,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config.teff_min = 7000
         config.teff_max = 5000
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_effective_temperature()
 
     def test_invalid_teff_min_negative(self):
         """
@@ -276,7 +287,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.teff_min = -1
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_effective_temperature()
 
     def test_invalid_teff_max_negative(self):
         """
@@ -285,7 +296,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.teff_max = -1
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_effective_temperature()
 
     def test_invalid_logg_min_larger_than_max(self):
         """
@@ -295,7 +306,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config.logg_min = 5.0
         config.logg_max = 4.0
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_surface_gravity()
 
     def test_invalid_logg_min_negative(self):
         """
@@ -304,7 +315,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.logg_min = -1
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_surface_gravity()
 
     def test_invalid_logg_max_negative(self):
         """
@@ -313,7 +324,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.logg_max = -1
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_surface_gravity()
 
     def test_invalid_feh_min_larger_than_max(self):
         """
@@ -323,7 +334,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config.feh_min = 0.5
         config.feh_max = -2.0
         with self.assertRaises(ValueError):
-            config._validate_configuration()
+            config._validate_metallicity()
 
     def test_no_stellar_parameters_loaded_if_read_from_file(self):
         """
@@ -355,6 +366,7 @@ class TestConfigurationSetup(unittest.TestCase):
         config = Configuration(
             "tests/test_input/configuration_read_stellar_parameters_from_file.cfg"
         )
+        self.assertEqual(config.num_spectra, 0)
         self.assertEqual(config.teff_max, 0)
         self.assertEqual(config.teff_min, 0)
         self.assertEqual(config.logg_max, 0)
