@@ -1,3 +1,4 @@
+import random
 import sys
 from configuration_setup import Configuration
 
@@ -54,9 +55,26 @@ def generate_random_parameters(config: Configuration):
     """
     Generate random stellar parameters
     """
+    # TODO: Consider fixed size allocation (1000 ok, 10 000 maybe not)
+    all_stellar_parameters = set()
+
+    while len(all_stellar_parameters) < config.num_spectra:
+        teff = random.randint(config.teff_min, config.teff_max)
+        logg = random.uniform(config.logg_min, config.logg_max)
+        feh = random.uniform(config.feh_max, config.feh_max)
+        # TODO: Add abundances
+
+        logg = round(logg, 2)
+        feh = round(feh, 3)
+
+        all_stellar_parameters.add(
+            (teff, logg, feh)
+        )  # If this combination already exists in all_stellar_parameters, it will not be added again
+
+    return all_stellar_parameters
 
 
-def generate_uniform_parameters():
+def generate_evenly_spaced_parameters():
     pass
 
 

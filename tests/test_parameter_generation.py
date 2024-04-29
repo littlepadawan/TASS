@@ -7,14 +7,16 @@ from shutil import rmtree
 
 
 class TestParameterGeneration(unittest.TestCase):
-    def setUp(self):
-        # Set up dummy directories for testing
+    @classmethod
+    def setUpClass(cls):
+        # Set up dummy directories and files for testing
         os.makedirs("tests/test_input", exist_ok=True)
         os.makedirs("tests/test_input/turbospectrum", exist_ok=True)
         os.makedirs("tests/test_input/turbospectrum/exec", exist_ok=True)
         os.makedirs("tests/test_input/turbospectrum/exec-gf", exist_ok=True)
         os.makedirs("tests/test_input/linelists", exist_ok=True)
         os.makedirs("tests/test_input/model_atmospheres", exist_ok=True)
+        open("tests/test_input/input_parameters.txt", "a").close()
         os.makedirs("tests/test_input/output", exist_ok=True)
 
         # Create config file for testing
@@ -32,7 +34,14 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("wavelength_max = 7000\n")
             f.write("wavelength_step = 0.05\n")
             f.write("[Stellar_parameters]\n")
-            f.write("read_from_file = True\n")
+            f.write("read_from_file = False\n")
+            f.write("num_spectra = 10\n")
+            f.write("teff_min = 5000\n")
+            f.write("teff_max = 7000\n")
+            f.write("logg_min = 4.0\n")
+            f.write("logg_max = 5.0\n")
+            f.write("feh_min = -2.0\n")
+            f.write("feh_max = 0.5\n")
 
         # Create file with stellar parameters for testing
         with open("tests/test_input/input_parameters.txt", "w") as f:
@@ -46,7 +55,8 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("6897  2.45 -0.636\n")
             f.write("2920  3.03 -3.941\n")
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(cls):
         # Remove dummy directories and files
         rmtree("tests/test_input")
 
@@ -55,6 +65,8 @@ class TestParameterGeneration(unittest.TestCase):
         Test that the stellar parameters are read from the input file
         """
         config = Configuration("tests/test_input/configuration.cfg")
+        config.read_stellar_parameters_from_file = True
+        config.path_input_parameters = "tests/test_input/input_parameters.txt"
         stellar_parameters = parameter_generation.read_parameters_from_file(config)
         self.assertEqual(
             stellar_parameters,
@@ -82,3 +94,29 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("7957 4.91\n")
         parameter_generation.read_parameters_from_file(config)
         mock_exit.assert_called_once_with(1)
+
+    def test_generate_random_parameters(self):
+        """
+        Test that the correct number of random stellar parameters are generated,
+        and that they are within bounds
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        stellar_parameters = parameter_generation.generate_random_parameters(config)
+        self.assertEqual(len(stellar_parameters), 10)
+        for parameters in stellar_parameters:
+            self.assertGreaterEqual(int(parameters[0]), 5000)
+            self.assertLessEqual(int(parameters[0]), 7000)
+            self.assertGreaterEqual(float(parameters[1]), 4.0)
+            self.assertLessEqual(float(parameters[1]), 5.0)
+            self.assertGreaterEqual(float(parameters[2]), -2.0)
+            self.assertLessEqual(float(parameters[2]), 0.5)
+
+    def test_generate_random_parameters_1000(self):
+        """
+        Test that 1000 random stellar parameters are generated,
+        and that they are within bounds
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.num_spectra = 1000
+        stellar_parameters = parameter_generation.generate_random_parameters(config)
+        self.assertEqual(len(stellar_parameters), 1000)
