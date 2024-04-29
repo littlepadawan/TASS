@@ -65,12 +65,25 @@ class TestConfigSetup(unittest.TestCase):
             config.config_file, os.path.abspath("tests/test_input/configuration.cfg")
         )
 
-    def test_non_existing_config(self):
+    @patch("configuration_setup.os.path.exists", return_value=False)
+    def test_non_existing_config_file(self, mock_exists):
         """
         Test that an error is raised if the config file does not exist
         """
         with self.assertRaises(FileNotFoundError):
-            config = Configuration("tests/non_existing_config.cfg")
+            Configuration("tests/non_existing_config.cfg")
+
+    @patch("configuration_setup.os.path.exists", return_value=True)
+    @patch("configuration_setup.Configuration._load_configuration_file")
+    @patch("configuration_setup.Configuration._validate_configuration")
+    def test_errors_caught_in_constructor(self, mock_validate, mock_load, mock_exists):
+        """
+        Test that errors are caught in the constructor
+        """
+        mock_validate.side_effect = ValueError()
+        with self.assertRaises(SystemExit) as cm:
+            Configuration()
+        self.assertEqual(cm.exception.code, 1)
 
     def test_path_validation_success(self):
         """
