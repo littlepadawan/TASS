@@ -43,6 +43,7 @@ class Configuration:
         self.wavelength_step = 0
 
         self.read_stellar_parameters_from_file = False
+        self.num_spectra = 0
         self.teff_min = 0
         self.teff_max = 0
         self.logg_min = 0
@@ -96,9 +97,10 @@ class Configuration:
             "Stellar_parameters", "read_from_file"
         )
 
-        # Only load these parameters if we are not reading them from a file,
+        # Only load these parameters if we are not reading parameters from a file,
         # since they're not needed if we are reading them from a file
         if self.read_stellar_parameters_from_file == False:
+            self.num_spectra = config_parser.getint("Stellar_parameters", "num_spectra")
             self.teff_min = config_parser.getint("Stellar_parameters", "teff_min")
             self.teff_max = config_parser.getint("Stellar_parameters", "teff_max")
             self.logg_min = config_parser.getfloat("Stellar_parameters", "logg_min")
@@ -162,6 +164,13 @@ class Configuration:
 
         # Stellar parameters
         if self.read_stellar_parameters_from_file == False:
+            # Number of spectra
+            # TODO: Add check for upper bound
+            if self.num_spectra <= 0:
+                raise ValueError(
+                    f"The number of spectra {self.num_spectra} must be greater than 0."
+                )
+
             # Effective temperature
             if self.teff_min < 0:
                 raise ValueError(

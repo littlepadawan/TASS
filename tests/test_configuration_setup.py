@@ -35,6 +35,7 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("wavelength_step = 0.05\n")
             f.write("[Stellar_parameters]\n")
             f.write("read_from_file = False\n")
+            f.write("num_spectra = 10\n")
             f.write("teff_min = 5000\n")
             f.write("teff_max = 7000\n")
             f.write("logg_min = 4.0\n")
@@ -239,6 +240,24 @@ class TestConfigurationSetup(unittest.TestCase):
         self.assertEqual(config.logg_max, 5.0)
         self.assertEqual(config.feh_min, -2.0)
         self.assertEqual(config.feh_max, 0.5)
+
+    def test_negative_num_spectra(self):
+        """
+        Test that an error is raised if the number of spectra is negative
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.num_spectra = -5
+        with self.assertRaises(ValueError):
+            config._validate_configuration()
+
+    def test_zero_num_spectra(self):
+        """
+        Test that an error is raised if the number of spectra is zero
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.num_spectra = 0
+        with self.assertRaises(ValueError):
+            config._validate_configuration()
 
     def test_invalid_teff_min_larger_than_max(self):
         """
