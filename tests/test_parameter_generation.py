@@ -1,9 +1,13 @@
 import unittest
 from unittest.mock import patch, MagicMock
+
+import numpy as np
 from configuration_setup import Configuration
 import parameter_generation
 import os
 from shutil import rmtree
+from rtree import index
+from rtree.index import Property
 
 
 class TestParameterGeneration(unittest.TestCase):
@@ -35,12 +39,13 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("wavelength_step = 0.05\n")
             f.write("[Stellar_parameters]\n")
             f.write("read_from_file = False\n")
+            f.write("random_parameters = True\n")
             f.write("num_spectra = 10\n")
             f.write("teff_min = 5000\n")
             f.write("teff_max = 7000\n")
             f.write("logg_min = 4.0\n")
             f.write("logg_max = 5.0\n")
-            f.write("feh_min = -2.0\n")
+            f.write("feh_min = -1.0\n")
             f.write("feh_max = 0.5\n")
 
         # Create file with stellar parameters for testing
@@ -95,13 +100,15 @@ class TestParameterGeneration(unittest.TestCase):
         parameter_generation.read_parameters_from_file(config)
         mock_exit.assert_called_once_with(1)
 
-    def test_generate_random_parameters(self):
+    def test_generate_random_parameters_no_distance_check(self):
         """
         Test that the correct number of random stellar parameters are generated,
         and that they are within bounds
         """
         config = Configuration("tests/test_input/configuration.cfg")
-        stellar_parameters = parameter_generation.generate_random_parameters(config)
+        stellar_parameters = (
+            parameter_generation.generate_random_parameters_no_distance_check(config)
+        )
         self.assertEqual(len(stellar_parameters), 10)
         for parameters in stellar_parameters:
             self.assertGreaterEqual(int(parameters[0]), 5000)
@@ -111,12 +118,426 @@ class TestParameterGeneration(unittest.TestCase):
             self.assertGreaterEqual(float(parameters[2]), -2.0)
             self.assertLessEqual(float(parameters[2]), 0.5)
 
-    def test_generate_random_parameters_1000(self):
+    def test_generate_random_parameters_no_distance_check_1000(self):
         """
         Test that 1000 random stellar parameters are generated,
         and that they are within bounds
         """
         config = Configuration("tests/test_input/configuration.cfg")
         config.num_spectra = 1000
-        stellar_parameters = parameter_generation.generate_random_parameters(config)
+        stellar_parameters = (
+            parameter_generation.generate_random_parameters_no_distance_check(config)
+        )
         self.assertEqual(len(stellar_parameters), 1000)
+
+    def test_within_min_delta_no_valid_candidates(self):
+        """
+        Test that the function returns False when no candidate values are within minimun delta from the given value
+        """
+        parameter_value = 5000
+        min_delta = 5
+        candidate_values = [5005, 5010, 5015]
+        for candidate in candidate_values:
+            self.assertFalse(
+                parameter_generation._within_min_delta(
+                    parameter_value, candidate, min_delta
+                )
+            )
+
+    def test_within_min_delta_valid_candidate(self):
+        """
+        Test that the function returns True when a candidate value is within minimun delta from the given value
+        """
+        parameter_value = 5000
+        min_delta = 5
+        candidate_values = [5004, 5003, 4999, 4996]
+        for candidate in candidate_values:
+            self.assertTrue(
+                parameter_generation._within_min_delta(
+                    parameter_value, candidate, min_delta
+                )
+            )
+
+    @patch("random.randint")
+    @patch("random.uniform")
+    def test_generate_random_parameters_no_conflicts(self, mock_randint, mock_uniform):
+        """
+        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are no conflicting parameter values
+        Obs: This test is sensitive regarding the number of parmeters to generate. If num_spectra in config is changed, the expected values must be updated, and the mock numbers
+        """
+        # Set up mock values
+        # Teff
+        randint_values = [
+            5000,
+            5005,
+            5010,
+            5015,
+            5020,
+            5025,
+            5030,
+            5035,
+            5040,
+            5045,
+        ]
+        # Logg and feh, interleaved
+        uniform_values = [
+            4.00,
+            -1.000,
+            4.11,
+            -0.833,
+            4.22,
+            -0.667,
+            4.33,
+            -0.500,
+            4.44,
+            -0.333,
+            4.56,
+            -0.167,
+            4.67,
+            0.000,
+            4.78,
+            0.167,
+            4.89,
+            0.333,
+            5.00,
+            0.500,
+        ]
+        config = Configuration("tests/test_input/configuration.cfg")
+        expected = [
+            (5000, 4.00, -1.000),
+            (5005, 4.11, -0.833),
+            (5010, 4.22, -0.667),
+            (5015, 4.33, -0.500),
+            (5020, 4.44, -0.333),
+            (5025, 4.56, -0.167),
+            (5030, 4.67, 0.000),
+            (5035, 4.78, 0.167),
+            (5040, 4.89, 0.333),
+            (5045, 5.00, 0.500),
+        ]
+        with patch("random.randint", side_effect=randint_values), patch(
+            "random.uniform", side_effect=uniform_values
+        ):
+            result = parameter_generation.generate_random_parameters(config)
+            self.assertEqual(len(result), 10)
+            self.assertTrue(all(len(parameter_set) == 3 for parameter_set in result))
+
+            self.assertEqual(result, expected)
+
+    @patch("random.randint")
+    @patch("random.uniform")
+    def test_generate_random_parameters_with_teff_collisions(
+        self, mock_randint, mock_uniform
+    ):
+        """
+        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are conflicting teff values, but no collisions in logg and feh values
+        """
+        # Set up mock values
+        # Teff value collides, same value every time
+
+        randint_values = [5000] * 10
+        # Logg and feh values, each set of values does not collide within the specified range
+        uniform_values = [
+            4.00,
+            -1.000,
+            4.06,
+            -0.899,
+            4.12,
+            -0.799,
+            4.18,
+            -0.699,
+            4.24,
+            -0.599,
+            4.30,
+            -0.499,
+            4.36,
+            -0.399,
+            4.42,
+            -0.299,
+            4.48,
+            -0.199,
+            4.54,
+            -0.099,
+        ]
+
+        config = Configuration("tests/test_input/configuration.cfg")
+        expected = [
+            (5000, 4.00, -1.000),
+            (5000, 4.06, -0.899),
+            (5000, 4.12, -0.799),
+            (5000, 4.18, -0.699),
+            (5000, 4.24, -0.599),
+            (5000, 4.30, -0.499),
+            (5000, 4.36, -0.399),
+            (5000, 4.42, -0.299),
+            (5000, 4.48, -0.199),
+            (5000, 4.54, -0.099),
+        ]
+        with patch("random.randint", side_effect=randint_values), patch(
+            "random.uniform", side_effect=uniform_values
+        ):
+            result = parameter_generation.generate_random_parameters(config)
+            self.assertEqual(len(result), 10)
+            self.assertTrue(all(len(parameter_set) == 3 for parameter_set in result))
+            self.assertEqual(result, expected)
+
+    @patch("random.randint")
+    @patch("random.uniform")
+    def test_generate_random_parameters_with_teff_and_logg_collisions(
+        self, mock_randint, mock_uniform
+    ):
+        """
+        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are conflicting teff and logg values, but no collisions in feh values
+        """
+        # Set up mock values
+        # Teff value collides, same value every time
+        randint_values = [5000] * 10
+        # Logg value collides, same value every time
+        # Fe/h values, each set of values does not collide within the specified range
+        uniform_values = [
+            4.0,
+            -1.000,
+            4.0,
+            -0.899,
+            4.0,
+            -0.799,
+            4.0,
+            -0.699,
+            4.0,
+            -0.599,
+            4.0,
+            -0.499,
+            4.0,
+            -0.399,
+            4.0,
+            -0.299,
+            4.0,
+            -0.199,
+            4.0,
+            -0.099,
+        ]
+
+        config = Configuration("tests/test_input/configuration.cfg")
+        expected = [
+            (5000, 4.0, -1.000),
+            (5000, 4.0, -0.899),
+            (5000, 4.0, -0.799),
+            (5000, 4.0, -0.699),
+            (5000, 4.0, -0.599),
+            (5000, 4.0, -0.499),
+            (5000, 4.0, -0.399),
+            (5000, 4.0, -0.299),
+            (5000, 4.0, -0.199),
+            (5000, 4.0, -0.099),
+        ]
+        with patch("random.randint", side_effect=randint_values), patch(
+            "random.uniform", side_effect=uniform_values
+        ):
+            result = parameter_generation.generate_random_parameters(config)
+            self.assertEqual(len(result), 10)
+            self.assertTrue(all(len(parameter_set) == 3 for parameter_set in result))
+            self.assertEqual(result, expected)
+
+    @patch("random.randint")
+    @patch("random.uniform")
+    def test_generate_random_parameters_full_collision(
+        self, mock_randint, mock_uniform
+    ):
+        """
+        TODO: Change this comment, it is not accurate
+        Test that the function only adds the first set when all subsequent sets are within the min delta for each parameter.
+        """
+        # Values close to each other, within the minimum delta range
+        randint_values = [
+            5000,
+            5004,
+            5002,
+            5003,
+            5001,
+            5050,
+            5060,
+            5070,
+            5080,
+            5090,
+            5100,
+            5110,
+            5120,
+            5130,
+            5140,
+            5150,
+            5160,
+            5170,
+            5180,
+            5190,
+        ]
+        uniform_values = [
+            4.0,
+            -0.5,
+            4.03,
+            -0.4997,
+            4.04,
+            -0.4999,
+            4.02,
+            -0.4998,
+            4.05,
+            -0.4996,  # First 5 sets are close to the first, potential collisions
+            4.10,
+            -0.450,
+            4.15,
+            -0.400,
+            4.20,
+            -0.350,
+            4.25,
+            -0.300,
+            4.30,
+            -0.250,
+            4.35,
+            -0.200,
+            4.40,
+            -0.150,
+            4.45,
+            -0.100,
+            4.50,
+            -0.050,
+            4.55,
+            0.0,
+            4.60,
+            0.05,
+            4.65,
+            0.10,
+            4.70,
+            0.15,
+        ]
+
+        config = Configuration("tests/test_input/configuration.cfg")
+        expected = [
+            (5000, 4.0, -0.5),
+            (5050, 4.10, -0.450),
+            (5060, 4.15, -0.400),
+            (5070, 4.20, -0.350),
+            (5080, 4.25, -0.300),
+            (5090, 4.30, -0.250),
+            (5100, 4.35, -0.200),
+            (5110, 4.40, -0.150),
+            (5120, 4.45, -0.100),
+            (5130, 4.50, -0.050),
+        ]  # Only the first set should be added due to collision within min deltas
+
+        with patch("random.randint", side_effect=randint_values), patch(
+            "random.uniform", side_effect=uniform_values
+        ):
+            result = parameter_generation.generate_random_parameters(config)
+            self.assertEqual(len(result), 10)
+            self.assertTrue(all(len(parameter_set) == 3 for parameter_set in result))
+            self.assertEqual(result, expected)
+
+    def test_generate_evenly_spaced_output_size_perfect_fit(self):
+        """
+        Test that output size matches the requested number of spectra when it fits perfectly
+        I.e. num_spectra = intervals^dimensions
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.num_spectra = 1000
+        result = parameter_generation.generate_evenly_spaced_parameters(config)
+        self.assertEqual(len(result), 1000)
+
+    def test_generate_evenly_spaced_output_size_just_above(self):
+        """
+        Test that output size matches the requested number of spectra when the requested number is just above "a perfect square
+        I.e. num_spectra = intervals^dimensions + 1
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.num_spectra = 103
+        result = parameter_generation.generate_evenly_spaced_parameters(config)
+        self.assertEqual(len(result), 103)
+
+    def test_generate_evenly_spaced_output_size_just_below(self):
+        """
+        Test that output size matches the requested number of spectra when the requested number is just below "a perfect square
+        I.e. num_spectra = intervals^dimensions - 1
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.num_spectra = 80
+        result = parameter_generation.generate_evenly_spaced_parameters(config)
+        self.assertEqual(len(result), 80)
+
+    def test_generate_evenly_spaced_parameters_value_distribution(self):
+        """
+            Test if the values are evenly spaced within their ranges
+                np.diff(unique_teffs): This calculates the difference between consecutive elements in unique_teffs, giving you an array of differences (or steps) between the values.
+        np.diff(unique_teffs)[0]: This is the first difference in the array. You're comparing every other difference against this first difference to check if they are all approximately equal.
+        atol=1e-2: You are allowing a difference of up to 0.01 between the first difference and every subsequent difference, regardless of the scale of the numbers involved.
+        rtol=1e-5: You are also allowing a relative error of 0.00001, scaled by the absolute size of the first difference.
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.num_spectra = 64
+        result = parameter_generation.generate_evenly_spaced_parameters(config)
+        teff_values, logg_values, feh_values = zip(*result)
+
+        unique_teffs = sorted(set(teff_values))
+        unique_loggs = sorted(set(logg_values))
+        unique_fehs = sorted(set(feh_values))
+
+        # Check that the step size are consistent
+        self.assertTrue(
+            np.allclose(
+                np.diff(unique_teffs),
+                np.diff(unique_teffs)[0],
+                atol=1,
+                rtol=0,
+            )
+        )
+        print("Logg Values:", unique_teffs)
+
+        print("Differences:", np.diff(unique_teffs))
+        print("First Difference:", np.diff(unique_teffs)[0])
+        self.assertTrue(
+            np.allclose(
+                np.diff(unique_loggs),
+                np.diff(unique_loggs)[0],
+                atol=0.01,
+                rtol=0,
+            )
+        )
+        self.assertTrue(
+            np.allclose(
+                np.diff(unique_fehs),
+                np.diff(unique_fehs)[0],
+                atol=0.001,
+                rtol=0,
+            )
+        )
+
+    @patch("parameter_generation.read_parameters_from_file")
+    def test_generate_parameters_read_from_file(self, mock_read_parameters_from_file):
+        """
+        Test that the function calls read_parameters_from_file when read_stellar_parameters_from_file is True
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.read_stellar_parameters_from_file = True
+        parameter_generation.generate_parameters(config)
+        mock_read_parameters_from_file.assert_called_once_with(config)
+
+    @patch("parameter_generation.generate_random_parameters")
+    def test_generate_parameters_random(self, mock_generate_random_parameters):
+        """
+        Test that the function calls generate_random_parameters when read_stellar_parameters_from_file is False and random_parameters is True
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.read_stellar_parameters_from_file = False
+        config.random_parameters
+        parameter_generation.generate_parameters(config)
+        mock_generate_random_parameters.assert_called_once_with(config)
+
+    @patch("parameter_generation.generate_evenly_spaced_parameters")
+    def test_generate_parameters_evenly_spaced(
+        self, mock_generate_evenly_spaced_parameters
+    ):
+        """
+        Test that the function calls generate_evenly_spaced_parameters when read_stellar_parameters_from_file is False and random_parameters is False
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.read_stellar_parameters_from_file = False
+        config.random_parameters = False
+        parameter_generation.generate_parameters(config)
+        mock_generate_evenly_spaced_parameters.assert_called_once_with(config)

@@ -35,12 +35,13 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("wavelength_step = 0.05\n")
             f.write("[Stellar_parameters]\n")
             f.write("read_from_file = False\n")
+            f.write("random_parameters = True\n")
             f.write("num_spectra = 10\n")
             f.write("teff_min = 5000\n")
             f.write("teff_max = 7000\n")
             f.write("logg_min = 4.0\n")
             f.write("logg_max = 5.0\n")
-            f.write("feh_min = -2.0\n")
+            f.write("feh_min = -1.0\n")
             f.write("feh_max = 0.5\n")
 
     @classmethod
@@ -249,7 +250,7 @@ class TestConfigurationSetup(unittest.TestCase):
         self.assertEqual(config.teff_max, 7000)
         self.assertEqual(config.logg_min, 4.0)
         self.assertEqual(config.logg_max, 5.0)
-        self.assertEqual(config.feh_min, -2.0)
+        self.assertEqual(config.feh_min, -1.0)
         self.assertEqual(config.feh_max, 0.5)
 
     def test_negative_num_spectra(self):
@@ -332,7 +333,7 @@ class TestConfigurationSetup(unittest.TestCase):
         """
         config = Configuration("tests/test_input/configuration.cfg")
         config.feh_min = 0.5
-        config.feh_max = -2.0
+        config.feh_max = -1.0
         with self.assertRaises(ValueError):
             config._validate_metallicity()
 
@@ -361,7 +362,7 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("teff_max = 7000\n")
             f.write("logg_min = 4.0\n")
             f.write("logg_max = 5.0\n")
-            f.write("feh_min = -2.0\n")
+            f.write("feh_min = -1.0\n")
             f.write("feh_max = 0.5\n")
         config = Configuration(
             "tests/test_input/configuration_read_stellar_parameters_from_file.cfg"

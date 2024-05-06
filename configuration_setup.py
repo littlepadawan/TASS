@@ -43,6 +43,7 @@ class Configuration:
         self.wavelength_step = 0
 
         self.read_stellar_parameters_from_file = False
+        self.random_parameters = True
         self.num_spectra = 0
         self.teff_min = 0
         self.teff_max = 0
@@ -97,6 +98,9 @@ class Configuration:
         # Only load these parameters if we are not reading parameters from a file,
         # since they're not needed if we are reading them from a file
         if self.read_stellar_parameters_from_file == False:
+            self.random_parameters = config_parser.getboolean(
+                "Stellar_parameters", "random_parameters"
+            )
             self.num_spectra = config_parser.getint("Stellar_parameters", "num_spectra")
             self.teff_min = config_parser.getint("Stellar_parameters", "teff_min")
             self.teff_max = config_parser.getint("Stellar_parameters", "teff_max")
