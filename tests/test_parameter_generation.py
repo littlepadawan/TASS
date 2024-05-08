@@ -16,6 +16,7 @@ class TestParameterGeneration(unittest.TestCase):
         # Set up dummy directories and files for testing
         os.makedirs("tests/test_input", exist_ok=True)
         os.makedirs("tests/test_input/turbospectrum", exist_ok=True)
+        os.makedirs("tests/test_input/turbospectrum/interpolator", exist_ok=True)
         os.makedirs("tests/test_input/turbospectrum/exec", exist_ok=True)
         os.makedirs("tests/test_input/turbospectrum/exec-gf", exist_ok=True)
         os.makedirs("tests/test_input/linelists", exist_ok=True)
@@ -29,6 +30,7 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("Compiler = gfortran\n")
             f.write("[Paths]\n")
             f.write("turbospectrum = ./tests/test_input/turbospectrum/\n")
+            f.write("interpolator = ./tests/test_input/turbospectrum/interpolator\n")
             f.write("linelists = ./tests/test_input/linelists/\n")
             f.write("model_atmospheres = ./tests/test_input/model_atmospheres/\n")
             f.write("input_parameters = ./tests/test_input/input_parameters.txt\n")

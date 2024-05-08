@@ -33,6 +33,7 @@ class Configuration:
         self.compiler = None
         self.path_turbospectrum = None
         self.path_turbospectrum_compiled = None
+        self.path_interpolator = None
         self.path_linelists = None
         self.path_model_atmospheres = None
         self.path_input_parameters = None
@@ -72,6 +73,9 @@ class Configuration:
 
         self.path_turbospectrum = os.path.abspath(
             config_parser.get("Paths", "turbospectrum")
+        )
+        self.path_interpolator = os.path.abspath(
+            config_parser.get("Paths", "interpolator")
         )
         self.path_linelists = os.path.abspath(config_parser.get("Paths", "linelists"))
         self.path_model_atmospheres = os.path.abspath(
@@ -120,6 +124,15 @@ class Configuration:
         if not os.path.exists(self.path_turbospectrum):
             raise FileNotFoundError(
                 f"The specified directory containing Turbospectrum {self.config_file} does not exist."
+            )
+
+    def _validate_interpolator_path(self):
+        """
+        Check that the path to the interpolator directory exists.
+        """
+        if not os.path.exists(self.path_interpolator):
+            raise FileNotFoundError(
+                f"The specified directory containing the interpolator {self.path_interpolator} does not exist."
             )
 
     def _validate_compiler(self):

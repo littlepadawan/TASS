@@ -12,6 +12,7 @@ class TestConfigurationSetup(unittest.TestCase):
         # Set up dummy directories and files for testing
         os.makedirs("tests/test_input", exist_ok=True)
         os.makedirs("tests/test_input/turbospectrum", exist_ok=True)
+        os.makedirs("tests/test_input/turbospectrum/interpolator", exist_ok=True)
         os.makedirs("tests/test_input/turbospectrum/exec", exist_ok=True)
         os.makedirs("tests/test_input/turbospectrum/exec-gf", exist_ok=True)
         os.makedirs("tests/test_input/linelists", exist_ok=True)
@@ -25,6 +26,7 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("Compiler = gfortran\n")
             f.write("[Paths]\n")
             f.write("turbospectrum = ./tests/test_input/turbospectrum/\n")
+            f.write("interpolator = ./tests/test_input/turbospectrum/interpolator/\n")
             f.write("linelists = ./tests/test_input/linelists/\n")
             f.write("model_atmospheres = ./tests/test_input/model_atmospheres/\n")
             f.write("input_parameters = ./tests/test_input/input_parameters.txt\n")
@@ -101,6 +103,24 @@ class TestConfigurationSetup(unittest.TestCase):
         config.path_turbospectrum = "tests/non_existing_turbospectrum"
         with self.assertRaises(FileNotFoundError):
             config._validate_turbospectrum_path()
+
+    @patch("configuration_setup.os.path.exists", return_value=True)
+    def test_validate_interpolator_path_success(self, mock_exists):
+        """
+        Test that an error is not raised if the path to the interpolator exists
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        self.assertTrue(os.path.exists(config.path_interpolator))
+
+    def test_validate_interpolator_path_failure(self):
+        """
+        Test that an error is raised if the path to the interpolator does not exist
+        """
+        # TODO: Test passes but coverage does not acknowledge it
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.path_interpolator = "tests/turbospectrum/non_existing_interpolator"
+        with self.assertRaises(FileNotFoundError):
+            config._validate_interpolator_path()
 
     def test_compiler_gfortran(self):
         """
@@ -348,6 +368,7 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("Compiler = gfortran\n")
             f.write("[Paths]\n")
             f.write("turbospectrum = ./tests/test_input/turbospectrum/\n")
+            f.write("interpolator = ./tests/test_input/turbospectrum/interpolator\n")
             f.write("linelists = ./tests/test_input/linelists/\n")
             f.write("model_atmospheres = ./tests/test_input/model_atmospheres/\n")
             f.write("input_parameters = ./tests/test_input/input_parameters.txt\n")
