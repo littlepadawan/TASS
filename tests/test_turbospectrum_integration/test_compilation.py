@@ -14,7 +14,7 @@ class TestInterpolate(unittest.TestCase):
     # Parse the filenames of the model atmospheres used for testing
     PARSED_FILENAMES = []
     for filename in FILENAMES:
-        PARSED_FILENAMES.append(utils._parse_model_atmosphere_filename(filename))
+        PARSED_FILENAMES.append(utils.parse_model_atmosphere_filename(filename))
 
     MODEL_GRID = pd.DataFrame(PARSED_FILENAMES)
 
