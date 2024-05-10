@@ -129,7 +129,7 @@ class TestTurbospectrumIntegration(unittest.TestCase):
         }
 
         output = turbospectrum_integration._parse_model_atmosphere_filename(filename)
-        print(output)
+        # print(output)
         self.assertEqual(output, expected_output)
 
     def test_parse_model_atmosphere_filename_no_match(self):
@@ -185,4 +185,17 @@ class TestTurbospectrumIntegration(unittest.TestCase):
         turbospectrum_integration.create_template_interpolator_script(self.config)
         turbospectrum_integration.generate_interpolated_model_atmosphere(
             self.config, parameters
+        )
+
+    def test_create_babsma(self):
+        parameters = {"teff": 5710, "logg": 4.6, "feh": 0.25}
+        turbospectrum_integration.compile_turbospectrum(self.config)
+        turbospectrum_integration.compile_interpolator(self.config)
+        all_models = turbospectrum_integration._extract_parameters_from_filenames(
+            self.config.path_model_atmospheres
+        )
+        model_grid = turbospectrum_integration._create_model_grid(all_models)
+        turbospectrum_integration.create_template_interpolator_script(self.config)
+        turbospectrum_integration.generate_one_spectrum(
+            self.config, parameters, model_grid
         )

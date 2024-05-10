@@ -355,8 +355,8 @@ set marcs_binary = '.false.'
 foreach Tref   ( {{PY_TREF}} )
 foreach loggref ( {{PY_LOGGREF}} )
 foreach zref ( {{PY_ZREF}} )
-set modele_out = {{PY_OUTPUT_PATH}}/${Tref}g${loggref}z${zref}.interpol
-set modele_out2 = {{PY_OUTPUT_PATH}}/${Tref}g${loggref}z${zref}.alt
+set modele_out = {{PY_OUTPUT_PATH}}/p${Tref}_g${loggref}_z${zref}.interpol
+set modele_out2 = {{PY_OUTPUT_PATH}}/p${Tref}_g${loggref}_z${zref}.alt
 
 # grid values bracketting the interpolation point (should be automatised!)
 set Tefflow = {{PY_TEFFLOW}}
@@ -424,7 +424,7 @@ def copy_template_interpolator_script(config: Configuration, stellar_parameters:
     """
     Copy the template interpolator script with a unique file name
     """
-    unique_filename = f"interpolate_{stellar_parameters['teff']}_{stellar_parameters['logg']}_{stellar_parameters['feh']}.script"
+    unique_filename = f"interpolate_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}.script"
     path_to_new_script = f"{config.path_interpolator}/{unique_filename}"
 
     shutil.copyfile(
@@ -483,7 +483,7 @@ def _run_interpolation_script(script_name: str, config: Configuration):
     try:
         subprocess.run(["chmod", "+x", script_name], check=True)
         result = subprocess.run([command], check=True, text=True, capture_output=True)
-        print(result)
+        # print(result)
     except subprocess.CalledProcessError as e:
         print(f"Error running interpolation script: {e.stderr}")
         raise e
@@ -506,7 +506,7 @@ def generate_interpolated_model_atmosphere(
     interpolator_script_name = copy_template_interpolator_script(
         config, input_parameters
     )
-    print(f"interpolator_script_name: {interpolator_script_name}")
+    # print(f"interpolator_script_name: {interpolator_script_name}")
     _update_interpolator_script(
         interpolator_script_name,
         input_parameters,
@@ -516,57 +516,241 @@ def generate_interpolated_model_atmosphere(
     # Run interpolation script
     _run_interpolation_script(interpolator_script_name, config)
     # TODO: Remove interpolation script
-    # TODO: Set filepaths in config object
+
+    # Return filepath to model atmosphere
+    return f"{config.path_output_directory}/p{input_parameters['teff']}_g{input_parameters['logg']}_z{input_parameters['feh']}.interpol"
 
 
-def create_babsma(config: Configuration):
+def generate_abundance_string(elements, base_abundance, adjustments):
+    # Generates formatted abundance strings for the config
+    abundances = "'INDIVIDUAL ABUNDANCES:'\n"
+    for element, base in base_abundance.items():
+        adjusted = base + adjustments.get(element, 0)
+        abundances += f"{element}  {adjusted:.6f}\n"
+    return abundances
+
+
+def generate_default_alpha(metallicity: float):
+    # THis is how TSFitPy calculates the alpha value
+    alpha = 0.0
+    if metallicity < -1.0:
+        alpha = 0.4
+    elif -1.0 <= metallicity < 0.0:
+        alpha = -0.4 * metallicity
+    else:
+        alpha = 0.0
+    return alpha
+
+
+def generate_default_abundances(alpha: float):
+    # This is how TSFitPy calculates the abundances
+    # String to hold the abundances
+    individual_abundances = "'INDIVIDUAL ABUNDANCES:'\n"
+    element_numbers = {
+        "H": 1,
+        "He": 2,
+        "O": 8,
+        "Ne": 10,
+        "Mg": 12,
+        "Si": 14,
+        "S": 16,
+        "Ca": 20,
+        "Fe": 26,
+    }
+    solar_abundances = {
+        "H": 12.00,
+        "He": 10.93,
+        "O": 8.69,
+        "Ne": 7.93,
+        "Mg": 7.60,
+        "Si": 7.51,
+        "S": 7.12,
+        "Ca": 6.34,
+        "Fe": 7.50,
+    }
+    for element, element_number in element_numbers.items():
+        abundance = solar_abundances[element] + (
+            alpha if element in ["O", "Ne", "Mg", "Si", "S", "Ca"] else 0
+        )  # Apply alpha enhancement to alpha elements
+        individual_abundances += f"{element_number}  {abundance:.2f}\n"
+
+    return individual_abundances
+
+
+def create_babsma(config: Configuration, stellar_parameters: dict, model_path: str):
     """
     Create the babsma file
     """
-    babsma_content = f"""\
-        'LAMBDA_MIN:'   '{config.wavelength_min}'
-        'LAMBDA_MAX:'   '{config.wavelength_max}'
-        'LAMBDA_STEP:'  '{config.wavelength_step}'
-        'MODELINPUT:'   '{config.path_model_atmospheres}'
-        'MARCS-FILE:'   '.true.'
-        'MODELOPAC:'    '{config.path_output_directory}/opac'
-        'METALLICITY:'  '{config.metallicity}'
-    """
+    babsma_template = """
+PURE-LTE: .true.
+LAMBDA_MIN: {lambda_min:.0f}
+LAMBDA_MAX: {lambda_max:.0f}
+LAMBDA_STEP: {lambda_step:.2f}
+MODELINPUT: '{model_input}'
+MARCS-FILE: .false.
+MODELOPAC: '{model_opac}'
+METALLICITY: {metallicity:.2f}
+'ALPHA/Fe:' {alpha:.2f}
+HELIUM: 0.00
+R-PROCESS: 0.00
+S-PROCESS: 0.00
+'INDIVIDUAL ABUNDANCES:' 0
+XIFIX: T
+1.5
+"""
+    alpha_def = generate_default_alpha(stellar_parameters["feh"])
+    # abundances_str = generate_default_abundances(alpha)
+
+    # Fill the templates
+    babsma_config = babsma_template.format(
+        lambda_min=config.wavelength_min,
+        lambda_max=config.wavelength_max,
+        lambda_step=config.wavelength_step,
+        model_input=model_path,
+        model_opac=f"{config.path_output_directory}/opac_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}",
+        metallicity=stellar_parameters["feh"],
+        alpha=alpha_def,
+    )
+
+    babsma_file_path = f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}_babsma"  # TODO: Should be unique
+
+    with open(babsma_file_path, "w") as file:
+        file.write(babsma_config)
+    return babsma_file_path
 
 
-def run_babsma(config: Configuration):
+def run_babsma(config: Configuration, babsma_file_path: str):
     """
     Run babsma
     """
-    pass
+    babsma_executable = f"{config.path_turbospectrum_compiled}/babsma_lu"
+    cwd = os.getcwd()
+    os.chdir(
+        config.path_turbospectrum
+    )  # Change to directory where babsma is expected to run
+    # Make sure the configuration file is executable (TODO REMOVE?)
+    subprocess.run(["chmod", "+x", babsma_file_path], check=True)
+    with open(babsma_file_path, "r") as file:
+        result = subprocess.run(
+            [babsma_executable],
+            stdin=file,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    if result.returncode != 0:
+        print(f"Error running babsma: {result.stderr}")
+    os.chdir(cwd)
 
 
-def generate_bsyn(config: Configuration, input_parameters: dict):
+def create_bsyn(config: Configuration, stellar_parameters: dict):
     """
     Generate the bsyn file
     """
-    pass
+    bsyn_template = """
+PURE-LTE: .true.
+SEGMENTSFILE: ''
+LAMBDA_MIN: {lambda_min:.0f}
+LAMBDA_MAX: {lambda_max:.0f}
+LAMBDA_STEP: {lambda_step:.2f}
+'INTENSITY/FLUX:' 'Flux'
+'COS(THETA):' 1.00
+ABFIND: .false.
+MODELOPAC: '{model_opac}'
+RESULTFILE: '{result_file}'
+METALLICITY: {metallicity:.2f}
+'ALPHA/Fe:' {alpha:.2f}
+HELIUM: 0.00
+R-PROCESS: 0.00
+S-PROCESS: 0.00
+'INDIVIDUAL ABUNDANCES:' 0
+ISOTOPES: 0
+'{line_lists}'
+SPHERICAL: .false.
+"""
+    alpha_def = generate_default_alpha(stellar_parameters["feh"])
+    # Make a list of line lists
+    directory = config.path_linelists
+    line_list_paths = [
+        os.path.join(directory, file)
+        for file in directory
+        if os.path.isfile(os.path.join(directory, file))
+    ]
+    # Convert to string for script
+    line_lists = "'NFILES   :' '{:d}'\n".format(len(line_list_paths))
+    for file in line_list_paths:
+        line_lists += "{}\n".format(file)
+    opac_model_path = f"{config.path_output_directory}/opac_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}"
+    result_file_path = f"{config.path_output_directory}/spectrum_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}"
+    bsyn_config = bsyn_template.format(
+        pure_lte=".true.",
+        lambda_min=config.wavelength_min,
+        lambda_max=config.wavelength_max,
+        lambda_step=config.wavelength_step,
+        model_opac=opac_model_path,
+        result_file=result_file_path,
+        metallicity=stellar_parameters["feh"],
+        alpha=alpha_def,
+        helium=0.00,
+        r_process=0.00,
+        s_process=0.00,
+        line_lists="\n".join(line_list_paths),
+    )
+
+    bsyn_file_path = f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}_bsyn"
+
+    with open(bsyn_file_path, "w") as file:
+        file.write(bsyn_config)
+    return bsyn_file_path
 
 
-def run_bsyn(config: Configuration):
+def run_bsyn(config: Configuration, bsyn_file_path: str):
     """
     Run bsyn
     """
-    pass
+    bsyn_executable = f"{config.path_turbospectrum_compiled}/bsyn_lu"
+    cwd = os.getcwd()
+    os.chdir(
+        config.path_turbospectrum
+    )  # Change to directory where bsyn is expected to run
+    # Make sure the configuration file is executable (TODO REMOVE?)
+    subprocess.run(["chmod", "+x", bsyn_file_path], check=True)
+    with open(bsyn_file_path, "r") as file:
+        result = subprocess.run(
+            [bsyn_executable],
+            stdin=file,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    if result.returncode != 0:
+        print(f"Error running bsyn: {result.stderr}")
+    os.chdir(cwd)
 
 
-def generate_one_spectrum(config: Configuration, input_parameters: dict):
+def generate_one_spectrum(
+    config: Configuration, input_parameters: dict, model_grid: pd.DataFrame
+):
     """
     Generates a spectrum for a set of input parameters.
     """
     # TODO: Check if model atmosphere needs to be interpolated
+    needs_interpolation, matching_models = _needs_interpolation(
+        input_parameters, model_grid
+    )
     # TODO: Generate interpolated model atmosphere
+    if needs_interpolation:
+        model_path = generate_interpolated_model_atmosphere(config, input_parameters)
 
     # TODO: Generate babsma
+    babsma_file_path = create_babsma(config, input_parameters, model_path)
     # TODO: Run babsma
+    run_babsma(config, babsma_file_path)
 
     # TODO: Generate bsyn
+    bsyn_file_path = create_bsyn(config, input_parameters)
     # TODO: Run bsyn
+    run_babsma(config, bsyn_file_path)
 
     # TODO: Save spectrum
 
@@ -575,7 +759,11 @@ def generate_one_spectrum(config: Configuration, input_parameters: dict):
 
 def generate_all_spectra(config: Configuration):
     # TODO: Compile Turbospectrum
+    compile_turbospectrum(config)
     # TODO: Compile interpolator
+    compile_interpolator(config)
+    # Read the model atmospheres
+
     # TODO: Set up output directory
     # TODO: Generate one spectra for each set of input parameters
     pass
