@@ -1,104 +1,14 @@
-from decimal import Decimal
-import shutil
-from string import Template
-import subprocess  # TODO: Maybe dont import entire subprocess module
 import os  # TODO: Maybe dont import entire os module
-import re
+import shutil
+import subprocess  # TODO: Maybe dont import entire subprocess module
+from decimal import Decimal
+from string import Template
 
 import numpy as np
-import pandas as pd
 import output_management
+import pandas as pd
+import turbospectrum_integration.turbospectrum_integration as turbospectrum_integration
 from configuration_setup import Configuration
-
-
-def compile_turbospectrum(config: Configuration):
-    """
-    Compile Turbospectrum using the specified compiler
-    """
-
-    # Change the current working directory to where the Makefile is located
-    original_directory = os.getcwd()
-    os.chdir(config.path_turbospectrum_compiled)
-
-    try:
-        # Run make command to compile Turbospectrum
-        result = subprocess.run(["make"], check=True, text=True, capture_output=True)
-        print(f"Compilation of Turbospectrum successful")
-    except subprocess.CalledProcessError as e:
-        print(f"Error compiling Turbospectrum: {e.stderr}")
-        raise e
-    finally:
-        # Change back to the original working directory
-        os.chdir(original_directory)
-
-
-def compile_interpolator(config: Configuration):
-    """
-    Compile the interpolator using the specified compiler (comes with Turbospectrum)
-    """
-
-    # Change the current working directory to where the interpolator is located
-    original_directory = os.getcwd()
-    os.chdir(config.path_interpolator)
-
-    # Command from readme: gfortran -o interpol_modeles interpol_modeles.f
-    command = [config.compiler, "-o", "interpol_modeles", "interpol_modeles.f"]
-
-    try:
-        # Run command to compile interpolator
-        result = subprocess.run(command, check=True, text=True, capture_output=True)
-        print(f"Compilation of interpolator successful")
-    except subprocess.CalledProcessError as e:
-        print(f"Error compiling interpolator: {e.stderr}")
-        raise e
-    finally:
-        # Change back to the original working directory
-        os.chdir(original_directory)
-
-
-def _parse_model_atmosphere_filename(filename: str):
-    """
-    Parse the filename of a model atmosphere to get its parameters
-    """
-    pattern = (
-        r"p(\d+)_g([\+\-]\d+\.\d+)_m(\d+\.\d+)_t(\d+)_st_z([\+\-]\d+\.\d+)_.*\.mod"
-    )
-
-    match = re.match(pattern, filename)
-    if match:
-
-        # print(f"feh: {feh_decimal}")
-        # print(f"filename: {filename}")
-        # print()
-        return {
-            "teff": match.group(1),
-            "logg": match.group(2),
-            "feh": match.group(5),
-            "filename": filename,
-        }
-    return None
-
-
-def _extract_parameters_from_filenames(directory: str):
-    """
-    Extract the parameters from the filenames of the model atmospheres
-    """
-    models = []
-    for filename in os.listdir(directory):
-        model_parameters = _parse_model_atmosphere_filename(filename)
-        if model_parameters:
-            models.append(model_parameters)
-
-    return models
-
-
-def _create_model_grid(models: list):
-    """
-    Convert a list of dictionaries into a DataFrame for easy manipulation
-    @param models: List of dictionaries with keys "teff", "logg", "feh", and "filename"
-    """
-    df = pd.DataFrame(models)
-    return df
 
 
 def _get_models_with_lower_parameter(
