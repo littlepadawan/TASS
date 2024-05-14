@@ -294,7 +294,7 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
         "z", stellar_parameters["z"], teffup_loggup_zup_models
     )
 
-    # Gets the first model in every subset # TODO: Is this correct logic, to just take the first model?
+    # Gets the first model in every subset # TODO: Om det inte finns en närmaste modell, avbryt och ge felmeddelande
     model1 = closest_tefflow_logglow_fehlow_models.iloc[0]
     model2 = closest_tefflow_logglow_zup_models.iloc[0]
     model3 = closest_tefflow_loggup_fehlow_models.iloc[0]
