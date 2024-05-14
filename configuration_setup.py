@@ -1,8 +1,9 @@
-from configparser import ConfigParser
 import os
 import sys
+from configparser import ConfigParser
 
 
+# TODO: Add validation functions for turbospectrum settings
 class Configuration:
     """
     Represents the configuration settings for the Turbospectrum wrapper.
@@ -52,6 +53,8 @@ class Configuration:
         self.logg_max = 0
         self.feh_min = 0
         self.feh_max = 0
+
+        self.xit = 0
 
         self._load_configuration_file()
         try:
@@ -116,6 +119,8 @@ class Configuration:
             self.path_input_parameters = os.path.abspath(
                 config_parser.get("Paths", "input_parameters")
             )
+
+        self.xit = config_parser.getfloat("Turbospectrum_settings", "xit")
 
     def _validate_turbospectrum_path(self):
         """

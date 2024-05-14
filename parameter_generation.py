@@ -158,8 +158,6 @@ def generate_random_parameters(config: Configuration):
             parameters["feh"].append(feh)
             completed_sets.append((teff, logg, feh))
 
-    # TODO: Validate max distance?  Wait for response from Ulrike
-
     return completed_sets
 
 

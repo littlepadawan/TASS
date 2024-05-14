@@ -1,8 +1,9 @@
-import unittest
-from unittest.mock import patch, MagicMock
-from configuration_setup import Configuration
 import os
+import unittest
 from shutil import rmtree
+from unittest.mock import MagicMock, patch
+
+from configuration_setup import Configuration
 
 
 # Run tests with this command: python3 -m unittest tests.test_config
@@ -45,6 +46,8 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("logg_max = 5.0\n")
             f.write("feh_min = -1.0\n")
             f.write("feh_max = 0.5\n")
+            f.write("[Turbospectrum_settings]\n")
+            f.write("xit = 1.0\n")
 
     @classmethod
     def tearDownClass(cls):
@@ -385,6 +388,8 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("logg_max = 5.0\n")
             f.write("feh_min = -1.0\n")
             f.write("feh_max = 0.5\n")
+            f.write("[Turbospectrum_settings]\n")
+            f.write("xit = 1.0\n")
         config = Configuration(
             "tests/test_input/configuration_read_stellar_parameters_from_file.cfg"
         )

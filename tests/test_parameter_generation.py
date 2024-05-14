@@ -1,11 +1,11 @@
+import os
 import unittest
-from unittest.mock import patch, MagicMock
+from shutil import rmtree
+from unittest.mock import MagicMock, patch
 
 import numpy as np
-from configuration_setup import Configuration
 import parameter_generation
-import os
-from shutil import rmtree
+from configuration_setup import Configuration
 from rtree import index
 from rtree.index import Property
 
@@ -49,6 +49,8 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("logg_max = 5.0\n")
             f.write("feh_min = -1.0\n")
             f.write("feh_max = 0.5\n")
+            f.write("[Turbospectrum_settings]\n")
+            f.write("xit = 1.0\n")
 
         # Create file with stellar parameters for testing
         with open("tests/test_input/input_parameters.txt", "w") as f:
