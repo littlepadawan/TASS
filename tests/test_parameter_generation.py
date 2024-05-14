@@ -47,14 +47,14 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("teff_max = 7000\n")
             f.write("logg_min = 4.0\n")
             f.write("logg_max = 5.0\n")
-            f.write("feh_min = -1.0\n")
-            f.write("feh_max = 0.5\n")
+            f.write("z_min = -1.0\n")
+            f.write("z_max = 0.5\n")
             f.write("[Turbospectrum_settings]\n")
             f.write("xit = 1.0\n")
 
         # Create file with stellar parameters for testing
         with open("tests/test_input/input_parameters.txt", "w") as f:
-            f.write("teff logg fe/h\n")
+            f.write("teff logg z\n")
             f.write("7957  4.91 -0.425\n")
             f.write("5952  2.71 -0.014\n")
             f.write("3543  1.19 -2.573\n")
@@ -80,14 +80,14 @@ class TestParameterGeneration(unittest.TestCase):
         self.assertEqual(
             stellar_parameters,
             [
-                {"teff": "7957", "logg": "4.91", "fe/h": "-0.425"},
-                {"teff": "5952", "logg": "2.71", "fe/h": "-0.014"},
-                {"teff": "3543", "logg": "1.19", "fe/h": "-2.573"},
-                {"teff": "3837", "logg": "5.41", "fe/h": "0.258"},
-                {"teff": "3070", "logg": "2.50", "fe/h": "-4.387"},
-                {"teff": "3862", "logg": "4.79", "fe/h": "-1.686"},
-                {"teff": "6897", "logg": "2.45", "fe/h": "-0.636"},
-                {"teff": "2920", "logg": "3.03", "fe/h": "-3.941"},
+                {"teff": "7957", "logg": "4.91", "z": "-0.425"},
+                {"teff": "5952", "logg": "2.71", "z": "-0.014"},
+                {"teff": "3543", "logg": "1.19", "z": "-2.573"},
+                {"teff": "3837", "logg": "5.41", "z": "0.258"},
+                {"teff": "3070", "logg": "2.50", "z": "-4.387"},
+                {"teff": "3862", "logg": "4.79", "z": "-1.686"},
+                {"teff": "6897", "logg": "2.45", "z": "-0.636"},
+                {"teff": "2920", "logg": "3.03", "z": "-3.941"},
             ],
         )
 
@@ -183,7 +183,7 @@ class TestParameterGeneration(unittest.TestCase):
             5040,
             5045,
         ]
-        # Logg and feh, interleaved
+        # Logg and z, interleaved
         uniform_values = [
             4.00,
             -1.000,
@@ -234,13 +234,13 @@ class TestParameterGeneration(unittest.TestCase):
         self, mock_randint, mock_uniform
     ):
         """
-        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are conflicting teff values, but no collisions in logg and feh values
+        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are conflicting teff values, but no collisions in logg and z values
         """
         # Set up mock values
         # Teff value collides, same value every time
 
         randint_values = [5000] * 10
-        # Logg and feh values, each set of values does not collide within the specified range
+        # Logg and z values, each set of values does not collide within the specified range
         uniform_values = [
             4.00,
             -1.000,
@@ -291,13 +291,13 @@ class TestParameterGeneration(unittest.TestCase):
         self, mock_randint, mock_uniform
     ):
         """
-        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are conflicting teff and logg values, but no collisions in feh values
+        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are conflicting teff and logg values, but no collisions in z values
         """
         # Set up mock values
         # Teff value collides, same value every time
         randint_values = [5000] * 10
         # Logg value collides, same value every time
-        # Fe/h values, each set of values does not collide within the specified range
+        # z values, each set of values does not collide within the specified range
         uniform_values = [
             4.0,
             -1.000,
@@ -476,11 +476,11 @@ class TestParameterGeneration(unittest.TestCase):
         config = Configuration("tests/test_input/configuration.cfg")
         config.num_spectra = 64
         result = parameter_generation.generate_evenly_spaced_parameters(config)
-        teff_values, logg_values, feh_values = zip(*result)
+        teff_values, logg_values, z_values = zip(*result)
 
         unique_teffs = sorted(set(teff_values))
         unique_loggs = sorted(set(logg_values))
-        unique_fehs = sorted(set(feh_values))
+        unique_zs = sorted(set(z_values))
 
         # Check that the step size are consistent
         self.assertTrue(
@@ -505,8 +505,8 @@ class TestParameterGeneration(unittest.TestCase):
         )
         self.assertTrue(
             np.allclose(
-                np.diff(unique_fehs),
-                np.diff(unique_fehs)[0],
+                np.diff(unique_zs),
+                np.diff(unique_zs)[0],
                 atol=0.001,
                 rtol=0,
             )

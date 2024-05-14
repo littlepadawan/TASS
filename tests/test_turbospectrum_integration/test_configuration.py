@@ -16,7 +16,7 @@ class TestConfiguration(unittest.TestCase):
         Test that the TurbospectrumConfiguration class is initialized correctly
         """
         config = Configuration()
-        stellar_parameters = {"teff": 5210, "logg": 4.3, "feh": 0.05}
+        stellar_parameters = {"teff": 5210, "logg": 4.3, "z": 0.05}
         ts_config = turbospectrum_config.TurbospectrumConfiguration(
             config, stellar_parameters
         )
@@ -25,11 +25,11 @@ class TestConfiguration(unittest.TestCase):
         self.assertEqual(ts_config.path_model_opac, None)
         self.assertEqual(
             ts_config.path_babsma,
-            f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}_babsma",
+            f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_babsma",
         )
         self.assertEqual(
             ts_config.path_bsyn,
-            f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}_bsyn",
+            f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_bsyn",
         )
         self.assertEqual(ts_config.interpolated_model_atmosphere, True)
         self.assertEqual(ts_config.alpha, expected_alpha)
@@ -71,14 +71,12 @@ class TestConfiguration(unittest.TestCase):
         """
         Test that the path to the model opac file is generated correctly
         """
-        stellar_parameters = {"teff": 5210, "logg": 4.3, "feh": 0.05}
+        stellar_parameters = {"teff": 5210, "logg": 4.3, "z": 0.05}
         ts_config = turbospectrum_config.TurbospectrumConfiguration(
             self.config, stellar_parameters
         )
 
-        expected_path = (
-            f"{self.config.path_output_directory}/opac_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}",
-        )
+        expected_path = f"{self.config.path_output_directory}/opac_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}"
         turbospectrum_config.generate_path_model_opac(
             ts_config, self.config, stellar_parameters
         )
@@ -88,14 +86,12 @@ class TestConfiguration(unittest.TestCase):
         """
         Test that the path to the result file is generated correctly
         """
-        stellar_parameters = {"teff": 5210, "logg": 4.3, "feh": 0.05}
+        stellar_parameters = {"teff": 5210, "logg": 4.3, "z": 0.05}
         ts_config = turbospectrum_config.TurbospectrumConfiguration(
             self.config, stellar_parameters
         )
 
-        expected_path = (
-            f"{self.config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}.spec",
-        )
+        expected_path = f"{self.config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.spec"
         turbospectrum_config.generate_path_result_file(
             ts_config, self.config, stellar_parameters
         )
@@ -108,7 +104,7 @@ class TestConfiguration(unittest.TestCase):
         stellar_parameters = {
             "teff": 5210,
             "logg": 4.3,
-            "feh": 0.05,
+            "z": 0.05,
             "Mg": 0.2,
             "Ca": 0.3,
         }
@@ -124,7 +120,7 @@ class TestConfiguration(unittest.TestCase):
         stellar_parameters = {
             "teff": 5210,
             "logg": 4.3,
-            "feh": 0.05,
+            "z": 0.05,
             "Mg": 0.2,
             "Ca": 0.3,
         }
@@ -142,7 +138,7 @@ class TestConfiguration(unittest.TestCase):
         not interpolated.
         """
         ts_config = turbospectrum_config.TurbospectrumConfiguration(
-            self.config, {"teff": 5210, "logg": 4.3, "feh": 0.05}
+            self.config, {"teff": 5210, "logg": 4.3, "z": 0.05}
         )
         ts_config.interpolated_model_atmosphere = False
         result = turbospectrum_config.is_model_atmosphere_marcs(ts_config)
@@ -156,7 +152,7 @@ class TestConfiguration(unittest.TestCase):
         interpolated.
         """
         ts_config = turbospectrum_config.TurbospectrumConfiguration(
-            self.config, {"teff": 5210, "logg": 4.3, "feh": 0.05}
+            self.config, {"teff": 5210, "logg": 4.3, "z": 0.05}
         )
         ts_config.interpolated_model_atmosphere = True
         result = turbospectrum_config.is_model_atmosphere_marcs(ts_config)
@@ -165,7 +161,6 @@ class TestConfiguration(unittest.TestCase):
         self.assertEqual(result, ".false.")
 
     @patch("turbospectrum_integration.configuration.generate_abundance_str")
-    @patch("turbospectrum_integration.configuration.generate_path_model_opac")
     @patch(
         "turbospectrum_integration.configuration.is_model_atmosphere_marcs",
         return_value=".true",
@@ -175,13 +170,11 @@ class TestConfiguration(unittest.TestCase):
         self,
         mock_open,
         mock_is_model_atmosphere_marcs,
-        mock_generate_path_model_opac,
         mock_generate_abundance_str,
     ):
         """Test that the babsma file is created correctly"""
         # Return values
         mock_generate_abundance_str.return_value = (2, "12  0.20\n20  0.30\n")
-        mock_generate_path_model_opac.return_value = "path/to/model_opac"
 
         # Set up test data
         config = MagicMock()
@@ -198,7 +191,7 @@ class TestConfiguration(unittest.TestCase):
         stellar_parameters = {
             "teff": 5210,
             "logg": 4.3,
-            "feh": 0.05,
+            "z": 0.05,
             "Mg": 0.2,
             "Ca": 0.3,
         }
@@ -210,7 +203,7 @@ class TestConfiguration(unittest.TestCase):
             model_input=ts_config.path_model_atmosphere,
             marcs_file=".true.",  # assuming `is_model_atmosphere_marcs` returns True for this test
             model_opac="path/to/model_opac",
-            metallicity=stellar_parameters["feh"],
+            metallicity=stellar_parameters["z"],
             alpha=ts_config.alpha,
             num_elements=2,
             abundance_str="12  0.20\n20  0.30\n",
@@ -222,11 +215,6 @@ class TestConfiguration(unittest.TestCase):
 
         # Check that generate_abundance_str was called with the correct arguments
         mock_generate_abundance_str.assert_called_once_with(stellar_parameters)
-
-        # Check that generate_path_model_opac was called with the correct arguments
-        mock_generate_path_model_opac.assert_called_once_with(
-            ts_config, config, stellar_parameters
-        )
 
         # Check that the file was written with the correct content
         mock_open.assert_called_once_with(ts_config.path_babsma, "w")
@@ -283,7 +271,7 @@ class TestConfiguration(unittest.TestCase):
         stellar_parameters = {
             "teff": 5210,
             "logg": 4.3,
-            "feh": 0.05,
+            "z": 0.05,
             "Mg": 0.2,
             "Ca": 0.3,
         }
@@ -294,7 +282,7 @@ class TestConfiguration(unittest.TestCase):
             lambda_step=config.wavelength_step,
             model_opac="path/to/model_opac",
             result_file=ts_config.path_result_file,
-            metallicity=stellar_parameters["feh"],
+            metallicity=stellar_parameters["z"],
             alpha=ts_config.alpha,
             num_elements=2,
             abundance_str="12  0.20\n20  0.30\n",

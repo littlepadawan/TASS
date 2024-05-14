@@ -45,10 +45,10 @@ class TurbospectrumConfiguration:
     def __init__(self, config: Configuration, stellar_parameters: dict):
         self.path_model_atmosphere = None
         self.path_model_opac = None
-        self.path_babsma = f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}_babsma"  # TODO: Update with Mg and Ca
-        self.path_bsyn = f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}_bsyn"  # TODO: Update with Mg and Ca
+        self.path_babsma = f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_babsma"  # TODO: Update with Mg and Ca
+        self.path_bsyn = f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_bsyn"  # TODO: Update with Mg and Ca
         self.interpolated_model_atmosphere = True
-        self.alpha = calculate_alpha(stellar_parameters["feh"])
+        self.alpha = calculate_alpha(stellar_parameters["z"])
         self.num_elements = 0
         self.abundance_str = ""
 
@@ -87,9 +87,7 @@ def generate_path_model_opac(
         config (Configuration): The configuration
         stellar_parameters (dict): The stellar parameters
     """
-    ts_config.path_model_opac = (
-        f"{config.path_output_directory}/opac_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}",
-    )
+    ts_config.path_model_opac = f"{config.path_output_directory}/opac_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}"
 
 
 def generate_path_result_file(
@@ -107,9 +105,7 @@ def generate_path_result_file(
     """
     # TODO: Update with Mg and Ca
     # TODO: Make sure this has the right format (follow TSFitPy? All params should be deducable from filename, and have + and -)
-    ts_config.path_result_file = (
-        f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}.spec",
-    )
+    ts_config.path_result_file = f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.spec"
 
 
 def generate_abundance_str(stellar_parameters: dict):
@@ -193,8 +189,8 @@ def create_babsma(
         lambda_step=config.wavelength_step,
         model_input=ts_config.path_model_atmosphere,
         marcs_file=is_model_atmosphere_marcs(ts_config),
-        model_opac=generate_path_model_opac(ts_config, config, stellar_parameters),
-        metallicity=stellar_parameters["feh"],
+        model_opac=ts_config.path_model_opac,
+        metallicity=stellar_parameters["z"],
         alpha=ts_config.alpha,
         num_elements=num_elements,
         abundance_str=abundance_str,
@@ -247,14 +243,14 @@ def create_bsyn(
         ts_config (TurbospectrumConfiguration): The Turbospectrum configuration object
         stellar_parameters (dict): The stellar parameters
     """
-
+    print(f"In bsyn, path_model_opac: {ts_config.path_model_opac}")
     bsyn_config = BSYN_CONTENT.format(
         lambda_min=config.wavelength_min,
         lambda_max=config.wavelength_max,
         lambda_step=config.wavelength_step,
         model_opac=ts_config.path_model_opac,
         result_file=ts_config.path_result_file,
-        metallicity=stellar_parameters["feh"],
+        metallicity=stellar_parameters["z"],
         alpha=ts_config.alpha,
         num_elements=ts_config.num_elements,
         abundance_str=ts_config.abundance_str,

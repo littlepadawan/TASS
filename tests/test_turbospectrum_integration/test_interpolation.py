@@ -30,7 +30,7 @@ class TestInterpolation(unittest.TestCase):
         """
 
         # There is no matching atmosphere model for this set of parameters
-        stellar_parameters = {"teff": 5710, "logg": 4.6, "feh": 0.25}
+        stellar_parameters = {"teff": 5710, "logg": 4.6, "z": 0.25}
         needs_interpolation, matching_models = interpolation.needs_interpolation(
             stellar_parameters, self.MODEL_ATMOSPHERES
         )
@@ -47,7 +47,7 @@ class TestInterpolation(unittest.TestCase):
         """
 
         # There is a matching atmosphere model for this set of parameters
-        stellar_parameters = {"teff": 6000, "logg": 4.0, "feh": 0.0}
+        stellar_parameters = {"teff": 6000, "logg": 4.0, "z": 0.0}
         needs_interpolation, matching_models = interpolation.needs_interpolation(
             stellar_parameters, self.MODEL_ATMOSPHERES
         )
@@ -266,8 +266,8 @@ set Tefflow = {{PY_TEFFLOW}}
 set Teffup  = {{PY_TEFFUP}}
 set logglow = {{PY_LOGGLOW}}
 set loggup  = {{PY_LOGGUP}}
-set zlow    = {{PY_FEHLOW}}
-set zup     = {{PY_FEHUP}}
+set zlow    = {{PY_ZLOW}}
+set zup     = {{PY_ZUP}}
 set alflow  = +0.00
 set alfup   = +0.00
 set xit     = 01
@@ -323,7 +323,7 @@ end
         with the correct filename.
         """
         self.config.path_interpolator = "/fake/path"
-        stellar_parameters = {"teff": 5700, "logg": 4.5, "feh": 0.1}
+        stellar_parameters = {"teff": 5700, "logg": 4.5, "z": 0.1}
 
         expected_filename = "interpolate_p5700_g4.5_z0.1.script"
         expected_source = "/fake/path/interpolate.script"
@@ -343,7 +343,7 @@ end
     @patch(
         "builtins.open",
         new_callable=mock_open,
-        read_data="Script content with placeholders {{PY_MODEL_PATH}} {{PY_TREF}} {{PY_LOGGREF}} {{PY_ZREF}} {{PY_OUTPUT_PATH}} {{PY_TEFFLOW}} {{PY_TEFFUP}} {{PY_LOGGLOW}} {{PY_LOGGUP}} {{PY_FEHLOW}} {{PY_FEHUP}}",
+        read_data="Script content with placeholders {{PY_MODEL_PATH}} {{PY_TREF}} {{PY_LOGGREF}} {{PY_ZREF}} {{PY_OUTPUT_PATH}} {{PY_TEFFLOW}} {{PY_TEFFUP}} {{PY_LOGGLOW}} {{PY_LOGGUP}} {{PY_ZLOW}} {{PY_ZUP}}",
     )
     def test_load_parameters_to_interpolator_script(self, mock_file):
         """
@@ -351,7 +351,7 @@ end
         # TODO: This test can be improved by checking that the placeholders in the script content are replaced with the correct values.
         """
         script_name = "test_script.sh"
-        stellar_parameters = {"teff": 5700, "logg": 4.5, "feh": -0.2}
+        stellar_parameters = {"teff": 5700, "logg": 4.5, "z": -0.2}
         bracketing_models = [
             {"teff_str": "5500", "logg_str": "4.0", "z_str": "-0.5"},
             {"teff_str": "6000", "logg_str": "5.0", "z_str": "0.5"},
@@ -453,7 +453,7 @@ end
         self, mock_get_models, mock_copy_script, mock_load_params, mock_run_script
     ):
         """Test that the function generates an interpolated model atmosphere."""
-        stellar_parameters = {"teff": 5700, "logg": 4.5, "feh": -0.2}
+        stellar_parameters = {"teff": 5700, "logg": 4.5, "z": -0.2}
 
         config = MagicMock()
         config.path_model_atmospheres = "/path/to/model/atmospheres"

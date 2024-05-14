@@ -44,8 +44,8 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("teff_max = 7000\n")
             f.write("logg_min = 4.0\n")
             f.write("logg_max = 5.0\n")
-            f.write("feh_min = -1.0\n")
-            f.write("feh_max = 0.5\n")
+            f.write("z_min = -1.0\n")
+            f.write("z_max = 0.5\n")
             f.write("[Turbospectrum_settings]\n")
             f.write("xit = 1.0\n")
 
@@ -273,8 +273,8 @@ class TestConfigurationSetup(unittest.TestCase):
         self.assertEqual(config.teff_max, 7000)
         self.assertEqual(config.logg_min, 4.0)
         self.assertEqual(config.logg_max, 5.0)
-        self.assertEqual(config.feh_min, -1.0)
-        self.assertEqual(config.feh_max, 0.5)
+        self.assertEqual(config.z_min, -1.0)
+        self.assertEqual(config.z_max, 0.5)
 
     def test_negative_num_spectra(self):
         """
@@ -350,13 +350,13 @@ class TestConfigurationSetup(unittest.TestCase):
         with self.assertRaises(ValueError):
             config._validate_surface_gravity()
 
-    def test_invalid_feh_min_larger_than_max(self):
+    def test_invalid_z_min_larger_than_max(self):
         """
         Test that an error is raised if the min metallicity is greater than the max metallicity
         """
         config = Configuration("tests/test_input/configuration.cfg")
-        config.feh_min = 0.5
-        config.feh_max = -1.0
+        config.z_min = 0.5
+        config.z_max = -1.0
         with self.assertRaises(ValueError):
             config._validate_metallicity()
 
@@ -386,8 +386,8 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("teff_max = 7000\n")
             f.write("logg_min = 4.0\n")
             f.write("logg_max = 5.0\n")
-            f.write("feh_min = -1.0\n")
-            f.write("feh_max = 0.5\n")
+            f.write("z_min = -1.0\n")
+            f.write("z_max = 0.5\n")
             f.write("[Turbospectrum_settings]\n")
             f.write("xit = 1.0\n")
         config = Configuration(
@@ -398,8 +398,8 @@ class TestConfigurationSetup(unittest.TestCase):
         self.assertEqual(config.teff_min, 0)
         self.assertEqual(config.logg_max, 0)
         self.assertEqual(config.logg_min, 0)
-        self.assertEqual(config.feh_max, 0)
-        self.assertEqual(config.feh_min, 0)
+        self.assertEqual(config.z_max, 0)
+        self.assertEqual(config.z_min, 0)
 
 
 if __name__ == "__main__":

@@ -5,18 +5,19 @@ import numpy as np
 from configuration_setup import Configuration
 from rtree import index
 
-REQUIRED_PARAMETERS = ["teff", "logg", "fe/h"]  # TODO: Add abundances
+REQUIRED_PARAMETERS = ["teff", "logg", "z"]  # TODO: Add abundances
 MIN_PARAMETER_DELTA = {
     "teff": 5,
     "logg": 0.05,
-    "fe/h": 0.001,
+    "z": 0.001,
 }  # TODO: Add abundances
 MAX_PARAMETER_DISTANCE = {
     "teff": 100,
     "logg": 0.5,
-    "fe/h": 0.01,
+    "z": 0.01,
 }  # TODO: Add abundances
 # TODO: Min-max in configuration file?
+# TODO: Max does not apply to random, and not to evenly either i think...
 
 
 def _check_required_parameters(parameters: list):
@@ -76,14 +77,14 @@ def generate_random_parameters_no_distance_check(config: Configuration):
     while len(all_stellar_parameters) < config.num_spectra:
         teff = random.randint(config.teff_min, config.teff_max)
         logg = random.uniform(config.logg_min, config.logg_max)
-        feh = random.uniform(config.feh_max, config.feh_max)
+        z = random.uniform(config.z_max, config.z_max)
         # TODO: Add abundances
 
         logg = round(logg, 2)
-        feh = round(feh, 3)
+        z = round(z, 3)
 
         all_stellar_parameters.add(
-            (teff, logg, feh)
+            (teff, logg, z)
         )  # If this combination already exists in all_stellar_parameters, it will not be added again
 
     return all_stellar_parameters
@@ -96,18 +97,12 @@ def _within_min_delta(new_parameter, existing, min_delta):
     return abs(new_parameter - existing) < min_delta
 
 
-def _validate_new_set(teff, logg, feh, parameters):
+def _validate_new_set(teff, logg, z, parameters):
     teff_collisions = [
         i
         for i, existing_teff in enumerate(parameters["teff"])
         if _within_min_delta(teff, existing_teff, MIN_PARAMETER_DELTA["teff"])
     ]
-
-    # print(f"New Set: ({teff}, {logg}, {feh})")
-    # print(
-    #     f"Existing Sets: {list(zip(parameters['teff'], parameters['logg'], parameters['feh']))}"
-    # )
-    # print(f"Teff Collisions Indices: {teff_collisions}")
 
     for index in teff_collisions:
 
@@ -116,20 +111,13 @@ def _validate_new_set(teff, logg, feh, parameters):
         )
         # print(f"Checking index {index}: Logg Collision: {logg_collision}")
         if logg_collision:
-            feh_collision = (
-                abs(parameters["feh"][index] - feh) < MIN_PARAMETER_DELTA["fe/h"]
-            )
+            z_collision = abs(parameters["z"][index] - z) < MIN_PARAMETER_DELTA["z"]
             # print(
-            #     f"Checking index {index}: Logg Collision: {logg_collision}, Feh Collision: {feh_collision})"
+            #     f"Checking index {index}: Logg Collision: {logg_collision}, z Collision: {z_collision})"
             # )
-            if feh_collision:
-                # Collision across all parameters in the same set, do not add this set
-                # print("Full collision detected. Set not added.")
-                # print()
+            if z_collision:
                 return False
     # No full set collision found, or no collision at all
-    # print("No full collision detected. Set added.")
-    # print()
     return True
 
 
@@ -139,10 +127,10 @@ def generate_random_parameters(config: Configuration):
     """
     teff_range = (config.teff_min, config.teff_max)
     logg_range = (config.logg_min, config.logg_max)
-    feh_range = (config.feh_min, config.feh_max)
+    z_range = (config.z_min, config.z_max)
 
     # Storage for parameters and links between them (index)
-    parameters = {"teff": [], "logg": [], "feh": []}
+    parameters = {"teff": [], "logg": [], "z": []}
 
     # Storage for generated sets
     completed_sets = []
@@ -150,13 +138,13 @@ def generate_random_parameters(config: Configuration):
     while len(completed_sets) < config.num_spectra:
         teff = random.randint(*teff_range)
         logg = round(random.uniform(*logg_range), 2)
-        feh = round(random.uniform(*feh_range), 3)
+        z = round(random.uniform(*z_range), 3)
 
-        if _validate_new_set(teff, logg, feh, parameters):
+        if _validate_new_set(teff, logg, z, parameters):
             parameters["teff"].append(teff)
             parameters["logg"].append(logg)
-            parameters["feh"].append(feh)
-            completed_sets.append((teff, logg, feh))
+            parameters["z"].append(z)
+            completed_sets.append((teff, logg, z))
 
     return completed_sets
 
@@ -173,7 +161,7 @@ def generate_evenly_spaced_parameters(config: Configuration):
     parameter_ranges = {
         "teff": np.linspace(config.teff_min, config.teff_max, intervals),
         "logg": np.linspace(config.logg_min, config.logg_max, intervals),
-        "feh": np.linspace(config.feh_min, config.feh_max, intervals),
+        "z": np.linspace(config.z_min, config.z_max, intervals),
     }
 
     # Use meshgrid to get all combinations
@@ -181,8 +169,8 @@ def generate_evenly_spaced_parameters(config: Configuration):
 
     parameter_sets = np.stack(grid, axis=-1).reshape(-1, dimensions)
     parameter_sets = [
-        (round(teff, 0), round(logg, 2), round(feh, 3))
-        for teff, logg, feh in parameter_sets[: config.num_spectra]
+        (round(teff, 0), round(logg, 2), round(z, 3))
+        for teff, logg, z in parameter_sets[: config.num_spectra]
     ]
     return parameter_sets
 

@@ -21,9 +21,12 @@ class TestUtils(unittest.TestCase):
         """
         filename = "p6000_g+4.0_m0.0_t02_st_z-2.00_a+0.40_c+0.00_n+0.00_o+0.40_r+0.00_s+0.00.mod"
         expected_output = {
-            "teff": "6000",
-            "logg": "+4.0",
-            "feh": "-2.00",
+            "teff": 6000,
+            "logg": 4.0,
+            "z": -2.00,
+            "teff_str": "6000",
+            "logg_str": "+4.0",
+            "z_str": "-2.00",
             "filename": "p6000_g+4.0_m0.0_t02_st_z-2.00_a+0.40_c+0.00_n+0.00_o+0.40_r+0.00_s+0.00.mod",
         }
 

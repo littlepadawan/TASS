@@ -51,8 +51,8 @@ class Configuration:
         self.teff_max = 0
         self.logg_min = 0
         self.logg_max = 0
-        self.feh_min = 0
-        self.feh_max = 0
+        self.z_min = 0
+        self.z_max = 0
 
         self.xit = 0
 
@@ -113,8 +113,8 @@ class Configuration:
             self.teff_max = config_parser.getint("Stellar_parameters", "teff_max")
             self.logg_min = config_parser.getfloat("Stellar_parameters", "logg_min")
             self.logg_max = config_parser.getfloat("Stellar_parameters", "logg_max")
-            self.feh_min = config_parser.getfloat("Stellar_parameters", "feh_min")
-            self.feh_max = config_parser.getfloat("Stellar_parameters", "feh_max")
+            self.z_min = config_parser.getfloat("Stellar_parameters", "z_min")
+            self.z_max = config_parser.getfloat("Stellar_parameters", "z_max")
         else:
             self.path_input_parameters = os.path.abspath(
                 config_parser.get("Paths", "input_parameters")
@@ -257,9 +257,9 @@ class Configuration:
         """
         Check that the metallicity is valid.
         """
-        if self.feh_min >= self.feh_max:
+        if self.z_min >= self.z_max:
             raise ValueError(
-                f"The minimum metallicity {self.feh_min} must be smaller than the maximum metallicity {self.feh_max}."
+                f"The minimum metallicity {self.z_min} must be smaller than the maximum metallicity {self.z_max}."
             )
 
     def _validate_configuration(self):

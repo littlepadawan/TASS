@@ -13,13 +13,14 @@ from turbospectrum_integration.utils import collect_model_atmosphere_parameters
 # TODO: Create template script should be called once for the entire run, maybe this file can just exist in wrapper directory, and the program copies the unique script to the interpolator directory?
 # ? Create some spectrum object that hold stellar parameters, script path, etc. and pass that to the functions instead of just the stellar parameters?
 # TODO: Create a function that is used once per run to set up interpolation things
+# TODO: If several closest files are found - containing the same parameters - the interpolation and spectrum generation for this set of stellar parameter should stop
 
 
 def needs_interpolation(stellar_parameters: dict, model_atmospheres: pd.DataFrame):
     """
     Check if the given stellar parameters need interpolation.
 
-    Expected stellar parameters are teff, logg, and feh.
+    Expected stellar parameters are teff, logg, and z.
     Args:
         stellar_parameters (dict): The stellar parameters to check for interpolation.
         model_atmospheres (DataFrame): A DataFrame of dictionaries containing the parameters of each model atmosphere.
@@ -32,9 +33,9 @@ def needs_interpolation(stellar_parameters: dict, model_atmospheres: pd.DataFram
     matches = model_atmospheres[
         (model_atmospheres["teff"] == stellar_parameters["teff"])
         & (model_atmospheres["logg"] == stellar_parameters["logg"])
-        & (model_atmospheres["z"] == stellar_parameters["feh"])
+        & (model_atmospheres["z"] == stellar_parameters["z"])
     ]
-
+    # TODO: Maybe change to if no matches -> needs interpolation so (true, None), if more than one match (false, None), if one match (false, match)
     if matches.empty:
         return True, None
     else:
@@ -53,7 +54,7 @@ def _get_models_with_lower_parameter_value(
         model_atmospheres (pd.DataFrame): A DataFrame of dictionaries
         containing the parameters of each model atmosphere.
 
-    target_parameter is expected to be 'teff', 'logg', or 'feh'.
+    target_parameter is expected to be 'teff', 'logg', or 'z'.
     target_value is expected to be an integer or float.
     Raises:
         ValueError: If no models with the target parameter value lower
@@ -176,21 +177,21 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
     )
 
     # From the subset of models with the closest lower Teff and logg values,
-    # get the models with a feh value less than the target parameter
-    tefflow_logglow_fehlow_models = _get_models_with_lower_parameter_value(
+    # get the models with a z value less than the target parameter
+    tefflow_logglow_zlow_models = _get_models_with_lower_parameter_value(
         "z", stellar_parameters["z"], closest_tefflow_logglow_models
     )
-    # Filter these models to get the ones with the closest lower feh value to the target parameter
-    closest_tefflow_logglow_fehlow_models = _get_closest_models(
-        "z", stellar_parameters["z"], tefflow_logglow_fehlow_models
+    # Filter these models to get the ones with the closest lower z value to the target parameter
+    closest_tefflow_logglow_zlow_models = _get_closest_models(
+        "z", stellar_parameters["z"], tefflow_logglow_zlow_models
     )
 
     # From the subset of models with the closest lower Teff and logg values,
-    # get the models with a feh value greater than the target parameter
+    # get the models with a z value greater than the target parameter
     tefflow_logglow_zup_models = _get_models_with_higher_parameter_value(
         "z", stellar_parameters["z"], closest_tefflow_logglow_models
     )
-    # Filter these models to get the ones with the closest higher feh value to the target parameter
+    # Filter these models to get the ones with the closest higher z value to the target parameter
     closest_tefflow_logglow_zup_models = _get_closest_models(
         "z", stellar_parameters["z"], tefflow_logglow_zup_models
     )
@@ -206,21 +207,21 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
     )
 
     # From the subset of models with the closest lower Teff value and higher logg value,
-    # get the models with a feh value less than the target parameter
-    tefflow_loggup_fehlow_models = _get_models_with_lower_parameter_value(
+    # get the models with a z value less than the target parameter
+    tefflow_loggup_zlow_models = _get_models_with_lower_parameter_value(
         "z", stellar_parameters["z"], closest_tefflow_loggup_models
     )
-    # Filter these models to get the ones with the closest lower feh value to the target parameter
-    closest_tefflow_loggup_fehlow_models = _get_closest_models(
-        "z", stellar_parameters["z"], tefflow_loggup_fehlow_models
+    # Filter these models to get the ones with the closest lower z value to the target parameter
+    closest_tefflow_loggup_zlow_models = _get_closest_models(
+        "z", stellar_parameters["z"], tefflow_loggup_zlow_models
     )
 
     # From the subset of models with the closest lower Teff value and higher logg value,
-    # get the models with a feh value greater than the target parameter
+    # get the models with a z value greater than the target parameter
     tefflow_loggup_zup_models = _get_models_with_higher_parameter_value(
         "z", stellar_parameters["z"], closest_tefflow_loggup_models
     )
-    # Filter these models to get the ones with the closest higher feh value to the target parameter
+    # Filter these models to get the ones with the closest higher z value to the target parameter
     closest_tefflow_loggup_zup_models = _get_closest_models(
         "z", stellar_parameters["z"], tefflow_loggup_zup_models
     )
@@ -245,21 +246,21 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
     )
 
     # From the subset of models with the closest higher Teff and lower logg value,
-    # get the models with a feh value less than the target parameter
-    teffup_logglow_fehlow_models = _get_models_with_lower_parameter_value(
+    # get the models with a z value less than the target parameter
+    teffup_logglow_zlow_models = _get_models_with_lower_parameter_value(
         "z", stellar_parameters["z"], closest_teffup_logglow_models
     )
-    # Filter these models to get the ones with the closest lower feh value to the target parameter
-    closest_teffup_logglow_fehlow_models = _get_closest_models(
-        "z", stellar_parameters["z"], teffup_logglow_fehlow_models
+    # Filter these models to get the ones with the closest lower z value to the target parameter
+    closest_teffup_logglow_zlow_models = _get_closest_models(
+        "z", stellar_parameters["z"], teffup_logglow_zlow_models
     )
 
     # From the subset of models with the closest higher Teff and lower logg values,
-    # get the models with a feh value greater than the target parameter
+    # get the models with a z value greater than the target parameter
     teffup_logglow_zup_models = _get_models_with_higher_parameter_value(
         "z", stellar_parameters["z"], closest_teffup_logglow_models
     )
-    # Filter these models to get the ones with the closest higher feh value to the target parameter
+    # Filter these models to get the ones with the closest higher z value to the target parameter
     closest_teffup_logglow_zup_models = _get_closest_models(
         "z", stellar_parameters["z"], teffup_logglow_zup_models
     )
@@ -275,33 +276,33 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
     )
 
     # From the subset of models with the closest higher Teff and higher logg values,
-    # get the models with a feh value less than the target parameter
-    teffup_loggup_fehlow_models = _get_models_with_lower_parameter_value(
+    # get the models with a z value less than the target parameter
+    teffup_loggup_zlow_models = _get_models_with_lower_parameter_value(
         "z", stellar_parameters["z"], closest_teffup_loggup_models
     )
-    # Filter these models to get the ones with the closest lower feh value to the target parameter
-    closest_teffup_loggup_fehlow_models = _get_closest_models(
-        "z", stellar_parameters["z"], teffup_loggup_fehlow_models
+    # Filter these models to get the ones with the closest lower z value to the target parameter
+    closest_teffup_loggup_zlow_models = _get_closest_models(
+        "z", stellar_parameters["z"], teffup_loggup_zlow_models
     )
 
     # From the subset of models with the closest higher Teff and higher logg values,
-    # get the models with a feh value greater than the target parameter
+    # get the models with a z value greater than the target parameter
     teffup_loggup_zup_models = _get_models_with_higher_parameter_value(
         "z", stellar_parameters["z"], closest_teffup_loggup_models
     )
-    # Filter these models to get the ones with the closest higher feh value to the target parameter
+    # Filter these models to get the ones with the closest higher z value to the target parameter
     closest_teffup_loggup_zup_models = _get_closest_models(
         "z", stellar_parameters["z"], teffup_loggup_zup_models
     )
 
     # Gets the first model in every subset # TODO: Om det inte finns en närmaste modell, avbryt och ge felmeddelande
-    model1 = closest_tefflow_logglow_fehlow_models.iloc[0]
+    model1 = closest_tefflow_logglow_zlow_models.iloc[0]
     model2 = closest_tefflow_logglow_zup_models.iloc[0]
-    model3 = closest_tefflow_loggup_fehlow_models.iloc[0]
+    model3 = closest_tefflow_loggup_zlow_models.iloc[0]
     model4 = closest_tefflow_loggup_zup_models.iloc[0]
-    model5 = closest_teffup_logglow_fehlow_models.iloc[0]
+    model5 = closest_teffup_logglow_zlow_models.iloc[0]
     model6 = closest_teffup_logglow_zup_models.iloc[0]
-    model7 = closest_teffup_loggup_fehlow_models.iloc[0]
+    model7 = closest_teffup_loggup_zlow_models.iloc[0]
     model8 = closest_teffup_loggup_zup_models.iloc[0]
 
     return [model1, model2, model3, model4, model5, model6, model7, model8]
@@ -365,8 +366,8 @@ set Tefflow = {{PY_TEFFLOW}}
 set Teffup  = {{PY_TEFFUP}}
 set logglow = {{PY_LOGGLOW}}
 set loggup  = {{PY_LOGGUP}}
-set zlow    = {{PY_FEHLOW}}
-set zup     = {{PY_FEHUP}}
+set zlow    = {{PY_ZLOW}}
+set zup     = {{PY_ZUP}}
 set alflow  = +0.00
 set alfup   = +0.00
 set xit     = 01
@@ -428,7 +429,7 @@ def copy_template_interpolator_script(config: Configuration, stellar_parameters:
     Returns:
         str: The unique filename of the copied script.
     """
-    unique_filename = f"interpolate_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}.script"
+    unique_filename = f"interpolate_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.script"
     path_to_script_copy = f"{config.path_interpolator}/{unique_filename}"
 
     copyfile(f"{config.path_interpolator}/interpolate.script", path_to_script_copy)
@@ -463,14 +464,14 @@ def _load_parameters_to_interpolator_script(
         "MODEL_PATH": config.path_model_atmospheres,
         "TREF": stellar_parameters["teff"],
         "LOGGREF": stellar_parameters["logg"],
-        "ZREF": stellar_parameters["feh"],
+        "ZREF": stellar_parameters["z"],
         "OUTPUT_PATH": config.path_output_directory,
         "TEFFLOW": bracketing_models[0]["teff_str"],
         "TEFFUP": bracketing_models[7]["teff_str"],
         "LOGGLOW": bracketing_models[0]["logg_str"],
         "LOGGUP": bracketing_models[7]["logg_str"],
-        "FEHLOW": bracketing_models[0]["z_str"],
-        "FEHUP": bracketing_models[7]["z_str"],
+        "ZLOW": bracketing_models[0]["z_str"],
+        "ZUP": bracketing_models[7]["z_str"],
     }
 
     # Replace the placeholders with the values
@@ -548,4 +549,4 @@ def generate_interpolated_model_atmosphere(
     # TODO: Remove the script file after running it
 
     # Return path to the interpolated model atmosphere # TODO: This should be set in some kind of spectrum object instead
-    return f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['feh']}.interpol"
+    return f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.interpol"

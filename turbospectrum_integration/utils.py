@@ -22,6 +22,8 @@ def parse_model_atmosphere_filename(filename: str):
     Returns:
         dict: A dictionary containing the parameters of the model atmosphere.
     """
+    # TODO: T värde ska anges i input filen. Microturbolunce, XIT, v_micro (km/s) (kolla mejl)
+    # TODO: Lägg till alpha värde i pattern. OBS a och o i pattern ska vara samma värde
     pattern = (
         r"p(\d+)_g([\+\-]\d+\.\d+)_m(\d+\.\d+)_t(\d+)_st_z([\+\-]\d+\.\d+)_.*\.mod"
     )
