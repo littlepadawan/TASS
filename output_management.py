@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 from os import makedirs
 from shutil import copyfile
 

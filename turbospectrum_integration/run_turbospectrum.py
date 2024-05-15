@@ -2,6 +2,7 @@ from os import chdir, getcwd
 from subprocess import PIPE, run
 
 from configuration_setup import Configuration
+from pandas import DataFrame
 from turbospectrum_integration.configuration import (
     TurbospectrumConfiguration,
     create_babsma,
@@ -95,3 +96,15 @@ def generate_one_spectrum(
     run_babsma(ts_config, config)
     create_bsyn(config, ts_config, stellar_parameters)
     run_bsyn(ts_config, config)
+    # TODO: Remove babsma and bsyn
+
+
+def generate_all_spectra(
+    config: Configuration, model_atmospheres: DataFrame, stellar_parameters: list
+):
+    for parameter_set in stellar_parameters:
+        generate_one_spectrum(config, parameter_set, model_atmospheres)
+        # TODO: If successful, add the parameters to a list of successful parameters
+        # TODO: If unsuccessful, add the parameters to a list of unsuccessful parameters (split by reasons)
+
+    pass

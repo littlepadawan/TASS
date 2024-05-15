@@ -39,6 +39,7 @@ class Configuration:
         self.path_model_atmospheres = None
         self.path_input_parameters = None
         self.path_output_directory = None
+        self.path_config = config_path
 
         self.wavelength_min = 0
         self.wavelength_max = 0

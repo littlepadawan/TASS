@@ -127,8 +127,9 @@ def generate_abundance_str(stellar_parameters: dict):
     # TODO: Fråga Ulrike - ska man ta det konverterade värdet + alpha?
     # TODO: Error handling - what if element is not in stellar_parameters?
     for element, element_number in element_numbers.items():
-        abundance = stellar_parameters[element]
-        abundance_str += f"{element_number}  {abundance:.2f}\n"
+        abundance = stellar_parameters.get(element)
+        if abundance is not None:
+            abundance_str += f"{element_number}  {abundance:.2f}\n"
 
     return len(element_numbers), abundance_str
 

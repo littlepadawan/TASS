@@ -124,6 +124,12 @@ def _validate_new_set(teff, logg, z, parameters):
 def generate_random_parameters(config: Configuration):
     """
     Generate random stellar parameters
+
+    Args:
+        config (Configuration): Configuration object containing ranges and step sizes for the parameters to be generated
+
+    Returns:
+        list: List of tuples containing the generated stellar parameters
     """
     teff_range = (config.teff_min, config.teff_max)
     logg_range = (config.logg_min, config.logg_max)
@@ -144,12 +150,21 @@ def generate_random_parameters(config: Configuration):
             parameters["teff"].append(teff)
             parameters["logg"].append(logg)
             parameters["z"].append(z)
-            completed_sets.append((teff, logg, z))
+            completed_sets.append({"teff": teff, "logg": logg, "z": z})
 
     return completed_sets
 
 
 def generate_evenly_spaced_parameters(config: Configuration):
+    """
+    Generate evenly spaced stellar parameters
+
+    Args:
+        config (Configuration): Configuration object containing ranges and step sizes for the parameters to be generated
+
+    Returns:
+        list: List of tuples containing the generated stellar parameters
+    """
     dimensions = 3  # TODO: Remove hard coding
     intervals = round(config.num_spectra ** (1 / dimensions))
 
@@ -176,9 +191,20 @@ def generate_evenly_spaced_parameters(config: Configuration):
 
 
 def generate_parameters(config: Configuration):
+    """
+    Generate stellar parameters based on the configuration
+
+    Args:
+        config (Configuration): Configuration object
+
+    Returns:
+        list: List of tuples containing the generated stellar parameters
+    """
     if config.read_stellar_parameters_from_file:
         return read_parameters_from_file(config)
     elif config.random_parameters:
         return generate_random_parameters(config)
     else:
         return generate_evenly_spaced_parameters(config)
+
+    # TODO: Write to a file?
