@@ -1,7 +1,11 @@
 import logging
 
 from configuration_setup import Configuration
-from output_management import copy_config_file, set_up_output_directory
+from output_management import (
+    copy_config_file,
+    remove_temp_files,
+    set_up_output_directory,
+)
 from parameter_generation import generate_parameters
 from turbospectrum_integration.compilation import (
     compile_interpolator,
@@ -24,6 +28,9 @@ def main():
         # Set up output directory
         set_up_output_directory(config)
 
+        # Copy configuration file to output directory for reference
+        copy_config_file(config)
+
         # Load model atmospheres
         model_atmospheres = collect_model_atmosphere_parameters(
             config.path_model_atmospheres
@@ -45,7 +52,9 @@ def main():
     # Generate all spectra
     generate_all_spectra(config, model_atmospheres, stellar_parameters)
 
-    # TODO: Remove interpolator script and temp file
+    # Remove temporary files
+    # Toggle this if you want to access scipts and intermediate files used in the process
+    remove_temp_files(config)
 
 
 if __name__ == "__main__":

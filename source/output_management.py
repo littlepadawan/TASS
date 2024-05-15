@@ -1,6 +1,6 @@
 from datetime import datetime
 from os import makedirs
-from shutil import copyfile
+from shutil import copyfile, rmtree
 
 from source.configuration_setup import Configuration
 
@@ -30,7 +30,7 @@ def copy_config_file(config: Configuration):
     Args:
         config (Configuration): Configuration object containing the path to the configuration file and the output directory
     """
-    copyfile(config.path_config, config.path_output_directory)
+    copyfile(config.path_config, f"{config.path_output_directory}/config.cfg")
 
 
 def generate_parameter_file(
@@ -67,3 +67,8 @@ def generate_parameter_file(
         # Write successful parameters
         for parameter_set in successful_parameters:
             file.write(f"{parameter_set}\n")
+
+
+def remove_temp_files(config: Configuration):
+    # Remove the temp directory
+    rmtree(f"{config.path_output_directory}/temp")
