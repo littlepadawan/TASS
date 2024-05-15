@@ -1,4 +1,4 @@
-from os import chdir, getcwd
+from os import chdir, getcwd, path
 from shutil import copyfile
 from subprocess import CalledProcessError, run
 
@@ -346,7 +346,7 @@ def create_template_interpolator_script(config: Configuration):
 
     # The template will be placed in the interpolator directory
     # TODO: Check if path to interpolator already ends with '/'
-    path_template_script = f"{config.path_interpolator}/interpolate.script"
+    path_template_script = f"{config.path_output_directory}/temp/interpolate.script"
 
     script_content = r"""#!/bin/csh -f
 set model_path = {{PY_MODEL_PATH}}
@@ -430,15 +430,17 @@ def copy_template_interpolator_script(config: Configuration, stellar_parameters:
         str: The unique filename of the copied script.
     """
     unique_filename = f"interpolate_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.script"
-    path_to_script_copy = f"{config.path_interpolator}/{unique_filename}"
+    path_to_script_copy = f"{config.path_output_directory}/temp/{unique_filename}"
 
-    copyfile(f"{config.path_interpolator}/interpolate.script", path_to_script_copy)
+    copyfile(
+        f"{config.path_output_directory}/temp/interpolate.script", path_to_script_copy
+    )
     # Filename is returned so it can be used to run the interpolator
-    return unique_filename
+    return path_to_script_copy
 
 
 def _load_parameters_to_interpolator_script(
-    script_name: str,
+    script_path: str,
     stellar_parameters: dict,
     bracketing_models: list,
     config: Configuration,
@@ -447,7 +449,7 @@ def _load_parameters_to_interpolator_script(
     Load the stellar parameters and bracketing models into the interpolator script.
 
     Args:
-        script_name (str): The name of the script file to load the parameters into.
+        script_path (str): The path to the script file to load the parameters into.
         stellar_parameters (dict): The stellar parameters to interpolate.
         bracketing_models (list): The bracketing models used for interpolation.
         config (Configuration): The Configuration object containing paths to the interpolator directory.
@@ -455,7 +457,7 @@ def _load_parameters_to_interpolator_script(
     Side effects:
         The placeholder in the script file is modified with the stellar parameters and bracketing models.
     """
-    script_path = f"{config.path_interpolator}/{script_name}"  # TODO: This should be a parameter to the function
+    # Read the script file
     with open(script_path, "r") as file:
         script_content = file.read()
 
@@ -481,12 +483,12 @@ def _load_parameters_to_interpolator_script(
         file.write(script_content)
 
 
-def _run_interpolation_script(script_name: str, config: Configuration):
+def _run_interpolation_script(script_path: str, config: Configuration):
     """
     Run the interpolation script.
 
     Args:
-        script_name (str): The name of the script file to run.
+        script_path (str): The path to the script file to run.
         config (Configuration): The Configuration object containing paths to the interpolator directory.
 
     Raises:
@@ -494,17 +496,26 @@ def _run_interpolation_script(script_name: str, config: Configuration):
     """
     cwd = getcwd()
 
-    # Change the current working directory to where the interpolator is located
+    # Get the directory where the script is located
+    script_dir = path.dirname(script_path)
+
+    # Change the current working directory to where the script is located
     chdir(config.path_interpolator)
+    # print(f"Running interpolation script in {script_dir}")
 
     # Build the command
-    command = f"./{script_name}"
+    # command = f".{script_path}"
 
     try:
         # Make sure the script is executable
-        run(["chmod", "+x", script_name], check=True)
+        run(["chmod", "+x", script_path], check=True)
         # Run the interpolation script
-        run([command], check=True, text=True, capture_output=True)
+        run(
+            [script_path],
+            check=True,
+            text=True,
+            capture_output=True,
+        )
     except CalledProcessError as e:
         print(f"Error running interpolation script: {e.stderr}")
         raise e
@@ -533,18 +544,18 @@ def generate_interpolated_model_atmosphere(
         stellar_parameters, config.path_model_atmospheres
     )
     # Create a unique script for this interpolation
-    interpolator_script_name = copy_template_interpolator_script(
+    interpolator_script_path = copy_template_interpolator_script(
         config, stellar_parameters
     )
     # Load the stellar parameters and bracketing models into the script
     _load_parameters_to_interpolator_script(
-        interpolator_script_name,
+        interpolator_script_path,
         stellar_parameters,
         bracketing_models,
         config,
     )
     # Run interpolation script
-    _run_interpolation_script(interpolator_script_name, config)
+    _run_interpolation_script(interpolator_script_path, config)
 
     # TODO: Remove the script file after running it
 
