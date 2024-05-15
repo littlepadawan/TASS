@@ -66,7 +66,6 @@ def generate_one_spectrum(
     ts_config = TurbospectrumConfiguration(config, stellar_parameters)
     # Set the path to the opacity model
     generate_path_model_opac(ts_config, config, stellar_parameters)
-    print(f"Path model opac: {ts_config.path_model_opac}")
     # Set the path to the result file
     generate_path_result_file(ts_config, config, stellar_parameters)
 
@@ -79,9 +78,8 @@ def generate_one_spectrum(
     if needs_interp:
         # Generate interpolated model atmosphere
         # TODO: If generate_interpolated_model_atmosphere can return errors, this is not a good solution
-        ts_config.path_model_atmosphere = generate_interpolated_model_atmosphere(
-            stellar_parameters, config
-        )
+        model_path = generate_interpolated_model_atmosphere(stellar_parameters, config)
+        ts_config.path_model_atmosphere = model_path
     elif len(matching_models) == 1:
         # A matching MARCS model was found, use it
         ts_config.path_model_atmosphere = matching_models[0]

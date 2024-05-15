@@ -45,8 +45,8 @@ class TurbospectrumConfiguration:
     def __init__(self, config: Configuration, stellar_parameters: dict):
         self.path_model_atmosphere = None
         self.path_model_opac = None
-        self.path_babsma = f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_babsma"  # TODO: Update with Mg and Ca
-        self.path_bsyn = f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_bsyn"  # TODO: Update with Mg and Ca
+        self.path_babsma = f"{config.path_output_directory}/temp/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_babsma"  # TODO: Update with Mg and Ca
+        self.path_bsyn = f"{config.path_output_directory}/temp/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_bsyn"  # TODO: Update with Mg and Ca
         self.interpolated_model_atmosphere = True
         self.alpha = calculate_alpha(stellar_parameters["z"])
         self.num_elements = 0
@@ -87,7 +87,7 @@ def generate_path_model_opac(
         config (Configuration): The configuration
         stellar_parameters (dict): The stellar parameters
     """
-    ts_config.path_model_opac = f"{config.path_output_directory}/opac_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}"
+    ts_config.path_model_opac = f"{config.path_output_directory}/temp/opac_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}"
 
 
 def generate_path_result_file(
@@ -126,12 +126,14 @@ def generate_abundance_str(stellar_parameters: dict):
     # TODO: Values need convesion from relative to absolute (given by Ulrike)
     # TODO: Fråga Ulrike - ska man ta det konverterade värdet + alpha?
     # TODO: Error handling - what if element is not in stellar_parameters?
+    num_abundances = 0
     for element, element_number in element_numbers.items():
         abundance = stellar_parameters.get(element)
         if abundance is not None:
             abundance_str += f"{element_number}  {abundance:.2f}\n"
+            num_abundances += 1
 
-    return len(element_numbers), abundance_str
+    return num_abundances, abundance_str
 
 
 def set_abundances(ts_config: TurbospectrumConfiguration, stellar_parameters: dict):
@@ -244,7 +246,6 @@ def create_bsyn(
         ts_config (TurbospectrumConfiguration): The Turbospectrum configuration object
         stellar_parameters (dict): The stellar parameters
     """
-    print(f"In bsyn, path_model_opac: {ts_config.path_model_opac}")
     bsyn_config = BSYN_CONTENT.format(
         lambda_min=config.wavelength_min,
         lambda_max=config.wavelength_max,

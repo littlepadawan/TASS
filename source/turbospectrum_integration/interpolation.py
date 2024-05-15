@@ -465,7 +465,7 @@ def _load_parameters_to_interpolator_script(
         "TREF": stellar_parameters["teff"],
         "LOGGREF": stellar_parameters["logg"],
         "ZREF": stellar_parameters["z"],
-        "OUTPUT_PATH": config.path_output_directory,
+        "OUTPUT_PATH": f"{config.path_output_directory}/temp",
         "TEFFLOW": bracketing_models[0]["teff_str"],
         "TEFFUP": bracketing_models[7]["teff_str"],
         "LOGGLOW": bracketing_models[0]["logg_str"],
@@ -549,4 +549,4 @@ def generate_interpolated_model_atmosphere(
     # TODO: Remove the script file after running it
 
     # Return path to the interpolated model atmosphere # TODO: This should be set in some kind of spectrum object instead
-    return f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.interpol"
+    return f"{config.path_output_directory}/temp/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.interpol"
