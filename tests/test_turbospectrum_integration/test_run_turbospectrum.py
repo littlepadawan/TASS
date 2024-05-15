@@ -7,6 +7,7 @@ from source.configuration_setup import Configuration
 from source.turbospectrum_integration import utils
 from source.turbospectrum_integration.configuration import TurbospectrumConfiguration
 from source.turbospectrum_integration.run_turbospectrum import (
+    generate_all_spectra,
     generate_one_spectrum,
     run_babsma,
     run_bsyn,
@@ -331,14 +332,37 @@ class TestRunTurbospectrum(unittest.TestCase):
         # Verify the exception message
         self.assertEqual(str(context.exception), "More than one matching model found")
 
-    def test_generate_one_spectrum_actual(self):
-        config = Configuration()
-        stellar_parameters = {
-            "teff": 5715,
-            "logg": 4.7,
-            "z": 0.26,
-            "Mg": 0.0,
-            "Ca": 0.0,
-        }
+    @patch("source.turbospectrum_integration.run_turbospectrum.generate_one_spectrum")
+    def test_generate_all_spectr(self, mock_generate_one_spectrum):
+        """
+        Test that generate_all_spectra runs successfully with expected arguments
+        """
+        # Create a mock Configuration object
+        config = MagicMock(spec=Configuration)
 
-        generate_one_spectrum(config, stellar_parameters, self.MODEL_ATMOSPHERES)
+        # Create a mock DataFrame for model atmospheres
+        model_atmospheres = MagicMock(spec=pd.DataFrame)
+
+        # Define the stellar parameters
+        stellar_parameters = (
+            {"teff": 5700, "logg": 4.5, "z": 0.0},
+            {"teff": 5715, "logg": 4.7, "z": 0.26},
+            {"teff": 5800, "logg": 4.6, "z": 0.1},
+            {"teff": 5900, "logg": 4.8, "z": 0.2},
+            {"teff": 6000, "logg": 4.9, "z": 0.3},
+        )
+
+        # Call the function
+        generate_all_spectra(config, model_atmospheres, stellar_parameters)
+
+        # Verify that generate_one_spectrum was called with the expected arguments
+        expected_calls = [
+            unittest.mock.call(config, stellar_parameters[0], model_atmospheres),
+            unittest.mock.call(config, stellar_parameters[1], model_atmospheres),
+            unittest.mock.call(config, stellar_parameters[2], model_atmospheres),
+            unittest.mock.call(config, stellar_parameters[3], model_atmospheres),
+            unittest.mock.call(config, stellar_parameters[4], model_atmospheres),
+        ]
+
+        mock_generate_one_spectrum.assert_has_calls(expected_calls, any_order=True)
+        self.assertEqual(mock_generate_one_spectrum.call_count, len(stellar_parameters))
