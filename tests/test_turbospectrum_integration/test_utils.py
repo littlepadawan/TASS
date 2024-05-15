@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, patch
 
 import pandas as pd
 from pandas.testing import assert_frame_equal
+from source.turbospectrum_integration import utils as utils
 from tests.model_atmospheres_data_for_testing import FILENAMES
-from turbospectrum_integration import utils
 
 
 class TestUtils(unittest.TestCase):
@@ -47,8 +47,8 @@ class TestUtils(unittest.TestCase):
 
         self.assertEqual(output, expected_output)
 
-    @patch("turbospectrum_integration.utils.parse_model_atmosphere_filename")
-    @patch("turbospectrum_integration.utils.listdir")
+    @patch("source.turbospectrum_integration.utils.parse_model_atmosphere_filename")
+    @patch("source.turbospectrum_integration.utils.listdir")
     def test_collect_model_atmosphere_parameters(self, mock_listdir, mock_parse):
         """
         Test that the expected DataFrame is returned

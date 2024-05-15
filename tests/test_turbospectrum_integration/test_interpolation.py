@@ -4,10 +4,10 @@ from subprocess import CalledProcessError
 from unittest.mock import MagicMock, call, mock_open, patch
 
 import pandas as pd
-import turbospectrum_integration.interpolation as interpolation
-from configuration_setup import Configuration
+import source.turbospectrum_integration.interpolation as interpolation
+from source.configuration_setup import Configuration
+from source.turbospectrum_integration import utils as utils
 from tests.model_atmospheres_data_for_testing import FILENAMES
-from turbospectrum_integration import utils
 
 
 class TestInterpolation(unittest.TestCase):
@@ -208,9 +208,9 @@ class TestInterpolation(unittest.TestCase):
                 stellar_parameters, self.MODEL_ATMOSPHERES
             )
 
-    @patch("turbospectrum_integration.interpolation._get_bracketing_models")
+    @patch("source.turbospectrum_integration.interpolation._get_bracketing_models")
     @patch(
-        "turbospectrum_integration.interpolation.collect_model_atmosphere_parameters"
+        "source.turbospectrum_integration.interpolation.collect_model_atmosphere_parameters"
     )
     def test_get_models_for_interpolating(
         self, mock_collect_models, mock_get_bracketing_models
@@ -316,7 +316,7 @@ end
         mock_file_handle = mock_file()
         mock_file_handle.write.assert_called_once_with(expected_content)
 
-    @patch("turbospectrum_integration.interpolation.copyfile")
+    @patch("source.turbospectrum_integration.interpolation.copyfile")
     def test_copy_interpolator_script(self, mock_copyfile):
         """
         Test that the function copies the interpolator script to the output directory,
@@ -385,9 +385,9 @@ end
         mock_file().read.assert_called_once()
         mock_file().write.assert_called_once_with(expected_content)
 
-    @patch("turbospectrum_integration.interpolation.chdir")
-    @patch("turbospectrum_integration.interpolation.getcwd", return_value="cwd")
-    @patch("turbospectrum_integration.interpolation.run")
+    @patch("source.turbospectrum_integration.interpolation.chdir")
+    @patch("source.turbospectrum_integration.interpolation.getcwd", return_value="cwd")
+    @patch("source.turbospectrum_integration.interpolation.run")
     def test_run_interpolator_script_success(self, mock_run, mock_getcwd, mock_chdir):
         """Test that the function runs the interpolator script correctly."""
         self.config.path_interpolator = "/path/to/interpolator"
@@ -410,9 +410,9 @@ end
             ]
         )
 
-    @patch("turbospectrum_integration.interpolation.chdir")
-    @patch("turbospectrum_integration.interpolation.getcwd", return_value="cwd")
-    @patch("turbospectrum_integration.interpolation.run")
+    @patch("source.turbospectrum_integration.interpolation.chdir")
+    @patch("source.turbospectrum_integration.interpolation.getcwd", return_value="cwd")
+    @patch("source.turbospectrum_integration.interpolation.run")
     def test_run_interpolator_script_failure(self, mock_run, mock_getcwd, mock_chdir):
         """Test that the function raises a CalledProcessError when the interpolator script fails."""
         mock_run.side_effect = [
@@ -433,16 +433,16 @@ end
             ]
         )
 
-    @patch("turbospectrum_integration.interpolation._run_interpolation_script")
+    @patch("source.turbospectrum_integration.interpolation._run_interpolation_script")
     @patch(
-        "turbospectrum_integration.interpolation._load_parameters_to_interpolator_script"
+        "source.turbospectrum_integration.interpolation._load_parameters_to_interpolator_script"
     )
     @patch(
-        "turbospectrum_integration.interpolation.copy_template_interpolator_script",
+        "source.turbospectrum_integration.interpolation.copy_template_interpolator_script",
         return_value="interpolator_script.sh",
     )
     @patch(
-        "turbospectrum_integration.interpolation._get_models_for_interpolation",
+        "source.turbospectrum_integration.interpolation._get_models_for_interpolation",
         return_value=[
             {"teff_str": "5500", "logg_str": "4.0", "z_str": "-0.5"},
             {"teff_str": "6000", "logg_str": "5.0", "z_str": "0.5"},

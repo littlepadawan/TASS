@@ -4,10 +4,10 @@ from shutil import rmtree
 from unittest.mock import MagicMock, patch
 
 import numpy as np
-import parameter_generation
-from configuration_setup import Configuration
+import source.parameter_generation as parameter_generation
 from rtree import index
 from rtree.index import Property
+from source.configuration_setup import Configuration
 
 
 class TestParameterGeneration(unittest.TestCase):
@@ -91,7 +91,7 @@ class TestParameterGeneration(unittest.TestCase):
             ],
         )
 
-    @patch("parameter_generation.sys.exit")
+    @patch("source.parameter_generation.sys.exit")
     def test_read_parameters_from_file_missing_parameters(self, mock_exit):
         """
         Test that an error is raised if the input file is missing required parameters
@@ -162,8 +162,8 @@ class TestParameterGeneration(unittest.TestCase):
                 )
             )
 
-    @patch("random.randint")
-    @patch("random.uniform")
+    @patch("source.parameter_generation.random.randint")
+    @patch("source.parameter_generation.random.uniform")
     def test_generate_random_parameters_no_conflicts(self, mock_randint, mock_uniform):
         """
         Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are no conflicting parameter values
@@ -208,19 +208,21 @@ class TestParameterGeneration(unittest.TestCase):
         ]
         config = Configuration("tests/test_input/configuration.cfg")
         expected = [
-            (5000, 4.00, -1.000),
-            (5005, 4.11, -0.833),
-            (5010, 4.22, -0.667),
-            (5015, 4.33, -0.500),
-            (5020, 4.44, -0.333),
-            (5025, 4.56, -0.167),
-            (5030, 4.67, 0.000),
-            (5035, 4.78, 0.167),
-            (5040, 4.89, 0.333),
-            (5045, 5.00, 0.500),
+            {"teff": 5000, "logg": 4.00, "z": -1.000},
+            {"teff": 5005, "logg": 4.11, "z": -0.833},
+            {"teff": 5010, "logg": 4.22, "z": -0.667},
+            {"teff": 5015, "logg": 4.33, "z": -0.500},
+            {"teff": 5020, "logg": 4.44, "z": -0.333},
+            {"teff": 5025, "logg": 4.56, "z": -0.167},
+            {"teff": 5030, "logg": 4.67, "z": 0.000},
+            {"teff": 5035, "logg": 4.78, "z": 0.167},
+            {"teff": 5040, "logg": 4.89, "z": 0.333},
+            {"teff": 5045, "logg": 5.00, "z": 0.500},
         ]
-        with patch("random.randint", side_effect=randint_values), patch(
-            "random.uniform", side_effect=uniform_values
+        with patch(
+            "source.parameter_generation.random.randint", side_effect=randint_values
+        ), patch(
+            "source.parameter_generation.random.uniform", side_effect=uniform_values
         ):
             result = parameter_generation.generate_random_parameters(config)
             self.assertEqual(len(result), 10)
@@ -266,16 +268,16 @@ class TestParameterGeneration(unittest.TestCase):
 
         config = Configuration("tests/test_input/configuration.cfg")
         expected = [
-            (5000, 4.00, -1.000),
-            (5000, 4.06, -0.899),
-            (5000, 4.12, -0.799),
-            (5000, 4.18, -0.699),
-            (5000, 4.24, -0.599),
-            (5000, 4.30, -0.499),
-            (5000, 4.36, -0.399),
-            (5000, 4.42, -0.299),
-            (5000, 4.48, -0.199),
-            (5000, 4.54, -0.099),
+            {"teff": 5000, "logg": 4.00, "z": -1.000},
+            {"teff": 5000, "logg": 4.06, "z": -0.899},
+            {"teff": 5000, "logg": 4.12, "z": -0.799},
+            {"teff": 5000, "logg": 4.18, "z": -0.699},
+            {"teff": 5000, "logg": 4.24, "z": -0.599},
+            {"teff": 5000, "logg": 4.30, "z": -0.499},
+            {"teff": 5000, "logg": 4.36, "z": -0.399},
+            {"teff": 5000, "logg": 4.42, "z": -0.299},
+            {"teff": 5000, "logg": 4.48, "z": -0.199},
+            {"teff": 5000, "logg": 4.54, "z": -0.099},
         ]
         with patch("random.randint", side_effect=randint_values), patch(
             "random.uniform", side_effect=uniform_values
@@ -323,16 +325,16 @@ class TestParameterGeneration(unittest.TestCase):
 
         config = Configuration("tests/test_input/configuration.cfg")
         expected = [
-            (5000, 4.0, -1.000),
-            (5000, 4.0, -0.899),
-            (5000, 4.0, -0.799),
-            (5000, 4.0, -0.699),
-            (5000, 4.0, -0.599),
-            (5000, 4.0, -0.499),
-            (5000, 4.0, -0.399),
-            (5000, 4.0, -0.299),
-            (5000, 4.0, -0.199),
-            (5000, 4.0, -0.099),
+            {"teff": 5000, "logg": 4.0, "z": -1.000},
+            {"teff": 5000, "logg": 4.0, "z": -0.899},
+            {"teff": 5000, "logg": 4.0, "z": -0.799},
+            {"teff": 5000, "logg": 4.0, "z": -0.699},
+            {"teff": 5000, "logg": 4.0, "z": -0.599},
+            {"teff": 5000, "logg": 4.0, "z": -0.499},
+            {"teff": 5000, "logg": 4.0, "z": -0.399},
+            {"teff": 5000, "logg": 4.0, "z": -0.299},
+            {"teff": 5000, "logg": 4.0, "z": -0.199},
+            {"teff": 5000, "logg": 4.0, "z": -0.099},
         ]
         with patch("random.randint", side_effect=randint_values), patch(
             "random.uniform", side_effect=uniform_values
@@ -415,16 +417,16 @@ class TestParameterGeneration(unittest.TestCase):
 
         config = Configuration("tests/test_input/configuration.cfg")
         expected = [
-            (5000, 4.0, -0.5),
-            (5050, 4.10, -0.450),
-            (5060, 4.15, -0.400),
-            (5070, 4.20, -0.350),
-            (5080, 4.25, -0.300),
-            (5090, 4.30, -0.250),
-            (5100, 4.35, -0.200),
-            (5110, 4.40, -0.150),
-            (5120, 4.45, -0.100),
-            (5130, 4.50, -0.050),
+            {"teff": 5000, "logg": 4.0, "z": -0.5},
+            {"teff": 5050, "logg": 4.10, "z": -0.450},
+            {"teff": 5060, "logg": 4.15, "z": -0.400},
+            {"teff": 5070, "logg": 4.20, "z": -0.350},
+            {"teff": 5080, "logg": 4.25, "z": -0.300},
+            {"teff": 5090, "logg": 4.30, "z": -0.250},
+            {"teff": 5100, "logg": 4.35, "z": -0.200},
+            {"teff": 5110, "logg": 4.40, "z": -0.150},
+            {"teff": 5120, "logg": 4.45, "z": -0.100},
+            {"teff": 5130, "logg": 4.50, "z": -0.050},
         ]  # Only the first set should be added due to collision within min deltas
 
         with patch("random.randint", side_effect=randint_values), patch(
@@ -512,7 +514,7 @@ class TestParameterGeneration(unittest.TestCase):
             )
         )
 
-    @patch("parameter_generation.read_parameters_from_file")
+    @patch("source.parameter_generation.read_parameters_from_file")
     def test_generate_parameters_read_from_file(self, mock_read_parameters_from_file):
         """
         Test that the function calls read_parameters_from_file when read_stellar_parameters_from_file is True
@@ -522,7 +524,7 @@ class TestParameterGeneration(unittest.TestCase):
         parameter_generation.generate_parameters(config)
         mock_read_parameters_from_file.assert_called_once_with(config)
 
-    @patch("parameter_generation.generate_random_parameters")
+    @patch("source.parameter_generation.generate_random_parameters")
     def test_generate_parameters_random(self, mock_generate_random_parameters):
         """
         Test that the function calls generate_random_parameters when read_stellar_parameters_from_file is False and random_parameters is True
@@ -533,7 +535,7 @@ class TestParameterGeneration(unittest.TestCase):
         parameter_generation.generate_parameters(config)
         mock_generate_random_parameters.assert_called_once_with(config)
 
-    @patch("parameter_generation.generate_evenly_spaced_parameters")
+    @patch("source.parameter_generation.generate_evenly_spaced_parameters")
     def test_generate_parameters_evenly_spaced(
         self, mock_generate_evenly_spaced_parameters
     ):

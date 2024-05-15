@@ -1,7 +1,7 @@
 from os import chdir, getcwd
 from subprocess import CalledProcessError, run
 
-from configuration_setup import Configuration
+from source.configuration_setup import Configuration
 
 
 def compile_turbospectrum(config: Configuration):

@@ -1,14 +1,14 @@
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
-import output_management
-from configuration_setup import Configuration
+import source.output_management as output_management
+from source.configuration_setup import Configuration
 
 
 class TestOutputManagement(unittest.TestCase):
 
-    @patch("output_management.makedirs")
-    @patch("output_management.datetime")
+    @patch("source.output_management.makedirs")
+    @patch("source.output_management.datetime")
     def test_set_up_output_directory(self, mock_datetime, mock_makedirs):
         """
         Test that the output directory is created with the correct name and a subdirectory for temp files
@@ -34,7 +34,7 @@ class TestOutputManagement(unittest.TestCase):
         mock_makedirs.assert_any_call(expected_output_directory)
         mock_makedirs.assert_any_call(expected_temp_directory)
 
-    @patch("output_management.copyfile")
+    @patch("source.output_management.copyfile")
     def test_copy_config_file(self, mock_copyfile):
         """
         Test that the configuration file is copied to the output directory
@@ -50,7 +50,7 @@ class TestOutputManagement(unittest.TestCase):
         # Verify that os.copyfile was called with the correct arguments
         mock_copyfile.assert_called_once_with("/path/to/config", "/path/to/output")
 
-    @patch("output_management.open", new_callable=mock_open)
+    @patch("source.output_management.open", new_callable=mock_open)
     def test_generate_parameter_file(self, mock_open):
         """
         Test that the parameter file is generated correctly
@@ -133,7 +133,7 @@ class TestOutputManagement(unittest.TestCase):
         file_handle.write.assert_any_call(f"{successful_parameters[0]}\n")
         file_handle.write.assert_any_call(f"{successful_parameters[1]}\n")
 
-    @patch("output_management.open", new_callable=mock_open)
+    @patch("source.output_management.open", new_callable=mock_open)
     def test_generate_parameter_file_only_successful_parameters(self, mock_open):
         """
         Test that the parameter file is generated correctly when

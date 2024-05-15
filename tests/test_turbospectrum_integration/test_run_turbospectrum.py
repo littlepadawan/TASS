@@ -3,15 +3,15 @@ from subprocess import PIPE
 from unittest.mock import MagicMock, mock_open, patch
 
 import pandas as pd
-from configuration_setup import Configuration
-from tests.model_atmospheres_data_for_testing import FILENAMES
-from turbospectrum_integration import utils
-from turbospectrum_integration.configuration import TurbospectrumConfiguration
-from turbospectrum_integration.run_turbospectrum import (
+from source.configuration_setup import Configuration
+from source.turbospectrum_integration import utils
+from source.turbospectrum_integration.configuration import TurbospectrumConfiguration
+from source.turbospectrum_integration.run_turbospectrum import (
     generate_one_spectrum,
     run_babsma,
     run_bsyn,
 )
+from tests.model_atmospheres_data_for_testing import FILENAMES
 
 
 class TestRunTurbospectrum(unittest.TestCase):
@@ -25,9 +25,9 @@ class TestRunTurbospectrum(unittest.TestCase):
     MODEL_ATMOSPHERES = pd.DataFrame(PARSED_FILENAMES)
 
     @patch("builtins.open", new_callable=mock_open, read_data="mock data")
-    @patch("turbospectrum_integration.run_turbospectrum.run")
-    @patch("turbospectrum_integration.run_turbospectrum.getcwd")
-    @patch("turbospectrum_integration.run_turbospectrum.chdir")
+    @patch("source.turbospectrum_integration.run_turbospectrum.run")
+    @patch("source.turbospectrum_integration.run_turbospectrum.getcwd")
+    @patch("source.turbospectrum_integration.run_turbospectrum.chdir")
     def test_run_babsma_success(self, mock_chdir, mock_getcwd, mock_run, mock_open):
         """Test that run_babsma runs successfully"""
         # Set up the return values for getcwd and run
@@ -60,9 +60,9 @@ class TestRunTurbospectrum(unittest.TestCase):
         )
 
     @patch("builtins.open", new_callable=mock_open, read_data="mock data")
-    @patch("turbospectrum_integration.run_turbospectrum.run")
-    @patch("turbospectrum_integration.run_turbospectrum.getcwd")
-    @patch("turbospectrum_integration.run_turbospectrum.chdir")
+    @patch("source.turbospectrum_integration.run_turbospectrum.run")
+    @patch("source.turbospectrum_integration.run_turbospectrum.getcwd")
+    @patch("source.turbospectrum_integration.run_turbospectrum.chdir")
     def test_run_babsma_failure(self, mock_chdir, mock_getcwd, mock_run, mock_open):
         # Set up the return values for getcwd and mock run to raise an error
         mock_getcwd.return_value = "/current/directory"
@@ -84,9 +84,9 @@ class TestRunTurbospectrum(unittest.TestCase):
         self.assertEqual(str(context.exception), "mock error")
 
     @patch("builtins.open", new_callable=mock_open, read_data="mock data")
-    @patch("turbospectrum_integration.run_turbospectrum.run")
-    @patch("turbospectrum_integration.run_turbospectrum.getcwd")
-    @patch("turbospectrum_integration.run_turbospectrum.chdir")
+    @patch("source.turbospectrum_integration.run_turbospectrum.run")
+    @patch("source.turbospectrum_integration.run_turbospectrum.getcwd")
+    @patch("source.turbospectrum_integration.run_turbospectrum.chdir")
     def test_run_bsyn(self, mock_chdir, mock_getcwd, mock_run, mock_open):
         # Set up the return values for getcwd and run
         mock_getcwd.return_value = "/current/directory"
@@ -118,9 +118,9 @@ class TestRunTurbospectrum(unittest.TestCase):
         )
 
     @patch("builtins.open", new_callable=mock_open, read_data="mock data")
-    @patch("turbospectrum_integration.run_turbospectrum.run")
-    @patch("turbospectrum_integration.run_turbospectrum.getcwd")
-    @patch("turbospectrum_integration.run_turbospectrum.chdir")
+    @patch("source.turbospectrum_integration.run_turbospectrum.run")
+    @patch("source.turbospectrum_integration.run_turbospectrum.getcwd")
+    @patch("source.turbospectrum_integration.run_turbospectrum.chdir")
     def test_run_bsyn_raises_error(self, mock_chdir, mock_getcwd, mock_run, mock_open):
         # Set up the return values for getcwd and mock run to raise an error
         mock_getcwd.return_value = "/current/directory"
@@ -141,17 +141,23 @@ class TestRunTurbospectrum(unittest.TestCase):
         # Verify the exception message
         self.assertEqual(str(context.exception), "mock error")
 
-    @patch("turbospectrum_integration.run_turbospectrum.TurbospectrumConfiguration")
-    @patch("turbospectrum_integration.run_turbospectrum.generate_path_model_opac")
-    @patch("turbospectrum_integration.run_turbospectrum.generate_path_result_file")
-    @patch("turbospectrum_integration.run_turbospectrum.needs_interpolation")
     @patch(
-        "turbospectrum_integration.run_turbospectrum.generate_interpolated_model_atmosphere"
+        "source.turbospectrum_integration.run_turbospectrum.TurbospectrumConfiguration"
     )
-    @patch("turbospectrum_integration.run_turbospectrum.create_babsma")
-    @patch("turbospectrum_integration.run_turbospectrum.run_babsma")
-    @patch("turbospectrum_integration.run_turbospectrum.create_bsyn")
-    @patch("turbospectrum_integration.run_turbospectrum.run_bsyn")
+    @patch(
+        "source.turbospectrum_integration.run_turbospectrum.generate_path_model_opac"
+    )
+    @patch(
+        "source.turbospectrum_integration.run_turbospectrum.generate_path_result_file"
+    )
+    @patch("source.turbospectrum_integration.run_turbospectrum.needs_interpolation")
+    @patch(
+        "source.turbospectrum_integration.run_turbospectrum.generate_interpolated_model_atmosphere"
+    )
+    @patch("source.turbospectrum_integration.run_turbospectrum.create_babsma")
+    @patch("source.turbospectrum_integration.run_turbospectrum.run_babsma")
+    @patch("source.turbospectrum_integration.run_turbospectrum.create_bsyn")
+    @patch("source.turbospectrum_integration.run_turbospectrum.run_bsyn")
     def test_generate_one_spectrum(
         self,
         mock_run_bsyn,
@@ -209,17 +215,23 @@ class TestRunTurbospectrum(unittest.TestCase):
             mock_TurbospectrumConfiguration.return_value, config
         )
 
-    @patch("turbospectrum_integration.run_turbospectrum.TurbospectrumConfiguration")
-    @patch("turbospectrum_integration.run_turbospectrum.generate_path_model_opac")
-    @patch("turbospectrum_integration.run_turbospectrum.generate_path_result_file")
-    @patch("turbospectrum_integration.run_turbospectrum.needs_interpolation")
     @patch(
-        "turbospectrum_integration.run_turbospectrum.generate_interpolated_model_atmosphere"
+        "source.turbospectrum_integration.run_turbospectrum.TurbospectrumConfiguration"
     )
-    @patch("turbospectrum_integration.run_turbospectrum.create_babsma")
-    @patch("turbospectrum_integration.run_turbospectrum.run_babsma")
-    @patch("turbospectrum_integration.run_turbospectrum.create_bsyn")
-    @patch("turbospectrum_integration.run_turbospectrum.run_bsyn")
+    @patch(
+        "source.turbospectrum_integration.run_turbospectrum.generate_path_model_opac"
+    )
+    @patch(
+        "source.turbospectrum_integration.run_turbospectrum.generate_path_result_file"
+    )
+    @patch("source.turbospectrum_integration.run_turbospectrum.needs_interpolation")
+    @patch(
+        "source.turbospectrum_integration.run_turbospectrum.generate_interpolated_model_atmosphere"
+    )
+    @patch("source.turbospectrum_integration.run_turbospectrum.create_babsma")
+    @patch("source.turbospectrum_integration.run_turbospectrum.run_babsma")
+    @patch("source.turbospectrum_integration.run_turbospectrum.create_bsyn")
+    @patch("source.turbospectrum_integration.run_turbospectrum.run_bsyn")
     def test_generate_one_spectrum_no_interpolation(
         self,
         mock_run_bsyn,
@@ -273,17 +285,23 @@ class TestRunTurbospectrum(unittest.TestCase):
         )
 
     # TODO: Clean this up
-    @patch("turbospectrum_integration.run_turbospectrum.TurbospectrumConfiguration")
-    @patch("turbospectrum_integration.run_turbospectrum.generate_path_model_opac")
-    @patch("turbospectrum_integration.run_turbospectrum.generate_path_result_file")
-    @patch("turbospectrum_integration.run_turbospectrum.needs_interpolation")
     @patch(
-        "turbospectrum_integration.run_turbospectrum.generate_interpolated_model_atmosphere"
+        "source.turbospectrum_integration.run_turbospectrum.TurbospectrumConfiguration"
     )
-    @patch("turbospectrum_integration.run_turbospectrum.create_babsma")
-    @patch("turbospectrum_integration.run_turbospectrum.run_babsma")
-    @patch("turbospectrum_integration.run_turbospectrum.create_bsyn")
-    @patch("turbospectrum_integration.run_turbospectrum.run_bsyn")
+    @patch(
+        "source.turbospectrum_integration.run_turbospectrum.generate_path_model_opac"
+    )
+    @patch(
+        "source.turbospectrum_integration.run_turbospectrum.generate_path_result_file"
+    )
+    @patch("source.turbospectrum_integration.run_turbospectrum.needs_interpolation")
+    @patch(
+        "source.turbospectrum_integration.run_turbospectrum.generate_interpolated_model_atmosphere"
+    )
+    @patch("source.turbospectrum_integration.run_turbospectrum.create_babsma")
+    @patch("source.turbospectrum_integration.run_turbospectrum.run_babsma")
+    @patch("source.turbospectrum_integration.run_turbospectrum.create_bsyn")
+    @patch("source.turbospectrum_integration.run_turbospectrum.run_bsyn")
     def test_generate_one_spectrum_multiple_matching_models(
         self,
         mock_run_bsyn,

@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, mock_open, patch
 
-import turbospectrum_integration.configuration as turbospectrum_config
-from configuration_setup import Configuration
+import source.turbospectrum_integration.configuration as turbospectrum_config
+from source.configuration_setup import Configuration
 
 
 class TestConfiguration(unittest.TestCase):
@@ -160,9 +160,9 @@ class TestConfiguration(unittest.TestCase):
         # The model atmosphere was interpolated, so it is not a MARCS model
         self.assertEqual(result, ".false.")
 
-    @patch("turbospectrum_integration.configuration.generate_abundance_str")
+    @patch("source.turbospectrum_integration.configuration.generate_abundance_str")
     @patch(
-        "turbospectrum_integration.configuration.is_model_atmosphere_marcs",
+        "source.turbospectrum_integration.configuration.is_model_atmosphere_marcs",
         return_value=".true",
     )
     @patch("builtins.open", new_callable=mock_open)
@@ -219,8 +219,8 @@ class TestConfiguration(unittest.TestCase):
         # Check that the file was written with the correct content
         mock_open.assert_called_once_with(ts_config.path_babsma, "w")
 
-    @patch("turbospectrum_integration.configuration.path.isfile")
-    @patch("turbospectrum_integration.configuration.listdir")
+    @patch("source.turbospectrum_integration.configuration.path.isfile")
+    @patch("source.turbospectrum_integration.configuration.listdir")
     def test_create_line_lists_string(self, mock_listdir, mock_isfile):
         # Set up test data
         mock_listdir.return_value = ["file1.txt", "file2.txt", "not_a_file"]
@@ -243,7 +243,7 @@ class TestConfiguration(unittest.TestCase):
         # Check the result
         self.assertEqual(result, expected_line_lists_str)
 
-    @patch("turbospectrum_integration.configuration.create_line_lists_str")
+    @patch("source.turbospectrum_integration.configuration.create_line_lists_str")
     @patch("builtins.open", new_callable=mock_open)
     def test_create_bsyn(
         self,

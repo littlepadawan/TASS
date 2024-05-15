@@ -2,8 +2,8 @@ import random
 import sys
 
 import numpy as np
-from configuration_setup import Configuration
 from rtree import index
+from source.configuration_setup import Configuration
 
 REQUIRED_PARAMETERS = ["teff", "logg", "z"]  # TODO: Add abundances
 MIN_PARAMETER_DELTA = {

@@ -3,8 +3,8 @@ from shutil import copyfile
 from subprocess import CalledProcessError, run
 
 import pandas as pd
-from configuration_setup import Configuration
-from turbospectrum_integration.utils import collect_model_atmosphere_parameters
+from source.configuration_setup import Configuration
+from source.turbospectrum_integration.utils import collect_model_atmosphere_parameters
 
 # TODO: Refactor functions to find higher, lower, and closest models to be more DRY
 # TODO: Refactor the function to get bracketing models to be more DRY

@@ -4,9 +4,9 @@ from subprocess import CalledProcessError
 from unittest.mock import MagicMock, call, patch
 
 import pandas as pd
-from configuration_setup import Configuration
+from source.configuration_setup import Configuration
+from source.turbospectrum_integration import compilation, utils
 from tests.model_atmospheres_data_for_testing import FILENAMES
-from turbospectrum_integration import compilation, utils
 
 
 class TestInterpolate(unittest.TestCase):
@@ -22,8 +22,8 @@ class TestInterpolate(unittest.TestCase):
         # Set up a fresh Configuration object for each test
         self.config = Configuration()
 
-    @patch("turbospectrum_integration.compilation.chdir")
-    @patch("turbospectrum_integration.compilation.run", autospec=True)
+    @patch("source.turbospectrum_integration.compilation.chdir")
+    @patch("source.turbospectrum_integration.compilation.run", autospec=True)
     def test_compile_turboscpectrum_success(self, mock_run, mock_chdir):
         """Test that Turbospectrum compiles successfully."""
 
@@ -41,8 +41,8 @@ class TestInterpolate(unittest.TestCase):
             [call(self.config.path_turbospectrum_compiled), call(getcwd())]
         )
 
-    @patch("turbospectrum_integration.compilation.chdir")
-    @patch("turbospectrum_integration.compilation.run", autospec=True)
+    @patch("source.turbospectrum_integration.compilation.chdir")
+    @patch("source.turbospectrum_integration.compilation.run", autospec=True)
     def test_compile_turbospectrum_failure(self, mock_run, mock_chdir):
         """Test that an error is raised if Turbospectrum compilation fails."""
 
@@ -52,8 +52,8 @@ class TestInterpolate(unittest.TestCase):
         with self.assertRaises(CalledProcessError):
             compilation.compile_turbospectrum(self.config)
 
-    @patch("turbospectrum_integration.compilation.chdir")
-    @patch("turbospectrum_integration.compilation.run", autospec=True)
+    @patch("source.turbospectrum_integration.compilation.chdir")
+    @patch("source.turbospectrum_integration.compilation.run", autospec=True)
     def test_return_to_original_directory_after_compile_turbospectrum(
         self, mock_run, mock_chdir
     ):
@@ -64,7 +64,7 @@ class TestInterpolate(unittest.TestCase):
 
         original_directory = "/original/directory"
         with patch(
-            "turbospectrum_integration.compilation.getcwd",
+            "source.turbospectrum_integration.compilation.getcwd",
             return_value=original_directory,
         ):
             compilation.compile_turbospectrum(self.config)
@@ -72,8 +72,8 @@ class TestInterpolate(unittest.TestCase):
         # Make sure os.chdir is called to return to the original directory
         mock_chdir.assert_called_with(original_directory)
 
-    @patch("turbospectrum_integration.compilation.chdir")
-    @patch("turbospectrum_integration.compilation.run", autospec=True)
+    @patch("source.turbospectrum_integration.compilation.chdir")
+    @patch("source.turbospectrum_integration.compilation.run", autospec=True)
     def test_compile_interpolator_success(self, mock_run, mock_chdir):
         """Test that the interpolator is compiled successfully."""
         # Command to compile interpolator (copied from turbospectrum_integration/compilation.py)
@@ -89,8 +89,8 @@ class TestInterpolate(unittest.TestCase):
             command, check=True, text=True, capture_output=True
         )
 
-    @patch("turbospectrum_integration.compilation.chdir")
-    @patch("turbospectrum_integration.compilation.run", autospec=True)
+    @patch("source.turbospectrum_integration.compilation.chdir")
+    @patch("source.turbospectrum_integration.compilation.run", autospec=True)
     def test_compile_interpolator_failure(self, mock_run, mock_chdir):
         """Test that an error is raised if the interpolator compilation fails."""
         # Command to compile interpolator (copied from turbospectrum_integration/compilation.py)
@@ -102,8 +102,8 @@ class TestInterpolate(unittest.TestCase):
         with self.assertRaises(CalledProcessError):
             compilation.compile_interpolator(self.config)
 
-    @patch("turbospectrum_integration.compilation.chdir")
-    @patch("turbospectrum_integration.compilation.run", autospec=True)
+    @patch("source.turbospectrum_integration.compilation.chdir")
+    @patch("source.turbospectrum_integration.compilation.run", autospec=True)
     def test_return_to_original_directory_after_compile_interpolator(
         self, mock_run, mock_chdir
     ):
@@ -112,7 +112,7 @@ class TestInterpolate(unittest.TestCase):
         """
         original_directory = "/original/directory"
         with patch(
-            "turbospectrum_integration.compilation.getcwd",
+            "source.turbospectrum_integration.compilation.getcwd",
             return_value=original_directory,
         ):
             compilation.compile_interpolator(self.config)

@@ -3,7 +3,7 @@ import unittest
 from shutil import rmtree
 from unittest.mock import MagicMock, patch
 
-from configuration_setup import Configuration
+from source.configuration_setup import Configuration
 
 
 # Run tests with this command: python3 -m unittest tests.test_config
@@ -70,7 +70,7 @@ class TestConfigurationSetup(unittest.TestCase):
             config.config_file, os.path.abspath("tests/test_input/configuration.cfg")
         )
 
-    @patch("configuration_setup.os.path.exists", return_value=False)
+    @patch("source.configuration_setup.os.path.exists", return_value=False)
     def test_non_existing_config_file(self, mock_exists):
         """
         Test that an error is raised if the config file does not exist
@@ -78,9 +78,9 @@ class TestConfigurationSetup(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             Configuration("tests/non_existing_config.cfg")
 
-    @patch("configuration_setup.os.path.exists", return_value=True)
-    @patch("configuration_setup.Configuration._load_configuration_file")
-    @patch("configuration_setup.Configuration._validate_configuration")
+    @patch("source.configuration_setup.os.path.exists", return_value=True)
+    @patch("source.configuration_setup.Configuration._load_configuration_file")
+    @patch("source.configuration_setup.Configuration._validate_configuration")
     def test_errors_caught_in_constructor(self, mock_validate, mock_load, mock_exists):
         """
         Test that errors are caught in the constructor
@@ -90,7 +90,7 @@ class TestConfigurationSetup(unittest.TestCase):
             Configuration()
         self.assertEqual(cm.exception.code, 1)
 
-    @patch("configuration_setup.os.path.exists", return_value=True)
+    @patch("source.configuration_setup.os.path.exists", return_value=True)
     def test_validate_turbospectrum_path_success(self, mock_exists):
         """
         Test that an error is not raised if the path to Turbospectrum exists
@@ -107,7 +107,7 @@ class TestConfigurationSetup(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             config._validate_turbospectrum_path()
 
-    @patch("configuration_setup.os.path.exists", return_value=True)
+    @patch("source.configuration_setup.os.path.exists", return_value=True)
     def test_validate_interpolator_path_success(self, mock_exists):
         """
         Test that an error is not raised if the path to the interpolator exists
@@ -158,7 +158,7 @@ class TestConfigurationSetup(unittest.TestCase):
         with self.assertRaises(ValueError):
             config._validate_compiler()
 
-    @patch("configuration_setup.os.path.exists", return_value=True)
+    @patch("source.configuration_setup.os.path.exists", return_value=True)
     def test_validate_path_to_directories_success(self, mock_exists):
         """
         Test that the path validation works when the paths exist

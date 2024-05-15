@@ -1,7 +1,7 @@
 from os import chdir, getcwd, listdir, path
 from subprocess import PIPE, run
 
-from configuration_setup import Configuration
+from source.configuration_setup import Configuration
 
 # String templates for BABSMA and BSYN configuration files
 # Placeholders are replaced with actual values in functions below

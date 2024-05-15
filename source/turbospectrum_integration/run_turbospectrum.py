@@ -1,16 +1,16 @@
 from os import chdir, getcwd
 from subprocess import PIPE, run
 
-from configuration_setup import Configuration
 from pandas import DataFrame
-from turbospectrum_integration.configuration import (
+from source.configuration_setup import Configuration
+from source.turbospectrum_integration.configuration import (
     TurbospectrumConfiguration,
     create_babsma,
     create_bsyn,
     generate_path_model_opac,
     generate_path_result_file,
 )
-from turbospectrum_integration.interpolation import (
+from source.turbospectrum_integration.interpolation import (
     generate_interpolated_model_atmosphere,
     needs_interpolation,
 )
@@ -106,5 +106,3 @@ def generate_all_spectra(
         generate_one_spectrum(config, parameter_set, model_atmospheres)
         # TODO: If successful, add the parameters to a list of successful parameters
         # TODO: If unsuccessful, add the parameters to a list of unsuccessful parameters (split by reasons)
-
-    pass

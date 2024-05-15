@@ -2,7 +2,7 @@ from datetime import datetime
 from os import makedirs
 from shutil import copyfile
 
-from configuration_setup import Configuration
+from source.configuration_setup import Configuration
 
 
 def set_up_output_directory(config: Configuration):
