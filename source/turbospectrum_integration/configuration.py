@@ -2,6 +2,7 @@ from os import chdir, getcwd, listdir, path
 from subprocess import PIPE, run
 
 from source.configuration_setup import Configuration
+from source.turbospectrum_integration.utils import compose_filename
 
 # String templates for BABSMA and BSYN configuration files
 # Placeholders are replaced with actual values in functions below
@@ -15,11 +16,12 @@ MARCS-FILE: {marcs_file}
 MODELOPAC: '{model_opac}'
 METALLICITY: {metallicity:.2f}
 'ALPHA/Fe:' {alpha:.2f}
-'INDIVIDUAL ABUNDANCES:' {num_elements:.0f}
-'{abundance_str}'
+{abundances}
 XIFIX: T
 {xifix:.1f}
 """
+# 'INDIVIDUAL ABUNDANCES:' {num_elements:.0f}
+# '{abundance_str}'
 
 BSYN_CONTENT = """
 PURE-LTE: .true.
@@ -33,26 +35,30 @@ MODELOPAC: '{model_opac}'
 RESULTFILE: '{result_file}'
 METALLICITY: {metallicity:.2f}
 'ALPHA/Fe:' {alpha:.2f}
-'INDIVIDUAL ABUNDANCES:' {num_elements:.0f}
-'{abundance_str}'
+{abundances}
 '{line_lists}'
 SPHERICAL: .false.
 """
+# 'INDIVIDUAL ABUNDANCES:' {num_elements:.0f}
+# '{abundance_str}'
 
 
 class TurbospectrumConfiguration:
 
     def __init__(self, config: Configuration, stellar_parameters: dict):
+        file_name = compose_filename(stellar_parameters)
+
         self.path_model_atmosphere = None
-        self.path_model_opac = None
-        self.path_babsma = f"{config.path_output_directory}/temp/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_babsma"  # TODO: Update with Mg and Ca
-        self.path_bsyn = f"{config.path_output_directory}/temp/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_bsyn"  # TODO: Update with Mg and Ca
+        self.path_model_opac = f"{config.path_output_directory}/temp/opac_{file_name}"
+        self.path_babsma = f"{config.path_output_directory}/temp/{file_name}_babsma"
+        self.path_bsyn = f"{config.path_output_directory}/temp/{file_name}_bsyn"
+        self.path_result = f"{config.path_output_directory}/{file_name}.spec"
         self.interpolated_model_atmosphere = True
         self.alpha = calculate_alpha(stellar_parameters["z"])
-        self.num_elements = 0
-        self.abundance_str = ""
+        # self.num_elements = 0
+        # self.abundance_str = ""
 
-        # set_abundances(self, stellar_parameters) # TODO: Implement when abundances has been added
+        set_abundances(self, stellar_parameters)
 
 
 def calculate_alpha(metallicity: float):
@@ -74,40 +80,6 @@ def calculate_alpha(metallicity: float):
     return alpha
 
 
-def generate_path_model_opac(
-    ts_config: TurbospectrumConfiguration,
-    config: Configuration,
-    stellar_parameters: dict,
-):
-    """
-    Generate the path to the model opac file and set it in the Turbospectrum configuration.
-
-    Args:
-        ts_config (TurbospectrumConfiguration): The Turbospectrum configuration
-        config (Configuration): The configuration
-        stellar_parameters (dict): The stellar parameters
-    """
-    ts_config.path_model_opac = f"{config.path_output_directory}/temp/opac_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}"
-
-
-def generate_path_result_file(
-    ts_config: TurbospectrumConfiguration,
-    config: Configuration,
-    stellar_parameters: dict,
-):
-    """
-    Generate the path to the result file and set it in the Turbospectrum configuration.
-
-    Args:
-        ts_config (TurbospectrumConfiguration): The Turbospectrum configuration
-        config (Configuration): The Configuration object containing path to the output directory.
-        stellar_parameters (dict): The stellar parameters
-    """
-    # TODO: Update with Mg and Ca
-    # TODO: Make sure this has the right format (follow TSFitPy? All params should be deducable from filename, and have + and -)
-    ts_config.path_result_file = f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.spec"
-
-
 def generate_abundance_str(stellar_parameters: dict):
     """
     Generate formatted abundance string used in the configuration.
@@ -123,15 +95,15 @@ def generate_abundance_str(stellar_parameters: dict):
     Returns:
         tuple: (number of elements, abundance string)
     """
-    abundance_str = ""
     # Set containing element numbers and solar abundances for Mg and CA
     # Reference: photospheric abundances from Magg+ 2022A&A...661A.140M
     elements = {
-        "Mg": {"element_number": 12, "solar_abundance": 7.55},
-        "Ca": {"element_number": 20, "solar_abundance": 6.37},
+        "mg": {"element_number": 12, "solar_abundance": 7.55},
+        "ca": {"element_number": 20, "solar_abundance": 6.37},
     }
 
     num_abundances = 0
+    abundance_lines = []
     metallicity = stellar_parameters["z"]
     for element, data in elements.items():
         relative_abundance = stellar_parameters.get(element)
@@ -141,9 +113,11 @@ def generate_abundance_str(stellar_parameters: dict):
 
             # Convert relative abundance to absolute abundance
             absolute_abundance = solar_abundance + metallicity + relative_abundance
-            abundance_str += f"{element_number}  {absolute_abundance:.2f}\n"
+            abundance_lines.append(f"{element_number} {absolute_abundance:.2f}")
             num_abundances += 1
 
+    abundance_str = f"'INDIVIDUAL ABUNDANCES:' {num_abundances}\n"
+    abundance_str += "\n".join(abundance_lines)
     return num_abundances, abundance_str
 
 
@@ -195,7 +169,7 @@ def create_babsma(
         stellar_parameters (dict): _description_
     """
     # TODO: This should be removed eventually, since these values are set in ts_config
-    num_elements, abundance_str = generate_abundance_str(stellar_parameters)
+    # num_elements, abundance_str = generate_abundance_str(stellar_parameters)
 
     babsma_config = BABSMA_CONTENT.format(
         lambda_min=config.wavelength_min,
@@ -206,8 +180,7 @@ def create_babsma(
         model_opac=ts_config.path_model_opac,
         metallicity=stellar_parameters["z"],
         alpha=ts_config.alpha,
-        num_elements=num_elements,
-        abundance_str=abundance_str,
+        abundances=ts_config.abundance_str,
         xifix=config.xit,
     )
 
@@ -237,7 +210,7 @@ def create_line_lists_str(config: Configuration):
 
     # Format the list as a string containing the keyword needed for the bsyn script,
     # with each path on a new line
-    line_lists_str = "'NFILES   :' '{:d}'\n".format(len(line_list_paths))
+    line_lists_str = "NFILES: {:d}\n".format(len(line_list_paths))
     for file in line_list_paths:
         line_lists_str += "{}\n".format(file)
 
@@ -262,11 +235,10 @@ def create_bsyn(
         lambda_max=config.wavelength_max,
         lambda_step=config.wavelength_step,
         model_opac=ts_config.path_model_opac,
-        result_file=ts_config.path_result_file,
+        result_file=ts_config.path_result,
         metallicity=stellar_parameters["z"],
         alpha=ts_config.alpha,
-        num_elements=ts_config.num_elements,
-        abundance_str=ts_config.abundance_str,
+        abundances=ts_config.abundance_str,
         line_lists=create_line_lists_str(config),
     )
 

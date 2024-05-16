@@ -31,7 +31,12 @@ def parse_model_atmosphere_filename(filename: str):
     result = match(pattern, filename)
     # If it matches, extract the parameters
     if result:
-        teff_str, logg_str, z_str = result.group(1), result.group(2), result.group(5)
+        teff_str, logg_str, z_str, turbulence_str = (
+            result.group(1),
+            result.group(2),
+            result.group(5),
+            result.group(4),
+        )
         return {
             "teff": int(teff_str),
             "logg": float(logg_str),
@@ -39,6 +44,7 @@ def parse_model_atmosphere_filename(filename: str):
             "teff_str": teff_str,
             "logg_str": logg_str,
             "z_str": z_str,
+            "turbulence_str": turbulence_str,
             "filename": filename,
         }
     return None
@@ -64,3 +70,30 @@ def collect_model_atmosphere_parameters(directory: str):
     df = pd.DataFrame(models)
 
     return df
+
+
+def stellar_parameter_to_str(stellar_parameter):
+    """
+    Convert stellar parameters to a string.
+
+    Args:
+        stellar_parameter: The stellar parameter to make a string of.
+
+    Returns:
+        str: A string representation of the stellar parameter.
+    """
+    if stellar_parameter < 0:
+        return f"{stellar_parameter}"
+    else:
+        return f"+{stellar_parameter}"
+
+
+def compose_filename(stellar_parameters: dict):
+    teff_str = stellar_parameters["teff"]
+    logg_str = stellar_parameter_to_str(stellar_parameters["logg"])
+    z_str = stellar_parameter_to_str(stellar_parameters["z"])
+    mg_str = stellar_parameter_to_str(stellar_parameters["mg"])
+    ca_str = stellar_parameter_to_str(stellar_parameters["ca"])
+
+    file_name = f"p{teff_str}_g{logg_str}_z{z_str}_mg{mg_str}_ca{ca_str}"
+    return file_name

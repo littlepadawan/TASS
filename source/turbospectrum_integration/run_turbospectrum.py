@@ -7,8 +7,6 @@ from source.turbospectrum_integration.configuration import (
     TurbospectrumConfiguration,
     create_babsma,
     create_bsyn,
-    generate_path_model_opac,
-    generate_path_result_file,
 )
 from source.turbospectrum_integration.interpolation import (
     generate_interpolated_model_atmosphere,
@@ -64,22 +62,19 @@ def generate_one_spectrum(
 ):
     # Setup Turbospectrum configuration for this set of stellar parameters
     ts_config = TurbospectrumConfiguration(config, stellar_parameters)
-    # Set the path to the opacity model
-    generate_path_model_opac(ts_config, config, stellar_parameters)
-    # Set the path to the result file
-    generate_path_result_file(ts_config, config, stellar_parameters)
 
     # Check if the model atmosphere needs to be interpolated
-    needs_interp, matching_models = needs_interpolation(
+    interpolate, matching_models = needs_interpolation(
         stellar_parameters, model_atmospheres
     )
 
     # TODO: Improve this part
-    if needs_interp:
+    if interpolate:
         # Generate interpolated model atmosphere
         # TODO: If generate_interpolated_model_atmosphere can return errors, this is not a good solution
-        model_path = generate_interpolated_model_atmosphere(stellar_parameters, config)
-        ts_config.path_model_atmosphere = model_path
+        ts_config.path_model_atmosphere = generate_interpolated_model_atmosphere(
+            stellar_parameters, config
+        )
     elif len(matching_models) == 1:
         # A matching MARCS model was found, use it
         ts_config.path_model_atmosphere = matching_models[0]
@@ -88,7 +83,7 @@ def generate_one_spectrum(
         raise ValueError("More than one matching model found")
 
     # Set flag for interpolated model atmosphere
-    ts_config.interpolated_model_atmosphere = needs_interpolation
+    ts_config.interpolated_model_atmosphere = interpolate
 
     create_babsma(config, ts_config, stellar_parameters)
     run_babsma(ts_config, config)

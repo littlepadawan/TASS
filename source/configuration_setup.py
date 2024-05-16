@@ -54,6 +54,10 @@ class Configuration:
         self.logg_max = 0
         self.z_min = 0
         self.z_max = 0
+        self.mg_min = 0
+        self.mg_max = 0
+        self.ca_min = 0
+        self.ca_max = 0
 
         self.xit = 0
 
@@ -116,6 +120,10 @@ class Configuration:
             self.logg_max = config_parser.getfloat("Stellar_parameters", "logg_max")
             self.z_min = config_parser.getfloat("Stellar_parameters", "z_min")
             self.z_max = config_parser.getfloat("Stellar_parameters", "z_max")
+            self.mg_min = config_parser.getfloat("Stellar_parameters", "mg_min")
+            self.mg_max = config_parser.getfloat("Stellar_parameters", "mg_max")
+            self.ca_min = config_parser.getfloat("Stellar_parameters", "ca_min")
+            self.ca_max = config_parser.getfloat("Stellar_parameters", "ca_max")
         else:
             self.path_input_parameters = os.path.abspath(
                 config_parser.get("Paths", "input_parameters")

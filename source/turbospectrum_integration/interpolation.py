@@ -4,7 +4,10 @@ from subprocess import CalledProcessError, run
 
 import pandas as pd
 from source.configuration_setup import Configuration
-from source.turbospectrum_integration.utils import collect_model_atmosphere_parameters
+from source.turbospectrum_integration.utils import (
+    collect_model_atmosphere_parameters,
+    compose_filename,
+)
 
 # TODO: Refactor functions to find higher, lower, and closest models to be more DRY
 # TODO: Refactor the function to get bracketing models to be more DRY
@@ -40,6 +43,33 @@ def needs_interpolation(stellar_parameters: dict, model_atmospheres: pd.DataFram
         return True, None
     else:
         return False, matches
+
+
+def _get_models_with_exact_value(
+    target_parameter: str, target_value, model_atmospheres: pd.DataFrame
+):
+    """
+    Get models with a parameter value equal to the target value.
+
+    Args:
+        target_parameter (str): The parameter to filter the models by.
+        target_value: The target value to filter the models by.
+        model_atmospheres (pd.DataFrame): A DataFrame of dictionaries containing the parameters of each model atmosphere.
+
+    Raises:
+        ValueError: If no models with the target parameter value equal to the target value are found.
+
+    Returns:
+        pd.DataFrame: A DataFrame with the models that have the target parameter value equal to the target value.
+    """
+    filtered_models = model_atmospheres[
+        model_atmospheres[target_parameter] == target_value
+    ]
+    if filtered_models.empty:
+        raise ValueError(
+            f"No models with {target_parameter} value equal to {target_value} found"
+        )
+    return filtered_models
 
 
 def _get_models_with_lower_parameter_value(
@@ -157,9 +187,13 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
     Returns:
         list: A list of DataFrames entries containing the bracketing models.
     """
+    # Get all models with correct turbulence
+    correct_turbulence_models = _get_models_with_exact_value(
+        "turbulence_str", "01", model_atmospheres
+    )
     # Get all models with lower Teff value than the given stellar parameters
     tefflow_models = _get_models_with_lower_parameter_value(
-        "teff", stellar_parameters["teff"], model_atmospheres
+        "teff", stellar_parameters["teff"], correct_turbulence_models
     )
     # Filter these models to get the ones with the closest Teff value to the target parameter
     closest_tefflow_models = _get_closest_models(
@@ -228,7 +262,7 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
 
     # Get all models with higher Teff value than the target
     teffup_models = _get_models_with_higher_parameter_value(
-        "teff", stellar_parameters["teff"], model_atmospheres
+        "teff", stellar_parameters["teff"], correct_turbulence_models
     )
     # Get the models that have the closest higher Teff value to the target parameter
     closest_teffup_models = _get_closest_models(
@@ -348,6 +382,7 @@ def create_template_interpolator_script(config: Configuration):
     # TODO: Check if path to interpolator already ends with '/'
     path_template_script = f"{config.path_output_directory}/temp/interpolate.script"
 
+    # TODO: alup and alflpw + xit need to be fetched from config
     script_content = r"""#!/bin/csh -f
 set model_path = {{PY_MODEL_PATH}}
 
@@ -429,8 +464,10 @@ def copy_template_interpolator_script(config: Configuration, stellar_parameters:
     Returns:
         str: The unique filename of the copied script.
     """
-    unique_filename = f"interpolate_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.script"
-    path_to_script_copy = f"{config.path_output_directory}/temp/{unique_filename}"
+    unique_filename = compose_filename(stellar_parameters)
+    path_to_script_copy = (
+        f"{config.path_output_directory}/temp/interpolate_{unique_filename}.script"
+    )
 
     copyfile(
         f"{config.path_output_directory}/temp/interpolate.script", path_to_script_copy
@@ -475,7 +512,6 @@ def _load_parameters_to_interpolator_script(
         "ZLOW": bracketing_models[0]["z_str"],
         "ZUP": bracketing_models[7]["z_str"],
     }
-
     # Replace the placeholders with the values
     for update, value in updates.items():
         script_content = script_content.replace(f"{{{{PY_{update}}}}}", str(value))
@@ -556,8 +592,6 @@ def generate_interpolated_model_atmosphere(
     )
     # Run interpolation script
     _run_interpolation_script(interpolator_script_path, config)
-
-    # TODO: Remove the script file after running it
 
     # Return path to the interpolated model atmosphere # TODO: This should be set in some kind of spectrum object instead
     return f"{config.path_output_directory}/temp/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.interpol"

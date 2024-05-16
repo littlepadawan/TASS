@@ -5,12 +5,14 @@ import numpy as np
 from rtree import index
 from source.configuration_setup import Configuration
 
-REQUIRED_PARAMETERS = ["teff", "logg", "z"]  # TODO: Add abundances
+REQUIRED_PARAMETERS = ["teff", "logg", "z", "mg", "ca"]
 MIN_PARAMETER_DELTA = {
     "teff": 5,
     "logg": 0.05,
     "z": 0.001,
-}  # TODO: Add abundances
+    "mg": 0.001,
+    "ca": 0.001,
+}
 MAX_PARAMETER_DISTANCE = {
     "teff": 100,
     "logg": 0.5,
@@ -70,7 +72,7 @@ def generate_random_parameters_no_distance_check(config: Configuration):
     """
     Generate random stellar parameters
     """
-    # TODO: How to handle step requirements? Tree?
+    # TODO: How to handle min step size?
     # TODO: Consider fixed size allocation (1000 ok, 10 000 maybe not)
     all_stellar_parameters = set()
 
@@ -78,10 +80,13 @@ def generate_random_parameters_no_distance_check(config: Configuration):
         teff = random.randint(config.teff_min, config.teff_max)
         logg = random.uniform(config.logg_min, config.logg_max)
         z = random.uniform(config.z_max, config.z_max)
-        # TODO: Add abundances
+        mg = random.uniform(config.mg_min, config.mg_max)
+        ca = random.uniform(config.ca_min, config.ca_max)
 
         logg = round(logg, 2)
         z = round(z, 3)
+        mg = round(mg, 3)  # TODO: Correct number of decimals?
+        ca = round(ca, 3)
 
         all_stellar_parameters.add(
             (teff, logg, z)
@@ -97,26 +102,45 @@ def _within_min_delta(new_parameter, existing, min_delta):
     return abs(new_parameter - existing) < min_delta
 
 
-def _validate_new_set(teff, logg, z, parameters):
+def _validate_new_set(teff, logg, z, mg, ca, parameters):
+    # Get all parameter sets who's teff value are within the minimum distance from teff
     teff_collisions = [
         i
         for i, existing_teff in enumerate(parameters["teff"])
         if _within_min_delta(teff, existing_teff, MIN_PARAMETER_DELTA["teff"])
     ]
 
-    for index in teff_collisions:
+    # In the subset of parameter sets that have "the same" teff value as the candidate set,
+    # check if any of them have logg values within the minimum distance from logg
+    teff_logg_collisions = [
+        i
+        for i in teff_collisions
+        if _within_min_delta(logg, parameters["logg"][i], MIN_PARAMETER_DELTA["logg"])
+    ]
 
-        logg_collision = (
-            abs(parameters["logg"][index] - logg) < MIN_PARAMETER_DELTA["logg"]
-        )
-        # print(f"Checking index {index}: Logg Collision: {logg_collision}")
-        if logg_collision:
-            z_collision = abs(parameters["z"][index] - z) < MIN_PARAMETER_DELTA["z"]
-            # print(
-            #     f"Checking index {index}: Logg Collision: {logg_collision}, z Collision: {z_collision})"
-            # )
-            if z_collision:
-                return False
+    # In the subset of parameter sets that have "the same" teff and logg values as the candidate set,
+    # check if any of them have z values within the minimum distance from z
+    teff_logg_z_collisions = [
+        i
+        for i in teff_logg_collisions
+        if _within_min_delta(z, parameters["z"][i], MIN_PARAMETER_DELTA["z"])
+    ]
+
+    # In the subset of parameter sets that have "the same" teff, logg and z values as the candidate set,
+    # check if any of them have mg values within the minimum distance from mg
+    teff_logg_z_mg_collisions = [
+        i
+        for i in teff_logg_z_collisions
+        if _within_min_delta(mg, parameters["mg"][i], MIN_PARAMETER_DELTA["mg"])
+    ]
+
+    # In the subset of parameter sets that have "the same" teff, logg, z and mg values as the candidate set,
+    # check if any of them have ca values within the minimum distance from ca
+    for i in teff_logg_z_mg_collisions:
+        if _within_min_delta(ca, parameters["ca"][i], MIN_PARAMETER_DELTA["ca"]):
+            # There was a collision in all parameters, meaning there exists a set with "the same" parameters
+            return False
+
     # No full set collision found, or no collision at all
     return True
 
@@ -134,9 +158,11 @@ def generate_random_parameters(config: Configuration):
     teff_range = (config.teff_min, config.teff_max)
     logg_range = (config.logg_min, config.logg_max)
     z_range = (config.z_min, config.z_max)
+    mg_range = (config.mg_min, config.mg_max)
+    ca_range = (config.ca_min, config.ca_max)
 
     # Storage for parameters and links between them (index)
-    parameters = {"teff": [], "logg": [], "z": []}
+    parameters = {"teff": [], "logg": [], "z": [], "ca": [], "mg": []}
 
     # Storage for generated sets
     completed_sets = []
@@ -145,12 +171,18 @@ def generate_random_parameters(config: Configuration):
         teff = random.randint(*teff_range)
         logg = round(random.uniform(*logg_range), 2)
         z = round(random.uniform(*z_range), 3)
+        mg = round(random.uniform(*mg_range), 3)
+        ca = round(random.uniform(*ca_range), 3)
 
-        if _validate_new_set(teff, logg, z, parameters):
+        if _validate_new_set(teff, logg, z, mg, ca, parameters):
             parameters["teff"].append(teff)
             parameters["logg"].append(logg)
             parameters["z"].append(z)
-            completed_sets.append({"teff": teff, "logg": logg, "z": z})
+            parameters["mg"].append(mg)
+            parameters["ca"].append(ca)
+            completed_sets.append(
+                {"teff": teff, "logg": logg, "z": z, "mg": mg, "ca": ca}
+            )
 
     return completed_sets
 
@@ -165,6 +197,7 @@ def generate_evenly_spaced_parameters(config: Configuration):
     Returns:
         list: List of tuples containing the generated stellar parameters
     """
+    # TODO: Change this function to just loop given sets
     dimensions = 3  # TODO: Remove hard coding
     intervals = round(config.num_spectra ** (1 / dimensions))
 
