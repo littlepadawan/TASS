@@ -112,25 +112,36 @@ def generate_abundance_str(stellar_parameters: dict):
     """
     Generate formatted abundance string used in the configuration.
 
+    The function converts the relative values of the abundances of
+    Mg and Ca to absolute values, and formats it to a string to use
+    in the babsma and bsyn scripts under the line "INDIVIDUAL ABUNDANCES".
+    The function assumes that the metallicity (Fe/H) is stored in the dictionary
+    stellar_parameters as value to the key "z".
+
     Args:
-        stellar_parameters (dict): The stellar parameters
+        stellar_parameters (dict): The stellar parameters containing the abundances of Mg and Ca
     Returns:
-        tuple: The number of elements and the abundance string
+        tuple: (number of elements, abundance string)
     """
     abundance_str = ""
-    element_numbers = {
-        "Mg": 12,
-        "Ca": 20,
+    # Set containing element numbers and solar abundances for Mg and CA
+    # Reference: photospheric abundances from Magg+ 2022A&A...661A.140M
+    elements = {
+        "Mg": {"element_number": 12, "solar_abundance": 7.55},
+        "Ca": {"element_number": 20, "solar_abundance": 6.37},
     }
 
-    # TODO: Values need convesion from relative to absolute (given by Ulrike)
-    # TODO: Fråga Ulrike - ska man ta det konverterade värdet + alpha?
-    # TODO: Error handling - what if element is not in stellar_parameters?
     num_abundances = 0
-    for element, element_number in element_numbers.items():
-        abundance = stellar_parameters.get(element)
-        if abundance is not None:
-            abundance_str += f"{element_number}  {abundance:.2f}\n"
+    metallicity = stellar_parameters["z"]
+    for element, data in elements.items():
+        relative_abundance = stellar_parameters.get(element)
+        if relative_abundance is not None:
+            element_number = data["element_number"]
+            solar_abundance = data["solar_abundance"]
+
+            # Convert relative abundance to absolute abundance
+            absolute_abundance = solar_abundance + metallicity + relative_abundance
+            abundance_str += f"{element_number}  {absolute_abundance:.2f}\n"
             num_abundances += 1
 
     return num_abundances, abundance_str
