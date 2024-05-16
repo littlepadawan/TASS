@@ -54,7 +54,7 @@ def main():
 
     # Remove temporary files
     # Toggle this if you want to access scipts and intermediate files used in the process
-    remove_temp_files(config)
+    # remove_temp_files(config)
 
 
 if __name__ == "__main__":

@@ -94,7 +94,6 @@ def generate_one_spectrum(
     run_babsma(ts_config, config)
     create_bsyn(config, ts_config, stellar_parameters)
     run_bsyn(ts_config, config)
-    # TODO: Remove babsma and bsyn
 
 
 def generate_all_spectra(
