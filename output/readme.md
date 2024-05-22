@@ -1,1 +1,1 @@
-The generated output will be placed here, if not otherwise specified in the configuration file.
+If not otherwise specified in the configuration file, the generated output will be placed in this directory.
