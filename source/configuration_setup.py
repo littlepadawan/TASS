@@ -1,4 +1,4 @@
-import os
+import os  # TODO: Is entire module needed?
 import sys
 from configparser import ConfigParser
 
@@ -6,31 +6,26 @@ from configparser import ConfigParser
 # TODO: Add validation functions for turbospectrum settings
 class Configuration:
     """
-    Represents the configuration settings for the Turbospectrum wrapper.
-
-    Attributes:
-        config_file (str): The absolute path to the configuration file.
-        config_parser (ConfigParser): The configuration parser object.
-        compiler (str): The TurboSpectrum compiler.
-        path_turbospectrum (str): The absolute path to the TurboSpectrum directory.
-        path_turbospectrum_compiled (str): The absolute path to the compiled TurboSpectrum executable.
-        path_linelists (str): The absolute path to the linelists directory.
-        path_model_atmospheres (str): The absolute path to the model atmospheres directory.
-        path_input_parameters (str): The absolute path to the input parameters file.
-        path_output_directory (str): The absolute path to the output directory.
-        wavelength_min (float): The minimum wavelength in Å.
-        wavelength_max (float): The maximum wavelength in Å.
-        wavelength_step (float): The wavelength step.
+    Class to handle the configuration of the Turbospectrum wrapper.
+    # TODO: Improve documenation
     """
 
     def __init__(self, config_path="input/configuration.cfg"):
+        """
+        Initialize the configuration object.
+
+        Args:
+            config_path (str, optional): The path to the configuration file to use. Defaults to "input/configuration.cfg".
+
+        Raises:
+            FileNotFoundError: If the configuration file does not exist.
+        """
         self.config_file = os.path.abspath(config_path)
         if not os.path.exists(self.config_file):
             raise FileNotFoundError(
                 f"The config file {self.config_file} does not exist."
             )
 
-        # TODO: Better to initiate to None or to default values?
         self.compiler = None
         self.path_turbospectrum = None
         self.path_turbospectrum_compiled = None
@@ -69,14 +64,20 @@ class Configuration:
             sys.exit(1)
 
     def _load_configuration_file(self):
+        """
+        Load the configuration file and set the configuration parameters.
+
+        Parameters in the configuration file must be explicity set in this function,
+        meaning that additions to the configuration file will not be recognised by
+        the program unless they are read by this function.
+
+        Side effects: Sets the configuration parameters based on the configuration file.
+        """
         # Read configuration file
         config_parser = ConfigParser()
         config_parser.read(self.config_file)
 
         # Set configuration parameters found in the configuration file
-        # Parameters in the configuration file must be explicity set here,
-        # so if you add something to the configuration file, you must also add it here,
-        # otherwise it will not be recognized by the program.
         self.compiler = config_parser.get("Turbospectrum_compiler", "compiler").lower()
 
         self.path_turbospectrum = os.path.abspath(
@@ -107,8 +108,8 @@ class Configuration:
             "Stellar_parameters", "read_from_file"
         )
 
-        # Only load these parameters if we are not reading parameters from a file,
-        # since they're not needed if we are reading them from a file
+        # Only load these parameters if stellar parameters should be generated,
+        # since they're not needed the stellar parameters are read from a file
         if self.read_stellar_parameters_from_file == False:
             self.random_parameters = config_parser.getboolean(
                 "Stellar_parameters", "random_parameters"
@@ -134,6 +135,9 @@ class Configuration:
     def _validate_turbospectrum_path(self):
         """
         Check that the path to the Turbospectrum directory exists.
+
+        Raises:
+            FileNotFoundError: If the path to the Turbospectrum directory does not exist.
         """
         if not os.path.exists(self.path_turbospectrum):
             raise FileNotFoundError(
@@ -143,6 +147,9 @@ class Configuration:
     def _validate_interpolator_path(self):
         """
         Check that the path to the interpolator directory exists.
+
+        Raises:
+            FileNotFoundError: If the path to the interpolator directory does not exist.
         """
         if not os.path.exists(self.path_interpolator):
             raise FileNotFoundError(
@@ -152,6 +159,12 @@ class Configuration:
     def _validate_compiler(self):
         """
         Check that the compiler is supported and set the path to the compiled Turbospectrum executable.
+
+        Suported compilers are "intel" and "gfortran".
+
+        Side effects: Sets the path to the compiled Turbospectrum executable.
+        Raises:
+            ValueError: If the compiler is not supported.
         """
         if self.compiler == "intel":
             self.path_turbospectrum_compiled = os.path.join(
@@ -167,6 +180,9 @@ class Configuration:
     def _validate_paths_to_directories(self):
         """
         Check that all paths to directories exist.
+
+        Raises:
+            FileNotFoundError: If any of the paths to directories do not exist.
         """
         paths = [
             self.path_linelists,
@@ -182,6 +198,9 @@ class Configuration:
     def _validate_path_to_input_parameters(self):
         """
         Check that the path to the input parameters file exists.
+
+        Raises:
+            FileNotFoundError: If the path to the input parameters file does not exist.
         """
         if not os.path.exists(self.path_input_parameters):
             raise FileNotFoundError(
@@ -191,6 +210,9 @@ class Configuration:
     def _validate_wavelength_range(self):
         """
         Check that the wavelength range is valid.
+
+        Raises:
+            ValueError: If any wavelength parameter is negative or if the minimum wavelength is greater than the maximum wavelength.
         """
         if self.wavelength_min >= self.wavelength_max:
             raise ValueError(
@@ -206,7 +228,7 @@ class Configuration:
 
     def _validate_stellar_parameters(self):
         """
-        Check that the stellar parameters are valid.
+        A wrapper function that checks that the stellar parameters are valid.
         """
         self._validate_number_of_spectra()
         self._validate_effective_temperature()
@@ -215,9 +237,11 @@ class Configuration:
         # TODO: Add check for abundances
 
     def _validate_number_of_spectra(self):
-        # TODO: Add check for upper bound
         """
-        Check that the number of spectra is valid.
+        Check that the number of spectra to generate is at least 1.
+
+        Raises:
+            ValueError: If the number of spectra is less than or equal to 0.
         """
         if self.num_spectra <= 0:
             raise ValueError(
@@ -226,7 +250,10 @@ class Configuration:
 
     def _validate_effective_temperature(self):
         """
-        Check that the effective temperature is valid.
+        Check that the effective temperature range is valid.
+
+        Raises:
+            ValueError: If any effective temperature parameter is negative or if the minimum effective temperature is greater than the maximum effective temperature.
         """
         if self.teff_min < 0:
             raise ValueError(
@@ -245,7 +272,10 @@ class Configuration:
 
     def _validate_surface_gravity(self):
         """
-        Check that the surface gravity is valid.
+        Check that the surface gravity range is valid.
+
+        Raises:
+            ValueError: If any surface gravity parameter is negative or if the minimum surface gravity is greater than the maximum surface gravity.
         """
         if self.logg_min < 0:
             raise ValueError(
@@ -265,6 +295,9 @@ class Configuration:
     def _validate_metallicity(self):
         """
         Check that the metallicity is valid.
+
+        Raises:
+            ValueError: If the minimum metallicity is greater than the maximum metallicity.
         """
         if self.z_min >= self.z_max:
             raise ValueError(
@@ -273,7 +306,7 @@ class Configuration:
 
     def _validate_configuration(self):
         """
-        Check that all required parameters are set and within range
+        A wrapper function that checks if all required parameters are set and within range.
         """
         self._validate_turbospectrum_path()
         self._validate_compiler()

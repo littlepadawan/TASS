@@ -53,7 +53,8 @@ def main():
     generate_all_spectra(config, model_atmospheres, stellar_parameters)
 
     # Remove temporary files
-    # Toggle this if you want to access scipts and intermediate files used in the process
+    # Toggle the function call below to access scripts
+    # and intermediate files used during the process
     # remove_temp_files(config)
 
 
