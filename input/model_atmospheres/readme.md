@@ -1,1 +1,1 @@
-If not otherwise specified in the configuration file, the model atmospheres should be placed in this directory.
+Place the model atmospheres in this directory, or add the path to where they are located on your machine in the configuration file.
