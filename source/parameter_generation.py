@@ -2,7 +2,6 @@ import random
 import sys
 
 import numpy as np
-from rtree import index
 from source.configuration_setup import Configuration
 
 REQUIRED_PARAMETERS = ["teff", "logg", "z", "mg", "ca"]

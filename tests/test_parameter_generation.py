@@ -5,8 +5,6 @@ from unittest.mock import MagicMock, patch
 
 import numpy as np
 import source.parameter_generation as parameter_generation
-from rtree import index
-from rtree.index import Property
 from source.configuration_setup import Configuration
 
 
