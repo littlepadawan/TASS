@@ -48,7 +48,9 @@ class TestOutputManagement(unittest.TestCase):
         output_management.copy_config_file(config)
 
         # Verify that os.copyfile was called with the correct arguments
-        mock_copyfile.assert_called_once_with("/path/to/config", "/path/to/output")
+        mock_copyfile.assert_called_once_with(
+            "/path/to/config", "/path/to/output/config.cfg"
+        )
 
     @patch("source.output_management.open", new_callable=mock_open)
     def test_generate_parameter_file(self, mock_open):

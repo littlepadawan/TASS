@@ -245,14 +245,14 @@ class TestInterpolation(unittest.TestCase):
     @patch("builtins.open", new_callable=mock_open)
     def test_create_interpolator_script(self, mock_file):
         """Test that the function creates a template interpolator script."""
-        self.config.path_interpolator = "/fake/path"
+        self.config.path_output_directory = "/fake/path/output"
+        self.config.path_interpolator = "/fake/path/interpolator"
 
         # Expected content of the interpolator script
         expected_content = r"""#!/bin/csh -f
 set model_path = {{PY_MODEL_PATH}}
 
 set marcs_binary = '.false.'
-#set marcs_binary = '.true.'
 
 #enter here the values requested for the interpolated model 
 foreach Tref   ( {{PY_TREF}} )
@@ -312,9 +312,14 @@ end
 end
 """
         interpolation.create_template_interpolator_script(self.config)
-        mock_file.assert_called_once_with("/fake/path/interpolate.script", "w")
-        mock_file_handle = mock_file()
-        mock_file_handle.write.assert_called_once_with(expected_content)
+
+        # Assert that the file was opened with the correct path and mode
+        mock_file.assert_called_once_with(
+            "/fake/path/output/temp/interpolate.script", "w"
+        )
+
+        # Assert that the file was written with the correct content
+        mock_file().write.assert_called_once_with(expected_content)
 
     @patch("source.turbospectrum_integration.interpolation.copyfile")
     def test_copy_interpolator_script(self, mock_copyfile):
@@ -368,7 +373,7 @@ end
             "5700 "
             "4.5 "
             "-0.2 "
-            "/path/to/output "
+            "/path/to/output/temp "
             "5500 "
             "6000 "
             "4.0 "
@@ -403,10 +408,8 @@ end
         # Check if script execution commands were called correctly
         mock_run.assert_has_calls(
             [
-                unittest.mock.call(["chmod", "+x", "test_script.sh"], check=True),
-                unittest.mock.call(
-                    ["./test_script.sh"], check=True, text=True, capture_output=True
-                ),
+                call(["chmod", "+x", "test_script.sh"], check=True),
+                call(["./test_script.sh"], check=True, text=True, capture_output=True),
             ]
         )
 
@@ -460,7 +463,7 @@ end
         config.path_output_directory = "/path/to/output"
         config.path_interpolator = "/path/to/interpolator"
 
-        expected_output_path = "/path/to/output/p5700_g4.5_z-0.2.interpol"
+        expected_output_path = "/path/to/output/temp/p5700_g4.5_z-0.2.interpol"
 
         result = interpolation.generate_interpolated_model_atmosphere(
             stellar_parameters, config

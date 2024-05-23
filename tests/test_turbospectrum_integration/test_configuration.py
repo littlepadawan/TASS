@@ -105,10 +105,10 @@ class TestConfiguration(unittest.TestCase):
             "teff": 5210,
             "logg": 4.3,
             "z": 0.05,
-            "Mg": 0.2,
-            "Ca": 0.3,
+            "mg": 0.2,
+            "ca": 0.3,
         }
-        expected_output = (2, "12  0.20\n20  0.30\n")
+        expected_output = (2, "'INDIVIDUAL ABUNDANCES:' 2\n12 7.80\n20 6.72")
 
         result = turbospectrum_config.generate_abundance_str(stellar_parameters)
         self.assertEqual(result, expected_output)
@@ -232,7 +232,7 @@ class TestConfiguration(unittest.TestCase):
 
         # Expected result
         expected_line_lists_str = (
-            "'NFILES   :' '2'\n"
+            "NFILES: 2\n"
             "/path/to/linelists/file1.txt\n"
             "/path/to/linelists/file2.txt\n"
         )
