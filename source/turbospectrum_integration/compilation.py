@@ -37,13 +37,9 @@ def compile_interpolator(config: Configuration):
     """
     Compile the interpolator.
 
-    The interpolator used is the one provided by Turbospectrum.
     The command used to compile the interpolator is specified
     in the Turbospectrum documentation (readme file of the interpolator):
     `<compilator> -o interpol_modeles interpol_modeles.f`
-
-    Where compilator can be either gfortrand or ifort.
-
     Args:
         config (Configuration): The Configuration object containing paths to the interpolator directory.
 

@@ -9,24 +9,15 @@ from source.turbospectrum_integration.utils import (
     compose_filename,
 )
 
-# TODO: Refactor functions to find higher, lower, and closest models to be more DRY
-# TODO: Refactor the function to get bracketing models to be more DRY
-# TODO: Generate the model DataFrame once for the entire run instead of once per spectrum (like the config object)
-# TODO: Extract the script string to a file
-# TODO: Create template script should be called once for the entire run, maybe this file can just exist in wrapper directory, and the program copies the unique script to the interpolator directory?
-# ? Create some spectrum object that hold stellar parameters, script path, etc. and pass that to the functions instead of just the stellar parameters?
-# TODO: Create a function that is used once per run to set up interpolation things
-# TODO: If several closest files are found - containing the same parameters - the interpolation and spectrum generation for this set of stellar parameter should stop
-
 
 def needs_interpolation(stellar_parameters: dict, model_atmospheres: pd.DataFrame):
     """
     Check if the given stellar parameters need interpolation.
 
-    Expected stellar parameters are teff, logg, and z.
-    Args:
-        stellar_parameters (dict): The stellar parameters to check for interpolation.
-        model_atmospheres (DataFrame): A DataFrame of dictionaries containing the parameters of each model atmosphere.
+    Interpolation is needed if there is no matching model atmosphere.
+        stellar_parameters (dict): The stellar parameters to check for interpolation, expected to contain the keys
+    "teff", "logg", and "z"
+        model_atmospheres (DataFrame): A DataFrame containing the parameters of each model atmosphere.
 
     Returns:
         bool: True if the stellar parameters need interpolation, False otherwise.
@@ -38,7 +29,10 @@ def needs_interpolation(stellar_parameters: dict, model_atmospheres: pd.DataFram
         & (model_atmospheres["logg"] == stellar_parameters["logg"])
         & (model_atmospheres["z"] == stellar_parameters["z"])
     ]
-    # TODO: Maybe change to if no matches -> needs interpolation so (true, None), if more than one match (false, None), if one match (false, match)
+    # TODO: Maybe change the function to have three different return values:
+    # no matches and needs interpolation -> (true, None)
+    # more than one match -> (false, None)
+    # one match -> (false, match)
     if matches.empty:
         return True, None
     else:
@@ -53,8 +47,8 @@ def _get_models_with_exact_value(
 
     Args:
         target_parameter (str): The parameter to filter the models by.
-        target_value: The target value to filter the models by.
-        model_atmospheres (pd.DataFrame): A DataFrame of dictionaries containing the parameters of each model atmosphere.
+        target_value: The target value to filter the models by, can be an integer or float
+        model_atmospheres (pd.DataFrame): A DataFrame containing the parameters of each model atmosphere.
 
     Raises:
         ValueError: If no models with the target parameter value equal to the target value are found.
@@ -79,13 +73,9 @@ def _get_models_with_lower_parameter_value(
     Get models with a parameter value lower than the target value.
 
     Args:
-        target_parameter (str): The parameter to filter the models by.
-        target_value: The target value to filter the models by.
-        model_atmospheres (pd.DataFrame): A DataFrame of dictionaries
-        containing the parameters of each model atmosphere.
-
-    target_parameter is expected to be 'teff', 'logg', or 'z'.
-    target_value is expected to be an integer or float.
+        target_parameter (str): The parameter to filter the models by. Expected to be 'teff', 'logg', or 'z'.
+        target_value: The target value to filter the models by. Can be an integer or float.
+        model_atmospheres (pd.DataFrame): A DataFrame containing the parameters of each model atmosphere.
     Raises:
         ValueError: If no models with the target parameter value lower
         than the target value are found.
@@ -111,10 +101,9 @@ def _get_models_with_higher_parameter_value(
     Get models with a parameter value higher than the target value.
 
     Args:
-        target_parameter (str): The parameter to filter the models by.
-        target_value: The target value to filter the models by.
-        model_atmospheres (pd.DataFrame): A DataFrame of dictionaries containing the parameters of each model atmosphere.
-
+        target_parameter (str): The parameter to filter the models by. Expected to be 'teff', 'logg', or 'z'.
+        target_value: The target value to filter the models by. Can be an integer or float.
+        model_atmospheres (pd.DataFrame): A DataFrame containing the parameters of each model atmosphere.
     Raises:
         ValueError: If no models with the target parameter value higher than the target value are found.
 
@@ -141,10 +130,9 @@ def _get_closest_models(
     The function calculates the minimum difference between the target value and the value of the models
     and returns the models where the difference matches the minimum difference.
     Args:
-        target_parameter (str): The parameter to filter the models by.
-        target_value: The target value to filter the models by.
-        model_grid (pd.DataFrame): A DataFrame of dictionaries containing the parameters of each model atmosphere.
-
+        target_parameter (str): The parameter to filter the models by. Expected to be 'teff', 'logg', or 'z'.
+        target_value: The target value to filter the models by. Can be an integer or float.
+        model_atmospheres (pd.DataFrame): A DataFrame containing the parameters of each model atmosphere.
     Returns:
         pd.DataFrame: A DataFrame with the models that have the closest parameter value to the target value.
     """
@@ -182,7 +170,7 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
 
     Args:
         stellar_parameters (dict): The stellar parameters to find bracketing models for.
-        model_atmospheres (pd.DataFrame): A DataFrame of dictionaries containing the parameters of each model atmosphere.
+        model_atmospheres (pd.DataFrame): A DataFrame containing the parameters of each model atmosphere.
 
     Returns:
         list: A list of DataFrames entries containing the bracketing models.
@@ -329,7 +317,9 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
         "z", stellar_parameters["z"], teffup_loggup_zup_models
     )
 
-    # Gets the first model in every subset # TODO: Om det inte finns en närmaste modell, avbryt och ge felmeddelande
+    # Get the first model in every subset
+    # TODO: If there are more than one model in any of the subsets, the interpolation should stop
+    # TODO: If there are no models in any of the subsets, the interpolation should stop
     model1 = closest_tefflow_logglow_zlow_models.iloc[0]
     model2 = closest_tefflow_logglow_zup_models.iloc[0]
     model3 = closest_tefflow_loggup_zlow_models.iloc[0]
@@ -371,8 +361,9 @@ def create_template_interpolator_script(config: Configuration):
     - The values are set by placeholders
     - Some comments are removed
 
+    This function only needs to be called once per run.
     Args:
-        config (Configuration): The Configuration object containing paths to the interpolator directory.
+        config (Configuration): The Configuration object containing the path to the directory with the interpolator.
 
     Side effects:
         Writes the template script to the interpolator directory.
@@ -387,7 +378,6 @@ def create_template_interpolator_script(config: Configuration):
 set model_path = {{PY_MODEL_PATH}}
 
 set marcs_binary = '.false.'
-#set marcs_binary = '.true.'
 
 #enter here the values requested for the interpolated model 
 foreach Tref   ( {{PY_TREF}} )
@@ -452,10 +442,10 @@ end
 
 def copy_template_interpolator_script(config: Configuration, stellar_parameters: dict):
     """
-    Copy the template script used to run the interpolator to a unique file.
+    Copy the template interpolator script to a unique script for this set of stellar parameters.
 
-    This function is used to create a unique script for each spectrum to be interpolated.
-    This is done to enable running the interpolator in parallel for multiple spectra.
+    This function is used to create a unique script for each set of stellar parameters to interpolate an atmosphere for.
+    This is done to enable (eventually) running the interpolator in parallel for multiple spectra.
 
     Args:
         config (Configuration): The Configuration object containing paths to the interpolator directory.
@@ -528,7 +518,7 @@ def _run_interpolation_script(script_path: str, config: Configuration):
         config (Configuration): The Configuration object containing paths to the interpolator directory.
 
     Raises:
-        e: If the interpolation script fails to run.
+        CalledProcessError: If the interpolation script fails to run.
     """
     cwd = getcwd()
 
@@ -566,6 +556,8 @@ def generate_interpolated_model_atmosphere(
     """
     Generate an interpolated model atmosphere.
 
+    This is a wrapper function that calls the functions needed to interpolate a model atmosphere for a set of stellar parameters.
+
     Args:
         stellar_parameters (dict): The stellar parameters to interpolate.
         config (Configuration): The Configuration object containing paths to the interpolator directory.
@@ -595,3 +587,15 @@ def generate_interpolated_model_atmosphere(
 
     # Return path to the interpolated model atmosphere # TODO: This should be set in some kind of spectrum object instead
     return f"{config.path_output_directory}/temp/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.interpol"
+
+
+# The following TODOs are thoughts on improvements and refactoring that could be done to the code
+# (will be removed before the final "submission")
+# TODO: Refactor functions to find higher, lower, and closest models to be more DRY
+# TODO: Refactor the function to get bracketing models to be more DRY
+# TODO: Generate the model DataFrame once for the entire run instead of once per spectrum (like the config object)
+# TODO: Extract the script string to a file
+# TODO: Create template script should be called once for the entire run, maybe this file can just exist in wrapper directory, and the program copies the unique script to the interpolator directory?
+# ? Create some spectrum object that hold stellar parameters, script path, etc. and pass that to the functions instead of just the stellar parameters?
+# TODO: Create a function that is used once per run to set up interpolation things
+# TODO: If several closest files are found - containing the same parameters - the interpolation and spectrum generation for this set of stellar parameter should stop

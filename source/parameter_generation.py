@@ -13,18 +13,24 @@ MIN_PARAMETER_DELTA = {
     "mg": 0.001,
     "ca": 0.001,
 }
+
+# TODO: This should be removed once loopsq
 MAX_PARAMETER_DISTANCE = {
     "teff": 100,
     "logg": 0.5,
     "z": 0.01,
-}  # TODO: Add abundances
-# TODO: Min-max in configuration file?
-# TODO: Max does not apply to random, and not to evenly either i think...
+}
 
 
 def _check_required_parameters(parameters: list):
     """
-    Check that all required parameters are present in the input parameters
+    Check that all required parameters specified in REQUIRED_PARAMETERS are present in the parameters.
+
+    Args:
+        parameters (list): List of parameters to check
+
+    Raises:
+        ValueError: If any of the required parameters are missing
     """
     missing_parameters = [
         parameter for parameter in REQUIRED_PARAMETERS if parameter not in parameters
@@ -37,7 +43,12 @@ def _check_required_parameters(parameters: list):
 
 def read_parameters_from_file(config: Configuration):
     """
-    Read input parameters from input file
+    Read stellar parameters from input file
+
+    Args:
+        config (Configuration): Configuration object
+    Returns:
+        list: List of dictionaries containing the stellar parameters
     """
     with open(config.path_input_parameters, "r", newline="") as file:
         # Read the header to get column names
@@ -72,8 +83,7 @@ def generate_random_parameters_no_distance_check(config: Configuration):
     """
     Generate random stellar parameters
     """
-    # TODO: How to handle min step size?
-    # TODO: Consider fixed size allocation (1000 ok, 10 000 maybe not)
+    # TODO: Remove this function, it is not used
     all_stellar_parameters = set()
 
     while len(all_stellar_parameters) < config.num_spectra:
@@ -85,7 +95,7 @@ def generate_random_parameters_no_distance_check(config: Configuration):
 
         logg = round(logg, 2)
         z = round(z, 3)
-        mg = round(mg, 3)  # TODO: Correct number of decimals?
+        mg = round(mg, 3)
         ca = round(ca, 3)
 
         all_stellar_parameters.add(
@@ -97,12 +107,31 @@ def generate_random_parameters_no_distance_check(config: Configuration):
 
 def _within_min_delta(new_parameter, existing, min_delta):
     """
-    Check if the candidate values are within the minimum delta of the parameter value
+    Check if the value of new_parameter is within the minimum delta of existing.
+
+    Returns:
+        bool: True if the value of new_parameter is within the minimum delta of existing, False otherwise
     """
     return abs(new_parameter - existing) < min_delta
 
 
-def _validate_new_set(teff, logg, z, mg, ca, parameters):
+def _validate_new_set(
+    teff: int, logg: float, z: float, mg: float, ca: float, parameters: dict
+):
+    """
+    Check if a new set of stellar parameters is valid, i.e. if it is outside the minimum distance of any existing set.
+
+    Args:
+        teff (int): Effective temperature
+        logg (float): Surface gravity
+        z (float): Metallicity
+        mg (float): Abundance of magnesium
+        ca (float): Abundance of calcium
+        parameters (dict): A dictionary containing lists of existing parameters
+
+    Returns:
+        bool: True if the new set is valid, False otherwise
+    """
     # Get all parameter sets who's teff value are within the minimum distance from teff
     teff_collisions = [
         i
@@ -198,7 +227,8 @@ def generate_evenly_spaced_parameters(config: Configuration):
         list: List of tuples containing the generated stellar parameters
     """
     # TODO: Change this function to just loop given sets
-    dimensions = 3  # TODO: Remove hard coding
+    # TODO: Are they stored in tuples? If so, how does it work with the rest of the code?
+    dimensions = 3
     intervals = round(config.num_spectra ** (1 / dimensions))
 
     # Adjust intervals to get the exact number of spectra
@@ -225,19 +255,20 @@ def generate_evenly_spaced_parameters(config: Configuration):
 
 def generate_parameters(config: Configuration):
     """
-    Generate stellar parameters based on the configuration
+    Generate stellar parameters based on the settings in configuration.
 
+    Based on what the user specified in the configuation file, this function will either read stellar parameters from a file,
+    generate random stellar parameters or generate evenly spaced stellar parameters.
     Args:
         config (Configuration): Configuration object
 
     Returns:
         list: List of tuples containing the generated stellar parameters
     """
+    # TODO: Write to a file?
     if config.read_stellar_parameters_from_file:
         return read_parameters_from_file(config)
     elif config.random_parameters:
         return generate_random_parameters(config)
     else:
         return generate_evenly_spaced_parameters(config)
-
-    # TODO: Write to a file?

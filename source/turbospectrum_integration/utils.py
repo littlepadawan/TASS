@@ -22,8 +22,8 @@ def parse_model_atmosphere_filename(filename: str):
     Returns:
         dict: A dictionary containing the parameters of the model atmosphere.
     """
-    # TODO: T värde ska anges i input filen. Microturbolunce, XIT, v_micro (km/s) (kolla mejl)
-    # TODO: Lägg till alpha värde i pattern. OBS a och o i pattern ska vara samma värde
+    # TODO: t value should be specified in config (microturbolunce, XIT, v_micro (km/s), check this in email), and read from the pattern
+    # TODO: Add alpha (a) to read from the patterm  (OBS a and o should have the same value, this can be assumed to be true though)
     pattern = (
         r"p(\d+)_g([\+\-]\d+\.\d+)_m(\d+\.\d+)_t(\d+)_st_z([\+\-]\d+\.\d+)_.*\.mod"
     )
@@ -89,6 +89,16 @@ def stellar_parameter_to_str(stellar_parameter):
 
 
 def compose_filename(stellar_parameters: dict):
+    """
+    Generate a filename based on the stellar parameters.
+
+    Args:
+        stellar_parameters (dict): The stellar parameters for which to generate the filename.
+
+    Returns:
+        str: The filename
+    """
+    # TODO: This should contain alpha and t values
     teff_str = stellar_parameters["teff"]
     logg_str = stellar_parameter_to_str(stellar_parameters["logg"])
     z_str = stellar_parameter_to_str(stellar_parameters["z"])
