@@ -1,0 +1,8 @@
+This document is under construction
+
+Make changes in the configuration:
+- To change the configurations of the program you have to modify the `input/configuration.cfg` file. 
+
+- If you change any file paths, make sure they are valid and point to the expected content
+
+- If you change any values, make sure they are reasonable. For example, the min value of a parameter cannot be smaller than the max value.
