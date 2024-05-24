@@ -4,7 +4,7 @@ This program serves as a wrapper for Turbospectrum, providing an interface that 
 - **Turbospectrum**. Ensure Turbospectrum is installed. The program was developed for version Turbospectrum 20.0. It has not been tested on older versions, and compatability with later versions is not guaranteed. Turbospectrum can be downloaded here: [https://github.com/bertrandplez/Turbospectrum_NLTE](https://github.com/bertrandplez/Turbospectrum_NLTE)
 - **Python**. The program is developed using Python 3.10
 - **Fortran compiler**. To run Turbospectrum, either GFortran or Intel Fortran Compiler is required.
-- **Python packages**. Ensure the packages listed in `requirements.txt` are installed (TBI).
+- **Python packages**. Ensure the packages listed in `requirements.txt` are installed.
 
 The program is developed for Unix systems and has not been tested on Windows systems. 
 
