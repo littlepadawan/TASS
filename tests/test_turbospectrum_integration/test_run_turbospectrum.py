@@ -145,12 +145,6 @@ class TestRunTurbospectrum(unittest.TestCase):
     @patch(
         "source.turbospectrum_integration.run_turbospectrum.TurbospectrumConfiguration"
     )
-    @patch(
-        "source.turbospectrum_integration.run_turbospectrum.generate_path_model_opac"
-    )
-    @patch(
-        "source.turbospectrum_integration.run_turbospectrum.generate_path_result_file"
-    )
     @patch("source.turbospectrum_integration.run_turbospectrum.needs_interpolation")
     @patch(
         "source.turbospectrum_integration.run_turbospectrum.generate_interpolated_model_atmosphere"
@@ -167,8 +161,6 @@ class TestRunTurbospectrum(unittest.TestCase):
         mock_create_babsma,
         mock_generate_interpolated_model_atmosphere,
         mock_needs_interpolation,
-        mock_generate_path_result_file,
-        mock_generate_path_model_opac,
         mock_TurbospectrumConfiguration,
     ):
         # Set up mock return values
@@ -190,12 +182,6 @@ class TestRunTurbospectrum(unittest.TestCase):
         # Verify that the mocks were called with the correct arguments
         mock_TurbospectrumConfiguration.assert_called_once_with(
             config, stellar_parameters
-        )
-        mock_generate_path_model_opac.assert_called_once_with(
-            mock_TurbospectrumConfiguration.return_value, config, stellar_parameters
-        )
-        mock_generate_path_result_file.assert_called_once_with(
-            mock_TurbospectrumConfiguration.return_value, config, stellar_parameters
         )
         mock_needs_interpolation.assert_called_once_with(
             stellar_parameters, model_atmospheres
@@ -219,12 +205,6 @@ class TestRunTurbospectrum(unittest.TestCase):
     @patch(
         "source.turbospectrum_integration.run_turbospectrum.TurbospectrumConfiguration"
     )
-    @patch(
-        "source.turbospectrum_integration.run_turbospectrum.generate_path_model_opac"
-    )
-    @patch(
-        "source.turbospectrum_integration.run_turbospectrum.generate_path_result_file"
-    )
     @patch("source.turbospectrum_integration.run_turbospectrum.needs_interpolation")
     @patch(
         "source.turbospectrum_integration.run_turbospectrum.generate_interpolated_model_atmosphere"
@@ -241,8 +221,6 @@ class TestRunTurbospectrum(unittest.TestCase):
         mock_create_babsma,
         mock_generate_interpolated_model_atmosphere,
         mock_needs_interpolation,
-        mock_generate_path_result_file,
-        mock_generate_path_model_opac,
         mock_TurbospectrumConfiguration,
     ):
         # Set up mock return values
@@ -261,12 +239,6 @@ class TestRunTurbospectrum(unittest.TestCase):
         # Verify that the mocks were called with the correct arguments
         mock_TurbospectrumConfiguration.assert_called_once_with(
             config, stellar_parameters
-        )
-        mock_generate_path_model_opac.assert_called_once_with(
-            mock_TurbospectrumConfiguration.return_value, config, stellar_parameters
-        )
-        mock_generate_path_result_file.assert_called_once_with(
-            mock_TurbospectrumConfiguration.return_value, config, stellar_parameters
         )
         mock_needs_interpolation.assert_called_once_with(
             stellar_parameters, model_atmospheres
@@ -289,12 +261,6 @@ class TestRunTurbospectrum(unittest.TestCase):
     @patch(
         "source.turbospectrum_integration.run_turbospectrum.TurbospectrumConfiguration"
     )
-    @patch(
-        "source.turbospectrum_integration.run_turbospectrum.generate_path_model_opac"
-    )
-    @patch(
-        "source.turbospectrum_integration.run_turbospectrum.generate_path_result_file"
-    )
     @patch("source.turbospectrum_integration.run_turbospectrum.needs_interpolation")
     @patch(
         "source.turbospectrum_integration.run_turbospectrum.generate_interpolated_model_atmosphere"
@@ -311,8 +277,6 @@ class TestRunTurbospectrum(unittest.TestCase):
         mock_create_babsma,
         mock_generate_interpolated_model_atmosphere,
         mock_needs_interpolation,
-        mock_generate_path_result_file,
-        mock_generate_path_model_opac,
         mock_TurbospectrumConfiguration,
     ):
         # Set up mock return values

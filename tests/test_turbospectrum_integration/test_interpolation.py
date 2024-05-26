@@ -328,11 +328,14 @@ end
         with the correct filename.
         """
         self.config.path_interpolator = "/fake/path"
-        stellar_parameters = {"teff": 5700, "logg": 4.5, "z": 0.1}
+        self.config.path_output_directory = "/fake/path/output"
+        stellar_parameters = {"teff": 5700, "logg": 4.5, "z": 0.1, "mg": 0.2, "ca": 0.3}
 
-        expected_filename = "interpolate_p5700_g4.5_z0.1.script"
-        expected_source = "/fake/path/interpolate.script"
-        expected_destination = f"/fake/path/{expected_filename}"
+        expected_filename = "interpolate_p5700_g+4.5_z+0.1_mg+0.2_ca+0.3.script"
+        expected_source = f"{self.config.path_output_directory}/temp/interpolate.script"
+        expected_destination = (
+            f"{self.config.path_output_directory}/temp/{expected_filename}"
+        )
 
         # Execute
         result = interpolation.copy_template_interpolator_script(
@@ -340,7 +343,7 @@ end
         )
 
         # Assert the returned filename is correct
-        self.assertEqual(result, expected_filename)
+        self.assertEqual(result, expected_destination)
 
         # Assert copyfile was called with the correct source and destination paths
         mock_copyfile.assert_called_once_with(expected_source, expected_destination)
@@ -409,7 +412,7 @@ end
         mock_run.assert_has_calls(
             [
                 call(["chmod", "+x", "test_script.sh"], check=True),
-                call(["./test_script.sh"], check=True, text=True, capture_output=True),
+                call(["test_script.sh"], check=True, text=True, capture_output=True),
             ]
         )
 

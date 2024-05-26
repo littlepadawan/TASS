@@ -16,25 +16,34 @@ class TestConfiguration(unittest.TestCase):
         Test that the TurbospectrumConfiguration class is initialized correctly
         """
         config = Configuration()
-        stellar_parameters = {"teff": 5210, "logg": 4.3, "z": 0.05}
+        stellar_parameters = {
+            "teff": 5210,
+            "logg": 4.3,
+            "z": 0.05,
+            "mg": 0.2,
+            "ca": 0.3,
+        }
         ts_config = turbospectrum_config.TurbospectrumConfiguration(
             config, stellar_parameters
         )
+        expected_file_name = "p5210_g+4.3_z+0.05_mg+0.2_ca+0.3"
         expected_alpha = 0.0
         self.assertEqual(ts_config.path_model_atmosphere, None)
-        self.assertEqual(ts_config.path_model_opac, None)
+        self.assertEqual(
+            ts_config.path_model_opac,
+            f"{config.path_output_directory}/temp/opac_{expected_file_name}",
+        )
         self.assertEqual(
             ts_config.path_babsma,
-            f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_babsma",
+            f"{config.path_output_directory}/temp/{expected_file_name}_babsma",
         )
         self.assertEqual(
             ts_config.path_bsyn,
-            f"{config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}_bsyn",
+            f"{config.path_output_directory}/temp/{expected_file_name}_bsyn",
         )
         self.assertEqual(ts_config.interpolated_model_atmosphere, True)
         self.assertEqual(ts_config.alpha, expected_alpha)
-        self.assertEqual(ts_config.num_elements, 0)
-        # self.assertEqual(ts_config.abundance_str, "") # TODO: Implement when abundances has been added
+        self.assertEqual(ts_config.num_elements, 2)
 
     def test_calculate_alpha_lowest_value(self):
         """
@@ -67,36 +76,6 @@ class TestConfiguration(unittest.TestCase):
         self.assertEqual(turbospectrum_config.calculate_alpha(0.0001), 0.0)
         self.assertEqual(turbospectrum_config.calculate_alpha(1), 0.0)
 
-    def test_generate_path_model_opac(self):
-        """
-        Test that the path to the model opac file is generated correctly
-        """
-        stellar_parameters = {"teff": 5210, "logg": 4.3, "z": 0.05}
-        ts_config = turbospectrum_config.TurbospectrumConfiguration(
-            self.config, stellar_parameters
-        )
-
-        expected_path = f"{self.config.path_output_directory}/opac_p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}"
-        turbospectrum_config.generate_path_model_opac(
-            ts_config, self.config, stellar_parameters
-        )
-        self.assertEqual(ts_config.path_model_opac, expected_path)
-
-    def test_generate_path_result_file(self):
-        """
-        Test that the path to the result file is generated correctly
-        """
-        stellar_parameters = {"teff": 5210, "logg": 4.3, "z": 0.05}
-        ts_config = turbospectrum_config.TurbospectrumConfiguration(
-            self.config, stellar_parameters
-        )
-
-        expected_path = f"{self.config.path_output_directory}/p{stellar_parameters['teff']}_g{stellar_parameters['logg']}_z{stellar_parameters['z']}.spec"
-        turbospectrum_config.generate_path_result_file(
-            ts_config, self.config, stellar_parameters
-        )
-        self.assertEqual(ts_config.path_result_file, expected_path)
-
     def test_generate_abundance_str(self):
         """
         Test that the abundance string and number of elements are generated correctly
@@ -121,8 +100,8 @@ class TestConfiguration(unittest.TestCase):
             "teff": 5210,
             "logg": 4.3,
             "z": 0.05,
-            "Mg": 0.2,
-            "Ca": 0.3,
+            "mg": 0.2,
+            "ca": 0.3,
         }
         ts_config = turbospectrum_config.TurbospectrumConfiguration(
             self.config, stellar_parameters
@@ -130,7 +109,9 @@ class TestConfiguration(unittest.TestCase):
 
         turbospectrum_config.set_abundances(ts_config, stellar_parameters)
         self.assertEqual(ts_config.num_elements, 2)
-        self.assertEqual(ts_config.abundance_str, "12  0.20\n20  0.30\n")
+        self.assertEqual(
+            ts_config.abundance_str, "'INDIVIDUAL ABUNDANCES:' 2\n12 7.80\n20 6.72"
+        )
 
     def test_is_model_atmosphere_marcs_true(self):
         """
@@ -138,7 +119,7 @@ class TestConfiguration(unittest.TestCase):
         not interpolated.
         """
         ts_config = turbospectrum_config.TurbospectrumConfiguration(
-            self.config, {"teff": 5210, "logg": 4.3, "z": 0.05}
+            self.config, {"teff": 5210, "logg": 4.3, "z": 0.05, "mg": 0.2, "ca": 0.3}
         )
         ts_config.interpolated_model_atmosphere = False
         result = turbospectrum_config.is_model_atmosphere_marcs(ts_config)
@@ -152,7 +133,7 @@ class TestConfiguration(unittest.TestCase):
         interpolated.
         """
         ts_config = turbospectrum_config.TurbospectrumConfiguration(
-            self.config, {"teff": 5210, "logg": 4.3, "z": 0.05}
+            self.config, {"teff": 5210, "logg": 4.3, "z": 0.05, "mg": 0.2, "ca": 0.3}
         )
         ts_config.interpolated_model_atmosphere = True
         result = turbospectrum_config.is_model_atmosphere_marcs(ts_config)
@@ -160,7 +141,6 @@ class TestConfiguration(unittest.TestCase):
         # The model atmosphere was interpolated, so it is not a MARCS model
         self.assertEqual(result, ".false.")
 
-    @patch("source.turbospectrum_integration.configuration.generate_abundance_str")
     @patch(
         "source.turbospectrum_integration.configuration.is_model_atmosphere_marcs",
         return_value=".true",
@@ -170,11 +150,8 @@ class TestConfiguration(unittest.TestCase):
         self,
         mock_open,
         mock_is_model_atmosphere_marcs,
-        mock_generate_abundance_str,
     ):
         """Test that the babsma file is created correctly"""
-        # Return values
-        mock_generate_abundance_str.return_value = (2, "12  0.20\n20  0.30\n")
 
         # Set up test data
         config = MagicMock()
@@ -206,15 +183,12 @@ class TestConfiguration(unittest.TestCase):
             metallicity=stellar_parameters["z"],
             alpha=ts_config.alpha,
             num_elements=2,
-            abundance_str="12  0.20\n20  0.30\n",
+            abundances="12  0.20\n20  0.30\n",
             xifix=config.xit,
         )
 
         # Call the function
         turbospectrum_config.create_babsma(config, ts_config, stellar_parameters)
-
-        # Check that generate_abundance_str was called with the correct arguments
-        mock_generate_abundance_str.assert_called_once_with(stellar_parameters)
 
         # Check that the file was written with the correct content
         mock_open.assert_called_once_with(ts_config.path_babsma, "w")
@@ -285,7 +259,7 @@ class TestConfiguration(unittest.TestCase):
             metallicity=stellar_parameters["z"],
             alpha=ts_config.alpha,
             num_elements=2,
-            abundance_str="12  0.20\n20  0.30\n",
+            abundances="12  0.20\n20  0.30\n",
             line_lists="'NFILES   :' '2'\nline_list1\nline_list2\n",
         )
 

@@ -46,6 +46,10 @@ class TestConfigurationSetup(unittest.TestCase):
             f.write("logg_max = 5.0\n")
             f.write("z_min = -1.0\n")
             f.write("z_max = 0.5\n")
+            f.write("mg_min = -0.8\n")
+            f.write("mg_max = 1.2\n")
+            f.write("ca_min = -0.8\n")
+            f.write("ca_max = 1.2\n")
             f.write("[Turbospectrum_settings]\n")
             f.write("xit = 1.0\n")
 

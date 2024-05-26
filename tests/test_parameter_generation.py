@@ -47,20 +47,24 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("logg_max = 5.0\n")
             f.write("z_min = -1.0\n")
             f.write("z_max = 0.5\n")
+            f.write("mg_min = -0.2\n")
+            f.write("mg_max = 0.8\n")
+            f.write("ca_min = -0.2\n")
+            f.write("ca_max = 0.8\n")
             f.write("[Turbospectrum_settings]\n")
             f.write("xit = 1.0\n")
 
         # Create file with stellar parameters for testing
         with open("tests/test_input/input_parameters.txt", "w") as f:
-            f.write("teff logg z\n")
-            f.write("7957  4.91 -0.425\n")
-            f.write("5952  2.71 -0.014\n")
-            f.write("3543  1.19 -2.573\n")
-            f.write("3837  5.41  0.258\n")
-            f.write("3070  2.50 -4.387\n")
-            f.write("3862  4.79 -1.686\n")
-            f.write("6897  2.45 -0.636\n")
-            f.write("2920  3.03 -3.941\n")
+            f.write("teff logg z mg ca\n")
+            f.write("7957  4.91 -0.425  0.12  0.15\n")
+            f.write("5952  2.71 -0.014 -0.05  0.10\n")
+            f.write("3543  1.19 -2.573  0.25 -0.10\n")
+            f.write("3837  5.41  0.258  0.18  0.20\n")
+            f.write("3070  2.50 -4.387 -0.30 -0.25\n")
+            f.write("3862  4.79 -1.686  0.00  0.05\n")
+            f.write("6897  2.45 -0.636  0.10 -0.05\n")
+            f.write("2920  3.03 -3.941 -0.20  0.00\n")
 
     @classmethod
     def tearDownClass(cls):
@@ -78,14 +82,62 @@ class TestParameterGeneration(unittest.TestCase):
         self.assertEqual(
             stellar_parameters,
             [
-                {"teff": "7957", "logg": "4.91", "z": "-0.425"},
-                {"teff": "5952", "logg": "2.71", "z": "-0.014"},
-                {"teff": "3543", "logg": "1.19", "z": "-2.573"},
-                {"teff": "3837", "logg": "5.41", "z": "0.258"},
-                {"teff": "3070", "logg": "2.50", "z": "-4.387"},
-                {"teff": "3862", "logg": "4.79", "z": "-1.686"},
-                {"teff": "6897", "logg": "2.45", "z": "-0.636"},
-                {"teff": "2920", "logg": "3.03", "z": "-3.941"},
+                {
+                    "teff": "7957",
+                    "logg": "4.91",
+                    "z": "-0.425",
+                    "mg": "0.12",
+                    "ca": "0.15",
+                },
+                {
+                    "teff": "5952",
+                    "logg": "2.71",
+                    "z": "-0.014",
+                    "mg": "-0.05",
+                    "ca": "0.10",
+                },
+                {
+                    "teff": "3543",
+                    "logg": "1.19",
+                    "z": "-2.573",
+                    "mg": "0.25",
+                    "ca": "-0.10",
+                },
+                {
+                    "teff": "3837",
+                    "logg": "5.41",
+                    "z": "0.258",
+                    "mg": "0.18",
+                    "ca": "0.20",
+                },
+                {
+                    "teff": "3070",
+                    "logg": "2.50",
+                    "z": "-4.387",
+                    "mg": "-0.30",
+                    "ca": "-0.25",
+                },
+                {
+                    "teff": "3862",
+                    "logg": "4.79",
+                    "z": "-1.686",
+                    "mg": "0.00",
+                    "ca": "0.05",
+                },
+                {
+                    "teff": "6897",
+                    "logg": "2.45",
+                    "z": "-0.636",
+                    "mg": "0.10",
+                    "ca": "-0.05",
+                },
+                {
+                    "teff": "2920",
+                    "logg": "3.03",
+                    "z": "-3.941",
+                    "mg": "-0.20",
+                    "ca": "0.00",
+                },
             ],
         )
 
@@ -164,8 +216,8 @@ class TestParameterGeneration(unittest.TestCase):
     @patch("source.parameter_generation.random.uniform")
     def test_generate_random_parameters_no_conflicts(self, mock_randint, mock_uniform):
         """
-        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are no conflicting parameter values
-        Obs: This test is sensitive regarding the number of parmeters to generate. If num_spectra in config is changed, the expected values must be updated, and the mock numbers
+        Test that the function successfully adds 10 randomly generated sets of stellar parameters when there are no conflicting parameter values.
+        Obs: This test is sensitive regarding the number of parameters to generate. If num_spectra in config is changed, the expected values must be updated, and the mock numbers.
         """
         # Set up mock values
         # Teff
@@ -181,42 +233,64 @@ class TestParameterGeneration(unittest.TestCase):
             5040,
             5045,
         ]
-        # Logg and z, interleaved
+        # Logg, z, mg, and ca, interleaved
         uniform_values = [
             4.00,
             -1.000,
+            0.1,
+            0.2,
             4.11,
             -0.833,
+            0.2,
+            0.1,
             4.22,
             -0.667,
+            0.3,
+            0.0,
             4.33,
             -0.500,
+            0.0,
+            -0.1,
             4.44,
             -0.333,
+            -0.1,
+            -0.2,
             4.56,
             -0.167,
+            -0.2,
+            0.3,
             4.67,
             0.000,
+            0.4,
+            -0.3,
             4.78,
             0.167,
+            0.5,
+            0.4,
             4.89,
             0.333,
+            -0.4,
+            0.5,
             5.00,
             0.500,
+            0.6,
+            -0.4,
         ]
+
         config = Configuration("tests/test_input/configuration.cfg")
         expected = [
-            {"teff": 5000, "logg": 4.00, "z": -1.000},
-            {"teff": 5005, "logg": 4.11, "z": -0.833},
-            {"teff": 5010, "logg": 4.22, "z": -0.667},
-            {"teff": 5015, "logg": 4.33, "z": -0.500},
-            {"teff": 5020, "logg": 4.44, "z": -0.333},
-            {"teff": 5025, "logg": 4.56, "z": -0.167},
-            {"teff": 5030, "logg": 4.67, "z": 0.000},
-            {"teff": 5035, "logg": 4.78, "z": 0.167},
-            {"teff": 5040, "logg": 4.89, "z": 0.333},
-            {"teff": 5045, "logg": 5.00, "z": 0.500},
+            {"teff": 5000, "logg": 4.00, "z": -1.000, "mg": 0.1, "ca": 0.2},
+            {"teff": 5005, "logg": 4.11, "z": -0.833, "mg": 0.2, "ca": 0.1},
+            {"teff": 5010, "logg": 4.22, "z": -0.667, "mg": 0.3, "ca": 0.0},
+            {"teff": 5015, "logg": 4.33, "z": -0.500, "mg": 0.0, "ca": -0.1},
+            {"teff": 5020, "logg": 4.44, "z": -0.333, "mg": -0.1, "ca": -0.2},
+            {"teff": 5025, "logg": 4.56, "z": -0.167, "mg": -0.2, "ca": 0.3},
+            {"teff": 5030, "logg": 4.67, "z": 0.000, "mg": 0.4, "ca": -0.3},
+            {"teff": 5035, "logg": 4.78, "z": 0.167, "mg": 0.5, "ca": 0.4},
+            {"teff": 5040, "logg": 4.89, "z": 0.333, "mg": -0.4, "ca": 0.5},
+            {"teff": 5045, "logg": 5.00, "z": 0.500, "mg": 0.6, "ca": -0.4},
         ]
+
         with patch(
             "source.parameter_generation.random.randint", side_effect=randint_values
         ), patch(
@@ -224,7 +298,9 @@ class TestParameterGeneration(unittest.TestCase):
         ):
             result = parameter_generation.generate_random_parameters(config)
             self.assertEqual(len(result), 10)
-            self.assertTrue(all(len(parameter_set) == 3 for parameter_set in result))
+            self.assertTrue(
+                all(len(parameter_set) == 5 for parameter_set in result)
+            )  # Ensure all parameter sets have 5 parameters
 
             self.assertEqual(result, expected)
 
@@ -234,55 +310,75 @@ class TestParameterGeneration(unittest.TestCase):
         self, mock_randint, mock_uniform
     ):
         """
-        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are conflicting teff values, but no collisions in logg and z values
+        Test that the function successfully adds 10 randomly generated sets of stellar parameters when there are conflicting teff values, but no collisions in logg, z, mg, and ca values.
         """
         # Set up mock values
         # Teff value collides, same value every time
-
         randint_values = [5000] * 10
-        # Logg and z values, each set of values does not collide within the specified range
+        # Logg, z, mg, and ca values, each set of values does not collide within the specified range
         uniform_values = [
             4.00,
             -1.000,
+            0.1,
+            0.2,
             4.06,
             -0.899,
+            0.2,
+            0.1,
             4.12,
             -0.799,
+            0.3,
+            0.0,
             4.18,
             -0.699,
+            0.0,
+            -0.1,
             4.24,
             -0.599,
+            -0.1,
+            -0.2,
             4.30,
             -0.499,
+            -0.2,
+            0.3,
             4.36,
             -0.399,
+            0.4,
+            -0.3,
             4.42,
             -0.299,
+            0.5,
+            0.4,
             4.48,
             -0.199,
+            -0.4,
+            0.5,
             4.54,
             -0.099,
+            0.6,
+            -0.4,
         ]
 
         config = Configuration("tests/test_input/configuration.cfg")
         expected = [
-            {"teff": 5000, "logg": 4.00, "z": -1.000},
-            {"teff": 5000, "logg": 4.06, "z": -0.899},
-            {"teff": 5000, "logg": 4.12, "z": -0.799},
-            {"teff": 5000, "logg": 4.18, "z": -0.699},
-            {"teff": 5000, "logg": 4.24, "z": -0.599},
-            {"teff": 5000, "logg": 4.30, "z": -0.499},
-            {"teff": 5000, "logg": 4.36, "z": -0.399},
-            {"teff": 5000, "logg": 4.42, "z": -0.299},
-            {"teff": 5000, "logg": 4.48, "z": -0.199},
-            {"teff": 5000, "logg": 4.54, "z": -0.099},
+            {"teff": 5000, "logg": 4.00, "z": -1.000, "mg": 0.1, "ca": 0.2},
+            {"teff": 5000, "logg": 4.06, "z": -0.899, "mg": 0.2, "ca": 0.1},
+            {"teff": 5000, "logg": 4.12, "z": -0.799, "mg": 0.3, "ca": 0.0},
+            {"teff": 5000, "logg": 4.18, "z": -0.699, "mg": 0.0, "ca": -0.1},
+            {"teff": 5000, "logg": 4.24, "z": -0.599, "mg": -0.1, "ca": -0.2},
+            {"teff": 5000, "logg": 4.30, "z": -0.499, "mg": -0.2, "ca": 0.3},
+            {"teff": 5000, "logg": 4.36, "z": -0.399, "mg": 0.4, "ca": -0.3},
+            {"teff": 5000, "logg": 4.42, "z": -0.299, "mg": 0.5, "ca": 0.4},
+            {"teff": 5000, "logg": 4.48, "z": -0.199, "mg": -0.4, "ca": 0.5},
+            {"teff": 5000, "logg": 4.54, "z": -0.099, "mg": 0.6, "ca": -0.4},
         ]
+
         with patch("random.randint", side_effect=randint_values), patch(
             "random.uniform", side_effect=uniform_values
         ):
             result = parameter_generation.generate_random_parameters(config)
             self.assertEqual(len(result), 10)
-            self.assertTrue(all(len(parameter_set) == 3 for parameter_set in result))
+            self.assertTrue(all(len(parameter_set) == 5 for parameter_set in result))
             self.assertEqual(result, expected)
 
     @patch("random.randint")
@@ -291,148 +387,162 @@ class TestParameterGeneration(unittest.TestCase):
         self, mock_randint, mock_uniform
     ):
         """
-        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are conflicting teff and logg values, but no collisions in z values
+        Test that the function successfully adds 10 randomly generated sets of stellar parameters when there are conflicting teff and logg values, but no collisions in z, mg, and ca values.
         """
         # Set up mock values
         # Teff value collides, same value every time
         randint_values = [5000] * 10
         # Logg value collides, same value every time
-        # z values, each set of values does not collide within the specified range
+        # z, mg, and ca values, each set of values does not collide within the specified range
         uniform_values = [
             4.0,
             -1.000,
+            0.1,
+            0.2,
             4.0,
             -0.899,
+            0.2,
+            0.1,
             4.0,
             -0.799,
+            0.3,
+            0.0,
             4.0,
             -0.699,
+            0.0,
+            -0.1,
             4.0,
             -0.599,
+            -0.1,
+            -0.2,
             4.0,
             -0.499,
+            -0.2,
+            0.3,
             4.0,
             -0.399,
+            0.4,
+            -0.3,
             4.0,
             -0.299,
+            0.5,
+            0.4,
             4.0,
             -0.199,
+            -0.4,
+            0.5,
             4.0,
             -0.099,
+            0.6,
+            -0.4,
         ]
 
         config = Configuration("tests/test_input/configuration.cfg")
         expected = [
-            {"teff": 5000, "logg": 4.0, "z": -1.000},
-            {"teff": 5000, "logg": 4.0, "z": -0.899},
-            {"teff": 5000, "logg": 4.0, "z": -0.799},
-            {"teff": 5000, "logg": 4.0, "z": -0.699},
-            {"teff": 5000, "logg": 4.0, "z": -0.599},
-            {"teff": 5000, "logg": 4.0, "z": -0.499},
-            {"teff": 5000, "logg": 4.0, "z": -0.399},
-            {"teff": 5000, "logg": 4.0, "z": -0.299},
-            {"teff": 5000, "logg": 4.0, "z": -0.199},
-            {"teff": 5000, "logg": 4.0, "z": -0.099},
+            {"teff": 5000, "logg": 4.0, "z": -1.000, "mg": 0.1, "ca": 0.2},
+            {"teff": 5000, "logg": 4.0, "z": -0.899, "mg": 0.2, "ca": 0.1},
+            {"teff": 5000, "logg": 4.0, "z": -0.799, "mg": 0.3, "ca": 0.0},
+            {"teff": 5000, "logg": 4.0, "z": -0.699, "mg": 0.0, "ca": -0.1},
+            {"teff": 5000, "logg": 4.0, "z": -0.599, "mg": -0.1, "ca": -0.2},
+            {"teff": 5000, "logg": 4.0, "z": -0.499, "mg": -0.2, "ca": 0.3},
+            {"teff": 5000, "logg": 4.0, "z": -0.399, "mg": 0.4, "ca": -0.3},
+            {"teff": 5000, "logg": 4.0, "z": -0.299, "mg": 0.5, "ca": 0.4},
+            {"teff": 5000, "logg": 4.0, "z": -0.199, "mg": -0.4, "ca": 0.5},
+            {"teff": 5000, "logg": 4.0, "z": -0.099, "mg": 0.6, "ca": -0.4},
         ]
         with patch("random.randint", side_effect=randint_values), patch(
             "random.uniform", side_effect=uniform_values
         ):
             result = parameter_generation.generate_random_parameters(config)
             self.assertEqual(len(result), 10)
-            self.assertTrue(all(len(parameter_set) == 3 for parameter_set in result))
+            self.assertTrue(all(len(parameter_set) == 5 for parameter_set in result))
             self.assertEqual(result, expected)
 
-    @patch("random.randint")
-    @patch("random.uniform")
-    def test_generate_random_parameters_full_collision(
-        self, mock_randint, mock_uniform
-    ):
+    @patch("source.parameter_generation.random.randint")
+    @patch("source.parameter_generation.random.uniform")
+    def test_generate_random_parameters_no_conflicts(self, mock_randint, mock_uniform):
         """
-        TODO: Change this comment, it is not accurate
-        Test that the function only adds the first set when all subsequent sets are within the min delta for each parameter.
+        Test that the function successfully adds 10 randomly generated sets of stellar parameter when there are no conflicting parameter values
+        Obs: This test is sensitive regarding the number of parameters to generate. If num_spectra in config is changed, the expected values must be updated, and the mock numbers
         """
-        # Values close to each other, within the minimum delta range
+        # Set up mock values
+        # Teff
         randint_values = [
             5000,
-            5004,
-            5002,
-            5003,
-            5001,
-            5050,
-            5060,
-            5070,
-            5080,
-            5090,
-            5100,
-            5110,
-            5120,
-            5130,
-            5140,
-            5150,
-            5160,
-            5170,
-            5180,
-            5190,
+            5005,
+            5010,
+            5015,
+            5020,
+            5025,
+            5030,
+            5035,
+            5040,
+            5045,
         ]
+        # Logg, z, mg, and ca, interleaved
         uniform_values = [
-            4.0,
-            -0.5,
-            4.03,
-            -0.4997,
-            4.04,
-            -0.4999,
-            4.02,
-            -0.4998,
-            4.05,
-            -0.4996,  # First 5 sets are close to the first, potential collisions
-            4.10,
-            -0.450,
-            4.15,
-            -0.400,
-            4.20,
-            -0.350,
-            4.25,
-            -0.300,
-            4.30,
-            -0.250,
-            4.35,
-            -0.200,
-            4.40,
-            -0.150,
-            4.45,
-            -0.100,
-            4.50,
-            -0.050,
-            4.55,
-            0.0,
-            4.60,
-            0.05,
-            4.65,
-            0.10,
-            4.70,
+            4.00,
+            -1.000,
+            0.1,
+            0.2,
+            4.11,
+            -0.833,
             0.15,
+            0.25,
+            4.22,
+            -0.667,
+            0.2,
+            0.3,
+            4.33,
+            -0.500,
+            0.25,
+            0.35,
+            4.44,
+            -0.333,
+            0.3,
+            0.4,
+            4.56,
+            -0.167,
+            0.35,
+            0.45,
+            4.67,
+            0.000,
+            0.4,
+            0.5,
+            4.78,
+            0.167,
+            0.45,
+            0.55,
+            4.89,
+            0.333,
+            0.5,
+            0.6,
+            5.00,
+            0.500,
+            0.55,
+            0.65,
         ]
-
         config = Configuration("tests/test_input/configuration.cfg")
         expected = [
-            {"teff": 5000, "logg": 4.0, "z": -0.5},
-            {"teff": 5050, "logg": 4.10, "z": -0.450},
-            {"teff": 5060, "logg": 4.15, "z": -0.400},
-            {"teff": 5070, "logg": 4.20, "z": -0.350},
-            {"teff": 5080, "logg": 4.25, "z": -0.300},
-            {"teff": 5090, "logg": 4.30, "z": -0.250},
-            {"teff": 5100, "logg": 4.35, "z": -0.200},
-            {"teff": 5110, "logg": 4.40, "z": -0.150},
-            {"teff": 5120, "logg": 4.45, "z": -0.100},
-            {"teff": 5130, "logg": 4.50, "z": -0.050},
-        ]  # Only the first set should be added due to collision within min deltas
-
-        with patch("random.randint", side_effect=randint_values), patch(
-            "random.uniform", side_effect=uniform_values
+            {"teff": 5000, "logg": 4.00, "z": -1.000, "mg": 0.1, "ca": 0.2},
+            {"teff": 5005, "logg": 4.11, "z": -0.833, "mg": 0.15, "ca": 0.25},
+            {"teff": 5010, "logg": 4.22, "z": -0.667, "mg": 0.2, "ca": 0.3},
+            {"teff": 5015, "logg": 4.33, "z": -0.500, "mg": 0.25, "ca": 0.35},
+            {"teff": 5020, "logg": 4.44, "z": -0.333, "mg": 0.3, "ca": 0.4},
+            {"teff": 5025, "logg": 4.56, "z": -0.167, "mg": 0.35, "ca": 0.45},
+            {"teff": 5030, "logg": 4.67, "z": 0.000, "mg": 0.4, "ca": 0.5},
+            {"teff": 5035, "logg": 4.78, "z": 0.167, "mg": 0.45, "ca": 0.55},
+            {"teff": 5040, "logg": 4.89, "z": 0.333, "mg": 0.5, "ca": 0.6},
+            {"teff": 5045, "logg": 5.00, "z": 0.500, "mg": 0.55, "ca": 0.65},
+        ]
+        with patch(
+            "source.parameter_generation.random.randint", side_effect=randint_values
+        ), patch(
+            "source.parameter_generation.random.uniform", side_effect=uniform_values
         ):
             result = parameter_generation.generate_random_parameters(config)
             self.assertEqual(len(result), 10)
-            self.assertTrue(all(len(parameter_set) == 3 for parameter_set in result))
+            self.assertTrue(all(len(parameter_set) == 5 for parameter_set in result))
             self.assertEqual(result, expected)
 
     def test_generate_evenly_spaced_output_size_perfect_fit(self):
