@@ -42,7 +42,6 @@ class Configuration:
 
         self.read_stellar_parameters_from_file = False
         self.random_parameters = True
-        self.num_spectra = 0
         self.teff_min = 0
         self.teff_max = 0
         self.logg_min = 0
@@ -53,6 +52,13 @@ class Configuration:
         self.mg_max = 0
         self.ca_min = 0
         self.ca_max = 0
+
+        self.num_spectra = 0
+        self.num_points_teff = 0
+        self.num_points_logg = 0
+        self.num_points_z = 0
+        self.num_points_mg = 0
+        self.num_points_ca = 0
 
         self.xit = 0
 
@@ -69,7 +75,7 @@ class Configuration:
 
         Parameters in the configuration file must be explicity set in this function,
         meaning that additions to the configuration file will not be recognised by
-        the program unless they are read by this function.
+        the program unless they are loaded by this function.
 
         Side effects: Sets the configuration parameters based on the configuration file.
         """
@@ -114,7 +120,6 @@ class Configuration:
             self.random_parameters = config_parser.getboolean(
                 "Stellar_parameters", "random_parameters"
             )
-            self.num_spectra = config_parser.getint("Stellar_parameters", "num_spectra")
             self.teff_min = config_parser.getint("Stellar_parameters", "teff_min")
             self.teff_max = config_parser.getint("Stellar_parameters", "teff_max")
             self.logg_min = config_parser.getfloat("Stellar_parameters", "logg_min")
@@ -125,6 +130,30 @@ class Configuration:
             self.mg_max = config_parser.getfloat("Stellar_parameters", "mg_max")
             self.ca_min = config_parser.getfloat("Stellar_parameters", "ca_min")
             self.ca_max = config_parser.getfloat("Stellar_parameters", "ca_max")
+
+            # Load settings for parameter generation
+            # If random parameters are specified, the number of sets to generate is needed
+            if self.random_parameters == True:
+                self.num_spectra = config_parser.getint(
+                    "Random_settings", "num_spectra"
+                )
+            # If evenly spaced parameters are specified, the number of points for each parameter is needed
+            else:
+                self.num_points_teff = config_parser.getint(
+                    "Even_settings", "num_points_teff"
+                )
+                self.num_points_logg = config_parser.getint(
+                    "Even_settings", "num_points_logg"
+                )
+                self.num_points_z = config_parser.getint(
+                    "Even_settings", "num_points_z"
+                )
+                self.num_points_mg = config_parser.getint(
+                    "Even_settings", "num_points_mg"
+                )
+                self.num_points_ca = config_parser.getint(
+                    "Even_settings", "num_points_ca"
+                )
         else:
             self.path_input_parameters = os.path.abspath(
                 config_parser.get("Paths", "input_parameters")
@@ -230,11 +259,16 @@ class Configuration:
         """
         A wrapper function that checks that the stellar parameters are valid.
         """
-        self._validate_number_of_spectra()
         self._validate_effective_temperature()
         self._validate_surface_gravity()
         self._validate_metallicity()
-        # TODO: Add check for abundances
+        self._validate_magensium_abundance()
+        self._validate_calcium_abundance()
+
+        if self.random_parameters == True:
+            self._validate_number_of_spectra()
+        else:
+            self._validate_evenly_spaced_parameters_points()
 
     def _validate_number_of_spectra(self):
         """
@@ -277,6 +311,7 @@ class Configuration:
         Raises:
             ValueError: If any surface gravity parameter is negative or if the minimum surface gravity is greater than the maximum surface gravity.
         """
+        # TODO: Istället för att raise'a error, skriv ut varningsmeddelande och fortsätt programmet. Och ändra gränsen till 2
         if self.logg_min < 0:
             raise ValueError(
                 f"The minimum surface gravity {self.logg_min} must be positive."
@@ -294,7 +329,7 @@ class Configuration:
 
     def _validate_metallicity(self):
         """
-        Check that the metallicity is valid.
+        Check that the metallicity range is valid.
 
         Raises:
             ValueError: If the minimum metallicity is greater than the maximum metallicity.
@@ -302,6 +337,48 @@ class Configuration:
         if self.z_min >= self.z_max:
             raise ValueError(
                 f"The minimum metallicity {self.z_min} must be smaller than the maximum metallicity {self.z_max}."
+            )
+
+    def _validate_magensium_abundance(self):
+        """
+        Check that the magnesium abundance range is valid.
+
+        Raises:
+            ValueError: If the minimum magnesium abundance is greater than the maximum magnesium abundance.
+        """
+        if self.mg_min >= self.mg_max:
+            raise ValueError(
+                f"The minimum magnesium abundance {self.mg_min} must be smaller than the maximum magnesium abundance {self.mg_max}."
+            )
+
+    def _validate_calcium_abundance(self):
+        """
+        Check that the calcium abundance range is valid.
+
+        Raises:
+            ValueError: If the minimum calcium abundance is greater than the maximum calcium abundance.
+        """
+        if self.ca_min >= self.ca_max:
+            raise ValueError(
+                f"The minimum calcium abundance {self.ca_min} must be smaller than the maximum calcium abundance {self.ca_max}."
+            )
+
+    def _validate_evenly_spaced_parameters_points(self):
+        """
+        Check that the number of points for each parameter is at least 1.
+
+        Raises:
+            ValueError: If the number of points for any parameter is less than 1.
+        """
+        if (
+            self.num_points_teff < 1
+            or self.num_points_logg < 1
+            or self.num_points_z < 1
+            or self.num_points_mg < 1
+            or self.num_points_ca < 1
+        ):
+            raise ValueError(
+                f"The number of points for each parameter must be at least 1."
             )
 
     def _validate_configuration(self):

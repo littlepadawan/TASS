@@ -28,7 +28,7 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("Compiler = gfortran\n")
             f.write("[Paths]\n")
             f.write("turbospectrum = ./tests/test_input/turbospectrum/\n")
-            f.write("interpolator = ./tests/test_input/turbospectrum/interpolator\n")
+            f.write("interpolator = ./tests/test_input/turbospectrum/interpolator/\n")
             f.write("linelists = ./tests/test_input/linelists/\n")
             f.write("model_atmospheres = ./tests/test_input/model_atmospheres/\n")
             f.write("input_parameters = ./tests/test_input/input_parameters.txt\n")
@@ -40,17 +40,24 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("[Stellar_parameters]\n")
             f.write("read_from_file = False\n")
             f.write("random_parameters = True\n")
-            f.write("num_spectra = 10\n")
             f.write("teff_min = 5000\n")
             f.write("teff_max = 7000\n")
             f.write("logg_min = 4.0\n")
             f.write("logg_max = 5.0\n")
             f.write("z_min = -1.0\n")
             f.write("z_max = 0.5\n")
-            f.write("mg_min = -0.2\n")
-            f.write("mg_max = 0.8\n")
-            f.write("ca_min = -0.2\n")
-            f.write("ca_max = 0.8\n")
+            f.write("mg_min = -0.8\n")
+            f.write("mg_max = 1.2\n")
+            f.write("ca_min = -0.8\n")
+            f.write("ca_max = 1.2\n")
+            f.write("[Random_settings]\n")
+            f.write("num_spectra = 10\n")
+            f.write("[Even_settings]\n")
+            f.write("num_points_teff = 10\n")
+            f.write("num_points_logg = 8\n")
+            f.write("num_points_z = 5\n")
+            f.write("num_points_mg = 5\n")
+            f.write("num_points_ca = 5\n")
             f.write("[Turbospectrum_settings]\n")
             f.write("xit = 1.0\n")
 
@@ -515,83 +522,6 @@ class TestParameterGeneration(unittest.TestCase):
             self.assertTrue(all(len(parameter_set) == 5 for parameter_set in result))
             self.assertEqual(result, expected)
 
-    def test_generate_evenly_spaced_output_size_perfect_fit(self):
-        """
-        Test that output size matches the requested number of spectra when it fits perfectly
-        I.e. num_spectra = intervals^dimensions
-        """
-        config = Configuration("tests/test_input/configuration.cfg")
-        config.num_spectra = 1000
-        result = parameter_generation.generate_evenly_spaced_parameters(config)
-        self.assertEqual(len(result), 1000)
-
-    def test_generate_evenly_spaced_output_size_just_above(self):
-        """
-        Test that output size matches the requested number of spectra when the requested number is just above "a perfect square
-        I.e. num_spectra = intervals^dimensions + 1
-        """
-        config = Configuration("tests/test_input/configuration.cfg")
-        config.num_spectra = 103
-        result = parameter_generation.generate_evenly_spaced_parameters(config)
-        self.assertEqual(len(result), 103)
-
-    def test_generate_evenly_spaced_output_size_just_below(self):
-        """
-        Test that output size matches the requested number of spectra when the requested number is just below "a perfect square
-        I.e. num_spectra = intervals^dimensions - 1
-        """
-        config = Configuration("tests/test_input/configuration.cfg")
-        config.num_spectra = 80
-        result = parameter_generation.generate_evenly_spaced_parameters(config)
-        self.assertEqual(len(result), 80)
-
-    def test_generate_evenly_spaced_parameters_value_distribution(self):
-        """
-            Test if the values are evenly spaced within their ranges
-                np.diff(unique_teffs): This calculates the difference between consecutive elements in unique_teffs, giving you an array of differences (or steps) between the values.
-        np.diff(unique_teffs)[0]: This is the first difference in the array. You're comparing every other difference against this first difference to check if they are all approximately equal.
-        atol=1e-2: You are allowing a difference of up to 0.01 between the first difference and every subsequent difference, regardless of the scale of the numbers involved.
-        rtol=1e-5: You are also allowing a relative error of 0.00001, scaled by the absolute size of the first difference.
-        """
-        config = Configuration("tests/test_input/configuration.cfg")
-        config.num_spectra = 64
-        result = parameter_generation.generate_evenly_spaced_parameters(config)
-        teff_values, logg_values, z_values = zip(*result)
-
-        unique_teffs = sorted(set(teff_values))
-        unique_loggs = sorted(set(logg_values))
-        unique_zs = sorted(set(z_values))
-
-        # Check that the step size are consistent
-        self.assertTrue(
-            np.allclose(
-                np.diff(unique_teffs),
-                np.diff(unique_teffs)[0],
-                atol=1,
-                rtol=0,
-            )
-        )
-        print("Logg Values:", unique_teffs)
-
-        print("Differences:", np.diff(unique_teffs))
-        print("First Difference:", np.diff(unique_teffs)[0])
-        self.assertTrue(
-            np.allclose(
-                np.diff(unique_loggs),
-                np.diff(unique_loggs)[0],
-                atol=0.01,
-                rtol=0,
-            )
-        )
-        self.assertTrue(
-            np.allclose(
-                np.diff(unique_zs),
-                np.diff(unique_zs)[0],
-                atol=0.001,
-                rtol=0,
-            )
-        )
-
     @patch("source.parameter_generation.read_parameters_from_file")
     def test_generate_parameters_read_from_file(self, mock_read_parameters_from_file):
         """
@@ -613,15 +543,39 @@ class TestParameterGeneration(unittest.TestCase):
         parameter_generation.generate_parameters(config)
         mock_generate_random_parameters.assert_called_once_with(config)
 
-    @patch("source.parameter_generation.generate_evenly_spaced_parameters")
-    def test_generate_parameters_evenly_spaced(
-        self, mock_generate_evenly_spaced_parameters
-    ):
-        """
-        Test that the function calls generate_evenly_spaced_parameters when read_stellar_parameters_from_file is False and random_parameters is False
-        """
+    def test_generate_evenly_spaced_parameters(self):
         config = Configuration("tests/test_input/configuration.cfg")
-        config.read_stellar_parameters_from_file = False
         config.random_parameters = False
-        parameter_generation.generate_parameters(config)
-        mock_generate_evenly_spaced_parameters.assert_called_once_with(config)
+        config.num_points_teff = 10
+        config.num_points_logg = 8
+        config.num_points_z = 5
+        config.num_points_mg = 5
+        config.num_points_ca = 5
+
+        expected_teff = np.round(np.linspace(5000, 7000, 10))
+        expected_logg = np.round(np.linspace(4.0, 5.0, 8), 2)
+        expected_z = np.round(np.linspace(-1.0, 0.5, 5), 3)
+        expected_mg = np.round(np.linspace(-0.8, 1.2, 5), 3)
+        expected_ca = np.round(np.linspace(-0.8, 1.2, 5), 3)
+
+        result = parameter_generation.generate_evenly_spaced_parameters(config)
+        result_teff = {param["teff"] for param in result}
+        result_logg = {param["logg"] for param in result}
+        result_z = {param["z"] for param in result}
+        result_mg = {param["mg"] for param in result}
+        result_ca = {param["ca"] for param in result}
+
+        np.testing.assert_equal(sorted(result_teff), sorted(expected_teff))
+        np.testing.assert_equal(sorted(result_logg), sorted(expected_logg))
+        np.testing.assert_equal(sorted(result_z), sorted(expected_z))
+        np.testing.assert_equal(sorted(result_mg), sorted(expected_mg))
+        np.testing.assert_equal(sorted(result_ca), sorted(expected_ca))
+
+        self.assertEqual(
+            len(result),
+            len(expected_teff)
+            * len(expected_logg)
+            * len(expected_z)
+            * len(expected_mg)
+            * len(expected_ca),
+        )

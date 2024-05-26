@@ -78,32 +78,6 @@ def read_parameters_from_file(config: Configuration):
     return all_stellar_parameters
 
 
-def generate_random_parameters_no_distance_check(config: Configuration):
-    """
-    Generate random stellar parameters
-    """
-    # TODO: Remove this function, it is not used
-    all_stellar_parameters = set()
-
-    while len(all_stellar_parameters) < config.num_spectra:
-        teff = random.randint(config.teff_min, config.teff_max)
-        logg = random.uniform(config.logg_min, config.logg_max)
-        z = random.uniform(config.z_max, config.z_max)
-        mg = random.uniform(config.mg_min, config.mg_max)
-        ca = random.uniform(config.ca_min, config.ca_max)
-
-        logg = round(logg, 2)
-        z = round(z, 3)
-        mg = round(mg, 3)
-        ca = round(ca, 3)
-
-        all_stellar_parameters.add(
-            (teff, logg, z)
-        )  # If this combination already exists in all_stellar_parameters, it will not be added again
-
-    return all_stellar_parameters
-
-
 def _within_min_delta(new_parameter, existing, min_delta):
     """
     Check if the value of new_parameter is within the minimum delta of existing.
@@ -181,7 +155,7 @@ def generate_random_parameters(config: Configuration):
         config (Configuration): Configuration object containing ranges and step sizes for the parameters to be generated
 
     Returns:
-        list: List of tuples containing the generated stellar parameters
+        list: List of dictionaries containing the generated stellar parameters
     """
     teff_range = (config.teff_min, config.teff_max)
     logg_range = (config.logg_min, config.logg_max)
@@ -223,32 +197,39 @@ def generate_evenly_spaced_parameters(config: Configuration):
         config (Configuration): Configuration object containing ranges and step sizes for the parameters to be generated
 
     Returns:
-        list: List of tuples containing the generated stellar parameters
+        list: List of dictionaries containing the generated stellar parameters
     """
-    # TODO: Change this function to just loop given sets
-    # TODO: Are they stored in tuples? If so, how does it work with the rest of the code?
-    dimensions = 3
-    intervals = round(config.num_spectra ** (1 / dimensions))
+    # Generate evenly spaced values for each parameter
+    teff_values = np.round(
+        np.linspace(config.teff_min, config.teff_max, config.num_points_teff)
+    )
+    logg_values = np.round(
+        np.linspace(config.logg_min, config.logg_max, config.num_points_logg), 2
+    )
+    z_values = np.round(np.linspace(config.z_min, config.z_max, config.num_points_z), 3)
+    mg_values = np.round(
+        np.linspace(config.mg_min, config.mg_max, config.num_points_mg), 3
+    )
+    ca_values = np.round(
+        np.linspace(config.ca_min, config.ca_max, config.num_points_ca), 3
+    )
 
-    # Adjust intervals to get the exact number of spectra
-    while intervals**dimensions < config.num_spectra:
-        intervals += 1
-
-    # Generate evenly spaced values
-    parameter_ranges = {
-        "teff": np.linspace(config.teff_min, config.teff_max, intervals),
-        "logg": np.linspace(config.logg_min, config.logg_max, intervals),
-        "z": np.linspace(config.z_min, config.z_max, intervals),
-    }
-
-    # Use meshgrid to get all combinations
-    grid = np.meshgrid(*parameter_ranges.values())
-
-    parameter_sets = np.stack(grid, axis=-1).reshape(-1, dimensions)
-    parameter_sets = [
-        (round(teff, 0), round(logg, 2), round(z, 3))
-        for teff, logg, z in parameter_sets[: config.num_spectra]
-    ]
+    # Generate all combinations of the parameter values
+    parameter_sets = []
+    for t in teff_values:
+        for logg in logg_values:
+            for z in z_values:
+                for mg in mg_values:
+                    for ca in ca_values:
+                        parameter_sets.append(
+                            {
+                                "teff": t,
+                                "logg": round(logg, 2),
+                                "z": round(z, 3),
+                                "mg": round(mg, 3),
+                                "ca": round(ca, 3),
+                            }
+                        )
     return parameter_sets
 
 
