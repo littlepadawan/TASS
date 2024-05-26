@@ -452,7 +452,7 @@ def copy_template_interpolator_script(config: Configuration, stellar_parameters:
         stellar_parameters (dict): The stellar parameters to interpolate.
 
     Returns:
-        str: The unique filename of the copied script.
+        str: The path of the copied script.
     """
     unique_filename = compose_filename(stellar_parameters)
     path_to_script_copy = (

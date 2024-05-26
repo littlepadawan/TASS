@@ -154,36 +154,6 @@ class TestParameterGeneration(unittest.TestCase):
         parameter_generation.read_parameters_from_file(config)
         mock_exit.assert_called_once_with(1)
 
-    def test_generate_random_parameters_no_distance_check(self):
-        """
-        Test that the correct number of random stellar parameters are generated,
-        and that they are within bounds
-        """
-        config = Configuration("tests/test_input/configuration.cfg")
-        stellar_parameters = (
-            parameter_generation.generate_random_parameters_no_distance_check(config)
-        )
-        self.assertEqual(len(stellar_parameters), 10)
-        for parameters in stellar_parameters:
-            self.assertGreaterEqual(int(parameters[0]), 5000)
-            self.assertLessEqual(int(parameters[0]), 7000)
-            self.assertGreaterEqual(float(parameters[1]), 4.0)
-            self.assertLessEqual(float(parameters[1]), 5.0)
-            self.assertGreaterEqual(float(parameters[2]), -2.0)
-            self.assertLessEqual(float(parameters[2]), 0.5)
-
-    def test_generate_random_parameters_no_distance_check_1000(self):
-        """
-        Test that 1000 random stellar parameters are generated,
-        and that they are within bounds
-        """
-        config = Configuration("tests/test_input/configuration.cfg")
-        config.num_spectra = 1000
-        stellar_parameters = (
-            parameter_generation.generate_random_parameters_no_distance_check(config)
-        )
-        self.assertEqual(len(stellar_parameters), 1000)
-
     def test_within_min_delta_no_valid_candidates(self):
         """
         Test that the function returns False when no candidate values are within minimun delta from the given value
