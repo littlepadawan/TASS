@@ -39,6 +39,7 @@ def main():
         # Generate stellar parameters
         stellar_parameters = generate_parameters(config)
 
+        print(f"Stellar parameters: {stellar_parameters}")
         # Compile Turbospectrum and interpolator
         compile_turbospectrum(config)
         compile_interpolator(config)

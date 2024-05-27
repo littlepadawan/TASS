@@ -65,6 +65,9 @@ class Configuration:
         self._load_configuration_file()
         try:
             self._validate_configuration()
+            print(f"Wavelegnth min: {self.wavelength_min}")
+            print(f"Wavelegnth max: {self.wavelength_max}")
+            print(f"Wavelegnth step: {self.wavelength_step}")
         except (FileNotFoundError, ValueError) as e:
             print(e)
             sys.exit(1)
@@ -103,6 +106,7 @@ class Configuration:
         self.wavelength_min = config_parser.getfloat(
             "Atmosphere_parameters", "wavelength_min"
         )
+        print(f"Read Wavelegnth min: {self.wavelength_min}")
         self.wavelength_max = config_parser.getfloat(
             "Atmosphere_parameters", "wavelength_max"
         )

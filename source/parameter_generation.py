@@ -1,3 +1,4 @@
+import os
 import random
 import sys
 
@@ -245,10 +246,23 @@ def generate_parameters(config: Configuration):
     Returns:
         list: List of tuples containing the generated stellar parameters
     """
+    parameters = []
     # TODO: Write to a file?
     if config.read_stellar_parameters_from_file:
-        return read_parameters_from_file(config)
+        parameters = read_parameters_from_file(config)
     elif config.random_parameters:
-        return generate_random_parameters(config)
+        parameters = generate_random_parameters(config)
     else:
-        return generate_evenly_spaced_parameters(config)
+        parameters = generate_evenly_spaced_parameters(config)
+
+    # Write parameters to a file in the output directory
+    output_file = os.path.join(config.path_output_directory, "generated_parameters.txt")
+    with open(output_file, "w") as file:
+        # Write the header
+        headers = parameters[0].keys()
+        file.write(" ".join(headers) + "\n")
+        # Write the parameters
+        for param in parameters:
+            file.write(" ".join(str(param[key]) for key in headers) + "\n")
+
+    return parameters

@@ -98,16 +98,26 @@ def generate_one_spectrum(
 
     # Check if the model atmosphere needs to be interpolated
     interpolate, matching_models = needs_interpolation(
-        stellar_parameters, model_atmospheres
+        stellar_parameters, ts_config.alpha, model_atmospheres
     )
 
     # TODO: Improve this part
     if interpolate:
-        # Generate interpolated model atmosphere
-        # TODO: If generate_interpolated_model_atmosphere can return errors, this is not a good solution
-        ts_config.path_model_atmosphere = generate_interpolated_model_atmosphere(
-            stellar_parameters, config
-        )
+        try:
+            # Generate interpolated model atmosphere
+            # TODO: If generate_interpolated_model_atmosphere can return errors, this is not a good solution
+            ts_config.path_model_atmosphere = generate_interpolated_model_atmosphere(
+                stellar_parameters, ts_config.alpha, config
+            )
+            print(
+                f"Interpolated model atmosphere generated: {ts_config.path_model_atmosphere}"
+            )
+        except Exception as e:
+            print(
+                f"Error generating interpolated model atmosphere for stellar parameters: {stellar_parameters}. Moving on"
+            )
+            return
+            # raise e
     elif len(matching_models) == 1:
         # A matching MARCS model was found, use it
         ts_config.path_model_atmosphere = matching_models[0]

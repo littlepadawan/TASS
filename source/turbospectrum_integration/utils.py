@@ -14,7 +14,7 @@ def parse_model_atmosphere_filename(filename: str):
     After `<z>`, an underscore should be followed by any valid string, which
     must end with the `.mod` file extension.
 
-    Example filename: s6000_g+4.0_m0.0_t02_st_z-2.00_a+0.40_c+0.00_n+0.00_o+0.40_r+0.00_s+0.00.mod
+    Example filename: p6000_g+4.0_m0.0_t02_st_z-2.00_a+0.40_c+0.00_n+0.00_o+0.40_r+0.00_s+0.00.mod
 
     Args:
         filename (str): The filename of the model atmosphere.
@@ -24,27 +24,29 @@ def parse_model_atmosphere_filename(filename: str):
     """
     # TODO: t value should be specified in config (microturbolunce, XIT, v_micro (km/s), check this in email), and read from the pattern
     # TODO: Add alpha (a) to read from the patterm  (OBS a and o should have the same value, this can be assumed to be true though)
-    pattern = (
-        r"p(\d+)_g([\+\-]\d+\.\d+)_m(\d+\.\d+)_t(\d+)_st_z([\+\-]\d+\.\d+)_.*\.mod"
-    )
+    pattern = r"p(\d+)_g([\+\-]\d+\.\d+)_m([\+\-]?\d+\.\d+)_t(\d+)_st_z([\+\-]\d+\.\d+)_a([\+\-]\d+\.\d+)_c([\+\-]\d+\.\d+)_n([\+\-]\d+\.\d+)_o([\+\-]\d+\.\d+)_r([\+\-]\d+\.\d+)_s([\+\-]\d+\.\d+)\.mod"
     # Check if the filename matches the pattern
     result = match(pattern, filename)
     # If it matches, extract the parameters
     if result:
-        teff_str, logg_str, z_str, turbulence_str = (
+        teff_str, logg_str, z_str, turbulence_str, alpha_str = (
             result.group(1),
             result.group(2),
             result.group(5),
             result.group(4),
+            result.group(6),
         )
+
         return {
             "teff": int(teff_str),
             "logg": float(logg_str),
             "z": float(z_str),
+            "alpha": float(alpha_str),
             "teff_str": teff_str,
             "logg_str": logg_str,
             "z_str": z_str,
             "turbulence_str": turbulence_str,
+            "alpha_str": alpha_str,
             "filename": filename,
         }
     return None
@@ -72,7 +74,7 @@ def collect_model_atmosphere_parameters(directory: str):
     return df
 
 
-def stellar_parameter_to_str(stellar_parameter):
+def stellar_parameter_to_str(stellar_parameter, decimals):
     """
     Convert stellar parameters to a string.
 
@@ -83,12 +85,12 @@ def stellar_parameter_to_str(stellar_parameter):
         str: A string representation of the stellar parameter.
     """
     if stellar_parameter < 0:
-        return f"{stellar_parameter}"
+        return f"{stellar_parameter:+.{decimals}f}"
     else:
-        return f"+{stellar_parameter}"
+        return f"{stellar_parameter:+.{decimals}f}"
 
 
-def compose_filename(stellar_parameters: dict):
+def compose_filename(stellar_parameters: dict, alpha):
     """
     Generate a filename based on the stellar parameters.
 
@@ -98,12 +100,13 @@ def compose_filename(stellar_parameters: dict):
     Returns:
         str: The filename
     """
-    # TODO: This should contain alpha and t values
+    # TODO: This should contain t values
     teff_str = stellar_parameters["teff"]
-    logg_str = stellar_parameter_to_str(stellar_parameters["logg"])
-    z_str = stellar_parameter_to_str(stellar_parameters["z"])
-    mg_str = stellar_parameter_to_str(stellar_parameters["mg"])
-    ca_str = stellar_parameter_to_str(stellar_parameters["ca"])
+    logg_str = stellar_parameter_to_str(stellar_parameters["logg"], 1)
+    z_str = stellar_parameter_to_str(stellar_parameters["z"], 2)
+    mg_str = stellar_parameter_to_str(stellar_parameters["mg"], 2)
+    ca_str = stellar_parameter_to_str(stellar_parameters["ca"], 2)
+    alpha_str = stellar_parameter_to_str(alpha, 2)
 
-    file_name = f"p{teff_str}_g{logg_str}_z{z_str}_mg{mg_str}_ca{ca_str}"
+    file_name = f"p{teff_str}_g{logg_str}_z{z_str}_a{alpha_str}_mg{mg_str}_ca{ca_str}"
     return file_name

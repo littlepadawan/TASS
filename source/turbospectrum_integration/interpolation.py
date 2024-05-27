@@ -2,15 +2,19 @@ from os import chdir, getcwd, path
 from shutil import copyfile
 from subprocess import CalledProcessError, run
 
+import numpy as np
 import pandas as pd
 from source.configuration_setup import Configuration
+from source.turbospectrum_integration.configuration import calculate_alpha
 from source.turbospectrum_integration.utils import (
     collect_model_atmosphere_parameters,
     compose_filename,
 )
 
 
-def needs_interpolation(stellar_parameters: dict, model_atmospheres: pd.DataFrame):
+def needs_interpolation(
+    stellar_parameters: dict, alpha: float, model_atmospheres: pd.DataFrame
+):
     """
     Check if the given stellar parameters need interpolation.
 
@@ -28,6 +32,7 @@ def needs_interpolation(stellar_parameters: dict, model_atmospheres: pd.DataFram
         (model_atmospheres["teff"] == stellar_parameters["teff"])
         & (model_atmospheres["logg"] == stellar_parameters["logg"])
         & (model_atmospheres["z"] == stellar_parameters["z"])
+        & (model_atmospheres["alpha"] == alpha)
     ]
     # TODO: Maybe change the function to have three different return values:
     # no matches and needs interpolation -> (true, None)
@@ -56,13 +61,16 @@ def _get_models_with_exact_value(
     Returns:
         pd.DataFrame: A DataFrame with the models that have the target parameter value equal to the target value.
     """
+    # filtered_models = model_atmospheres[
+    #     model_atmospheres[target_parameter] == target_value
+    # ]
+    # if filtered_models.empty:
+    #     raise ValueError(
+    #         f"No models with {target_parameter} value equal to {target_value} found"
+    #     )
     filtered_models = model_atmospheres[
         model_atmospheres[target_parameter] == target_value
     ]
-    if filtered_models.empty:
-        raise ValueError(
-            f"No models with {target_parameter} value equal to {target_value} found"
-        )
     return filtered_models
 
 
@@ -83,14 +91,22 @@ def _get_models_with_lower_parameter_value(
     Returns:
         pd.DataFrame: A DataFrame with the models that have the target parameter value lower than the target value.
     """
+    # ! There are no models with alppha < 0.0. Is this a valid solution?
+    # if target_parameter == "alpha" and target_value == 0.0:
+    #     return _get_models_with_exact_value(
+    #         target_parameter, target_value, model_atmospheres
+    #     )
 
+    # filtered_models = model_atmospheres[
+    #     model_atmospheres[target_parameter] < target_value
+    # ]
+    # if filtered_models.empty:
+    #     raise ValueError(
+    #         f"No models with {target_parameter} value lower than {target_value} found"
+    #     )
     filtered_models = model_atmospheres[
         model_atmospheres[target_parameter] < target_value
     ]
-    if filtered_models.empty:
-        raise ValueError(
-            f"No models with {target_parameter} value lower than {target_value} found"
-        )
     return filtered_models
 
 
@@ -110,14 +126,34 @@ def _get_models_with_higher_parameter_value(
     Returns:
         pd.DataFrame: A DataFrame with the models that have the target parameter value higher than the target value.
     """
+    # Debugging: print the DataFrame and the data type of the target parameter column
+    # print("Model Atmospheres DataFrame:")
+    # print(model_atmospheres)
+    # print(
+    #     f"Data type of {target_parameter} column: {model_atmospheres[target_parameter].dtype}"
+    # )
+    # print(f"Data type of target_value: {type(target_value)}")
 
+    # if model_atmospheres[target_parameter].dtype == "int64":
+    #     target_value = int(target_value)
+    # else:
+    #     target_value = float(target_value)
+
+    # filtered_models = model_atmospheres[
+    #     model_atmospheres[target_parameter] > target_value
+    # ]
+
+    # # Debugging: print the filtered DataFrame
+    # # print("Filtered Models DataFrame:")
+    # # print(filtered_models)
+
+    # if filtered_models.empty:
+    #     raise ValueError(
+    #         f"No models with {target_parameter} value higher than {target_value} found"
+    #     )
     filtered_models = model_atmospheres[
-        model_atmospheres[target_parameter].astype(int) > target_value
+        model_atmospheres[target_parameter] > target_value
     ]
-    if filtered_models.empty:
-        raise ValueError(
-            f"No models with {target_parameter} value higher than {target_value} found"
-        )
     return filtered_models
 
 
@@ -136,18 +172,38 @@ def _get_closest_models(
     Returns:
         pd.DataFrame: A DataFrame with the models that have the closest parameter value to the target value.
     """
-    # Calculate the minimum difference between the target value and the value of the filtered models
+    # # Calculate the minimum difference between the target value and the value of the filtered models
+    # column_dtype = model_atmospheres[target_parameter].dtype
+    # tolerance = 0
+    # if column_dtype == "int64":
+    #     target_value = int(target_value)
+    # elif column_dtype == "float64":
+    #     target_value = float(target_value)
+    #     tolerance = 0.01
+
+    # differences = (target_value - model_atmospheres[target_parameter]).abs()
+
+    # # # Debugging: Print the differences
+    # # print(f"Differences for {target_parameter}:\n{differences}")
+
+    # min_difference = round(differences.min(), 3)
+
+    # # # Debugging: Print the minimum difference
+    # # print(f"Minimum difference for {target_parameter}: {min_difference}")
+
+    # # Filter to get the models where the difference matches the minimum difference
+    # closest_models = model_atmospheres[np.isclose(differences, min_difference)]
+
+    # # Debugging: Print the closest models
+    # # print(
+    # #     f"Closest models for {target_parameter} with target value {target_value} and min difference {min_difference}:\n{closest_models}"
+    # # )
+    # # print("")
     column_dtype = model_atmospheres[target_parameter].dtype
-    if column_dtype == "int64":
-        target_value = int(target_value)
-    elif column_dtype == "float64":
-        target_value = float(target_value)
-
+    target_value = int(target_value) if column_dtype == "int64" else float(target_value)
     differences = (target_value - model_atmospheres[target_parameter]).abs()
-    min_difference = differences.min()
-
-    # Filter to get the models where the difference matches the minimum difference
-    closest_models = model_atmospheres[differences == min_difference]
+    min_difference = round(differences.min(), 3)
+    closest_models = model_atmospheres[np.isclose(differences, min_difference)]
 
     return closest_models
 
@@ -159,14 +215,14 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
     The bracketing models are used to interpolate the model atmosphere
     and need to follow thevstructure required by Turbospectrum's
     interpolator:
-    Model 1: Tefflow logglow zlow
-    Model 2: Tefflow logglow zup
-    Model 3: Tefflow loggup zlow
-    Model 4: Tefflow loggup zup
-    Model 5: Teffup logglow zlow
-    Model 6: Teffup logglow zup
-    Model 7: Teffup loggup zlow
-    Model 8: Teffup loggup zup
+    Model 1: Tefflow logglow zlow alflow
+    Model 2: Tefflow logglow zup alfup
+    Model 3: Tefflow loggup zlow alflow
+    Model 4: Tefflow loggup zup alfup
+    Model 5: Teffup logglow zlow alflow
+    Model 6: Teffup logglow zup alfup
+    Model 7: Teffup loggup zlow alflow
+    Model 8: Teffup loggup zup alfup
 
     Args:
         stellar_parameters (dict): The stellar parameters to find bracketing models for.
@@ -175,10 +231,11 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
     Returns:
         list: A list of DataFrames entries containing the bracketing models.
     """
-    # Get all models with correct turbulence
+    # # Get all models with correct turbulence
     correct_turbulence_models = _get_models_with_exact_value(
         "turbulence_str", "01", model_atmospheres
     )
+
     # Get all models with lower Teff value than the given stellar parameters
     tefflow_models = _get_models_with_lower_parameter_value(
         "teff", stellar_parameters["teff"], correct_turbulence_models
@@ -208,14 +265,54 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
         "z", stellar_parameters["z"], tefflow_logglow_zlow_models
     )
 
+    # Model 1: Tefflow logglow zlow alflow
+    # Calculate alflow based of zlow
+    zlow = closest_tefflow_logglow_models.iloc[0]["z"]
+    alflow = calculate_alpha(zlow)
+
+    # From the subset of models with the closest lower Teff, logg, and z values,
+    # get the models with alpha = alflow
+    tefflow_logglow_zlow_alflow_models = _get_models_with_exact_value(
+        "alpha", alflow, closest_tefflow_logglow_zlow_models
+    )
+    # Choose the first model in the subset
+    # If no models with alflow are found, choose the one with the closest alpha value
+    model1 = (
+        tefflow_logglow_zlow_alflow_models.iloc[0]
+        if not tefflow_logglow_zlow_alflow_models.empty
+        else _get_closest_models(
+            "alpha", alflow, closest_tefflow_logglow_zlow_models
+        ).iloc[0]
+    )
+
     # From the subset of models with the closest lower Teff and logg values,
     # get the models with a z value greater than the target parameter
     tefflow_logglow_zup_models = _get_models_with_higher_parameter_value(
         "z", stellar_parameters["z"], closest_tefflow_logglow_models
     )
+
     # Filter these models to get the ones with the closest higher z value to the target parameter
     closest_tefflow_logglow_zup_models = _get_closest_models(
         "z", stellar_parameters["z"], tefflow_logglow_zup_models
+    )
+    # Model 2: Tefflow logglow zup alfup
+    # Calculate alfup based of zup
+    zup = closest_tefflow_logglow_zup_models.iloc[0]["z"]
+    alfup = calculate_alpha(zup)
+
+    # From the subset of models with the closest lower Teff value, lower logg value, and higher z value,
+    # get the models with an alpha value = alfup
+    tefflow_logglow_zup_alfup_models = _get_models_with_exact_value(
+        "alpha", alfup, closest_tefflow_logglow_zup_models
+    )
+    # Choose the first model in the subset
+    # If no models with alfup are found, choose the one with the closest alpha value
+    model2 = (
+        tefflow_logglow_zup_alfup_models.iloc[0]
+        if not tefflow_logglow_zup_alfup_models.empty
+        else _get_closest_models(
+            "alpha", alfup, closest_tefflow_logglow_zup_models
+        ).iloc[0]
     )
 
     # From the subset of models with the closest lower Teff value,
@@ -238,6 +335,26 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
         "z", stellar_parameters["z"], tefflow_loggup_zlow_models
     )
 
+    # Model 3: Tefflow loggup zlow alflow
+    # Calculate alflow based of zlow
+    zlow = closest_tefflow_loggup_zlow_models.iloc[0]["z"]
+    alflow = calculate_alpha(zlow)
+
+    # From the subset of models with the closest lower Teff value, higher logg value, and lower z value,
+    # get the models with alpha = alflow
+    tefflow_loggup_zlow_alflow_models = _get_models_with_exact_value(
+        "alpha", alflow, closest_tefflow_loggup_zlow_models
+    )
+    # Choose the first model in the subset
+    # If no models with alflow are found, choose the one with the closest alphavalue
+    model3 = (
+        tefflow_logglow_zlow_models.iloc[0]
+        if not tefflow_logglow_zlow_models.empty
+        else _get_closest_models(
+            "alpha", alflow, closest_tefflow_logglow_zlow_models
+        ).iloc[0]
+    )
+
     # From the subset of models with the closest lower Teff value and higher logg value,
     # get the models with a z value greater than the target parameter
     tefflow_loggup_zup_models = _get_models_with_higher_parameter_value(
@@ -246,6 +363,26 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
     # Filter these models to get the ones with the closest higher z value to the target parameter
     closest_tefflow_loggup_zup_models = _get_closest_models(
         "z", stellar_parameters["z"], tefflow_loggup_zup_models
+    )
+
+    # Model 4: Tefflow loggup zup alfup
+    # Calculate alfup based of zup
+    zup = closest_tefflow_loggup_zup_models.iloc[0]["z"]
+    alfup = calculate_alpha(zup)
+
+    # From the subset of models with the closest lower Teff value, higher logg value, and higher z value,
+    # get the models with alpha = alfup
+    tefflow_loggup_zup_alfup_models = _get_models_with_exact_value(
+        "alpha", alfup, closest_tefflow_loggup_zup_models
+    )
+    # Choose the first model in the subset
+    # If no models with alfup are found, choose the one with the closest alpha value
+    model4 = (
+        tefflow_loggup_zup_alfup_models.iloc[0]
+        if not tefflow_loggup_zup_alfup_models.empty
+        else _get_closest_models(
+            "alpha", alfup, closest_tefflow_loggup_zup_models
+        ).iloc[0]
     )
 
     # Get all models with higher Teff value than the target
@@ -277,6 +414,26 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
         "z", stellar_parameters["z"], teffup_logglow_zlow_models
     )
 
+    # Model 5: Teffup logglow zlow alflow
+    # Calculate alflow based of zlow
+    zlow = closest_teffup_logglow_zlow_models.iloc[0]["z"]
+    alflow = calculate_alpha(zlow)
+
+    # From the subset of models with the closest higher Teff value, lower logg value, and lower z value,
+    # get the models with alpha = alflow
+    teffup_logglow_zlow_alflow_models = _get_models_with_exact_value(
+        "alpha", alflow, closest_teffup_logglow_zlow_models
+    )
+    # Choose the first model in the subset
+    # If no models with alflow are found, choose the one with the closest alpha value
+    model5 = (
+        teffup_logglow_zlow_alflow_models.iloc[0]
+        if not teffup_logglow_zlow_alflow_models.empty
+        else _get_closest_models(
+            "alpha", alflow, closest_teffup_logglow_zlow_models
+        ).iloc[0]
+    )
+
     # From the subset of models with the closest higher Teff and lower logg values,
     # get the models with a z value greater than the target parameter
     teffup_logglow_zup_models = _get_models_with_higher_parameter_value(
@@ -285,6 +442,26 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
     # Filter these models to get the ones with the closest higher z value to the target parameter
     closest_teffup_logglow_zup_models = _get_closest_models(
         "z", stellar_parameters["z"], teffup_logglow_zup_models
+    )
+
+    # Model 6: Teffup logglow zup alfup
+    # Calculate alfup based of zup
+    zup = closest_teffup_logglow_zup_models.iloc[0]["z"]
+    alfup = calculate_alpha(zup)
+
+    # From the subset of models with the closest higher Teff value, lower logg value, and higher z value,
+    # get the models with alpha = alfup
+    teffup_logglow_zup_alfup_models = _get_models_with_exact_value(
+        "alpha", alfup, closest_teffup_logglow_zup_models
+    )
+    # Choose the first model in the subset
+    # If no models with alfup are found, choose the one with the closest alpha value
+    model6 = (
+        teffup_logglow_zup_alfup_models.iloc[0]
+        if not teffup_logglow_zup_alfup_models.empty
+        else _get_closest_models(
+            "alpha", alfup, closest_teffup_logglow_zup_models
+        ).iloc[0]
     )
 
     # From the subset of models with the closest higher Teff value,
@@ -307,6 +484,24 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
         "z", stellar_parameters["z"], teffup_loggup_zlow_models
     )
 
+    # Model 7: Teffup loggup zlow alflow
+    # Calculate alflow based of zlow
+    zlow = closest_teffup_loggup_zlow_models.iloc[0]["z"]
+    alflow = calculate_alpha(zlow)
+
+    # From the subset of models with the closest higher Teff value, higher logg value, and lower z value,
+    # get the models with alpha = alflow
+    teffup_loggup_zlow_alflow_models = _get_models_with_exact_value(
+        "alpha", alflow, closest_teffup_loggup_zlow_models
+    )
+    # Filter these models to get the ones with the closest lower alpha value to the target parameter
+    # If no models are found, return the closest model (not sure if this is closest)
+    model7 = (
+        teffup_loggup_zlow_alflow_models.iloc[0]
+        if (teffup_loggup_zlow_alflow_models.index.size > 0)
+        else closest_teffup_loggup_zlow_models.iloc[0]
+    )
+
     # From the subset of models with the closest higher Teff and higher logg values,
     # get the models with a z value greater than the target parameter
     teffup_loggup_zup_models = _get_models_with_higher_parameter_value(
@@ -317,17 +512,22 @@ def _get_bracketing_models(stellar_parameters: dict, model_atmospheres: pd.DataF
         "z", stellar_parameters["z"], teffup_loggup_zup_models
     )
 
-    # Get the first model in every subset
-    # TODO: If there are more than one model in any of the subsets, the interpolation should stop
-    # TODO: If there are no models in any of the subsets, the interpolation should stop
-    model1 = closest_tefflow_logglow_zlow_models.iloc[0]
-    model2 = closest_tefflow_logglow_zup_models.iloc[0]
-    model3 = closest_tefflow_loggup_zlow_models.iloc[0]
-    model4 = closest_tefflow_loggup_zup_models.iloc[0]
-    model5 = closest_teffup_logglow_zlow_models.iloc[0]
-    model6 = closest_teffup_logglow_zup_models.iloc[0]
-    model7 = closest_teffup_loggup_zlow_models.iloc[0]
-    model8 = closest_teffup_loggup_zup_models.iloc[0]
+    # Model 8: Teffup loggup zup alfup
+    # Calculate alfup based of zup
+    zup = closest_teffup_loggup_zup_models.iloc[0]["z"]
+    alfup = calculate_alpha(zup)
+    # From the subset of models with the closest higher Teff value, higher logg value, and higher z value,
+    # get the models with alpha = alfup
+    teffup_loggup_zup_alfup_models = _get_models_with_exact_value(
+        "alpha", alfup, closest_teffup_loggup_zup_models
+    )
+    # Filter these models to get the ones with the closest higher alpha value to the target parameter
+    # If no models are found, return the closest model (not sure if this is closest)
+    model8 = (
+        teffup_loggup_zup_alfup_models.iloc[0]
+        if not teffup_loggup_zup_alfup_models.empty
+        else closest_teffup_loggup_zup_models.iloc[0]
+    )
 
     return [model1, model2, model3, model4, model5, model6, model7, model8]
 
@@ -386,27 +586,15 @@ foreach zref ( {{PY_ZREF}} )
 set modele_out = {{PY_OUTPUT_PATH}}/p${Tref}_g${loggref}_z${zref}.interpol
 set modele_out2 = {{PY_OUTPUT_PATH}}/p${Tref}_g${loggref}_z${zref}.alt
 
-# grid values bracketting the interpolation point (should be automatised!)
-set Tefflow = {{PY_TEFFLOW}}
-set Teffup  = {{PY_TEFFUP}}
-set logglow = {{PY_LOGGLOW}}
-set loggup  = {{PY_LOGGUP}}
-set zlow    = {{PY_ZLOW}}
-set zup     = {{PY_ZUP}}
-set alflow  = +0.00
-set alfup   = +0.00
-set xit     = 01
-
 #plane-parallel models
-set model1 = p${Tefflow}_g${logglow}_m0.0_t${xit}_st_z${zlow}_a${alflow}_c+0.00_n+0.00_o${alflow}_r+0.00_s+0.00.mod
-set model2 = p${Tefflow}_g${logglow}_m0.0_t${xit}_st_z${zup}_a${alfup}_c+0.00_n+0.00_o${alfup}_r+0.00_s+0.00.mod
-set model3 = p${Tefflow}_g${loggup}_m0.0_t${xit}_st_z${zlow}_a${alflow}_c+0.00_n+0.00_o${alflow}_r+0.00_s+0.00.mod
-set model4 = p${Tefflow}_g${loggup}_m0.0_t${xit}_st_z${zup}_a${alfup}_c+0.00_n+0.00_o${alfup}_r+0.00_s+0.00.mod
-set model5 = p${Teffup}_g${logglow}_m0.0_t${xit}_st_z${zlow}_a${alflow}_c+0.00_n+0.00_o${alflow}_r+0.00_s+0.00.mod
-set model6 = p${Teffup}_g${logglow}_m0.0_t${xit}_st_z${zup}_a${alfup}_c+0.00_n+0.00_o${alfup}_r+0.00_s+0.00.mod
-set model7 = p${Teffup}_g${loggup}_m0.0_t${xit}_st_z${zlow}_a${alflow}_c+0.00_n+0.00_o${alflow}_r+0.00_s+0.00.mod
-set model8 = p${Teffup}_g${loggup}_m0.0_t${xit}_st_z${zup}_a${alfup}_c+0.00_n+0.00_o${alfup}_r+0.00_s+0.00.mod
-
+set model1 = {{PY_MODEL1}}
+set model2 = {{PY_MODEL2}}
+set model3 = {{PY_MODEL3}}
+set model4 = {{PY_MODEL4}}
+set model5 = {{PY_MODEL5}}
+set model6 = {{PY_MODEL6}}
+set model7 = {{PY_MODEL7}}
+set model8 = {{PY_MODEL8}}
 
 #### the test option is set to .true. if you want to plot comparison model (model_test)
 set test = '.false.'
@@ -440,7 +628,9 @@ end
         file.write(script_content)
 
 
-def copy_template_interpolator_script(config: Configuration, stellar_parameters: dict):
+def copy_template_interpolator_script(
+    config: Configuration, alpha: float, stellar_parameters: dict
+):
     """
     Copy the template interpolator script to a unique script for this set of stellar parameters.
 
@@ -454,7 +644,7 @@ def copy_template_interpolator_script(config: Configuration, stellar_parameters:
     Returns:
         str: The path of the copied script.
     """
-    unique_filename = compose_filename(stellar_parameters)
+    unique_filename = compose_filename(stellar_parameters, alpha)
     path_to_script_copy = (
         f"{config.path_output_directory}/temp/interpolate_{unique_filename}.script"
     )
@@ -489,19 +679,38 @@ def _load_parameters_to_interpolator_script(
         script_content = file.read()
 
     # Set the parameter values
+    # updates = {
+    #     "MODEL_PATH": config.path_model_atmospheres,
+    #     "TREF": stellar_parameters["teff"],
+    #     "LOGGREF": stellar_parameters["logg"],
+    #     "ZREF": stellar_parameters["z"],
+    #     "OUTPUT_PATH": f"{config.path_output_directory}/temp",
+    #     "TEFFLOW": bracketing_models[0]["teff_str"],
+    #     "TEFFUP": bracketing_models[7]["teff_str"],
+    #     "LOGGLOW": bracketing_models[0]["logg_str"],
+    #     "LOGGUP": bracketing_models[7]["logg_str"],
+    #     "ZLOW": bracketing_models[0]["z_str"],
+    #     "ZUP": bracketing_models[7]["z_str"],
+    # }
+    # print(
+    #     f"Bracketing models: \n{bracketing_models[0]} \n{bracketing_models[1]} \n{bracketing_models[2]}\n{bracketing_models[3]}\n{bracketing_models[4]}\n{bracketing_models[5]}\n{bracketing_models[6]}\n{bracketing_models[7]}"
+    # )
     updates = {
         "MODEL_PATH": config.path_model_atmospheres,
         "TREF": stellar_parameters["teff"],
         "LOGGREF": stellar_parameters["logg"],
         "ZREF": stellar_parameters["z"],
         "OUTPUT_PATH": f"{config.path_output_directory}/temp",
-        "TEFFLOW": bracketing_models[0]["teff_str"],
-        "TEFFUP": bracketing_models[7]["teff_str"],
-        "LOGGLOW": bracketing_models[0]["logg_str"],
-        "LOGGUP": bracketing_models[7]["logg_str"],
-        "ZLOW": bracketing_models[0]["z_str"],
-        "ZUP": bracketing_models[7]["z_str"],
+        "MODEL1": bracketing_models[0].filename,
+        "MODEL2": bracketing_models[1].filename,
+        "MODEL3": bracketing_models[2].filename,
+        "MODEL4": bracketing_models[3].filename,
+        "MODEL5": bracketing_models[4].filename,
+        "MODEL6": bracketing_models[5].filename,
+        "MODEL7": bracketing_models[6].filename,
+        "MODEL8": bracketing_models[7].filename,
     }
+
     # Replace the placeholders with the values
     for update, value in updates.items():
         script_content = script_content.replace(f"{{{{PY_{update}}}}}", str(value))
@@ -551,7 +760,7 @@ def _run_interpolation_script(script_path: str, config: Configuration):
 
 
 def generate_interpolated_model_atmosphere(
-    stellar_parameters: dict, config: Configuration
+    stellar_parameters: dict, alpha: float, config: Configuration
 ):
     """
     Generate an interpolated model atmosphere.
@@ -573,7 +782,7 @@ def generate_interpolated_model_atmosphere(
     )
     # Create a unique script for this interpolation
     interpolator_script_path = copy_template_interpolator_script(
-        config, stellar_parameters
+        config, alpha, stellar_parameters
     )
     # Load the stellar parameters and bracketing models into the script
     _load_parameters_to_interpolator_script(

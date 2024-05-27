@@ -34,15 +34,20 @@ RESULTFILE: '{result_file}'
 METALLICITY: {metallicity:.2f}
 'ALPHA/Fe:' {alpha:.2f}
 {abundances}
-'{line_lists}'
+{line_lists}
 SPHERICAL: .false.
+30
+300.00
+15
+1.30
 """
 
 
 class TurbospectrumConfiguration:
 
     def __init__(self, config: Configuration, stellar_parameters: dict):
-        file_name = compose_filename(stellar_parameters)
+        self.alpha = calculate_alpha(stellar_parameters["z"])
+        file_name = compose_filename(stellar_parameters, self.alpha)
 
         self.path_model_atmosphere = None
         self.path_model_opac = f"{config.path_output_directory}/temp/opac_{file_name}"
@@ -50,7 +55,6 @@ class TurbospectrumConfiguration:
         self.path_bsyn = f"{config.path_output_directory}/temp/{file_name}_bsyn"
         self.path_result = f"{config.path_output_directory}/{file_name}.spec"
         self.interpolated_model_atmosphere = True
-        self.alpha = calculate_alpha(stellar_parameters["z"])
 
         set_abundances(self, stellar_parameters)
 
@@ -207,10 +211,11 @@ def create_line_lists_str(config: Configuration):
 
     # Format the list as a string containing the keyword needed for the bsyn script,
     # with each path on a new line
-    line_lists_str = "NFILES: {:d}\n".format(len(line_list_paths))
+    line_lists_str = "NFILES: {:d}".format(len(line_list_paths))
     for file in line_list_paths:
-        line_lists_str += "{}\n".format(file)
+        line_lists_str += "\n{}".format(file)
 
+    line_lists_str += "\n"
     return line_lists_str
 
 
