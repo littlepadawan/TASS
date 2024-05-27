@@ -24,10 +24,12 @@ class TestUtils(unittest.TestCase):
             "teff": 6000,
             "logg": 4.0,
             "z": -2.00,
+            "alpha": 0.40,
             "teff_str": "6000",
             "turbulence_str": "02",
             "logg_str": "+4.0",
             "z_str": "-2.00",
+            "alpha_str": "+0.40",
             "filename": "p6000_g+4.0_m0.0_t02_st_z-2.00_a+0.40_c+0.00_n+0.00_o+0.40_r+0.00_s+0.00.mod",
         }
 

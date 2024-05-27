@@ -164,7 +164,9 @@ class TestRunTurbospectrum(unittest.TestCase):
         mock_TurbospectrumConfiguration,
     ):
         # Set up mock return values
-        mock_TurbospectrumConfiguration.return_value = MagicMock()
+        mock_config_instance = MagicMock()
+        mock_TurbospectrumConfiguration.return_value = mock_config_instance
+        mock_config_instance.alpha = 0.1
         mock_needs_interpolation.return_value = (True, ["matching_model"])
         mock_generate_interpolated_model_atmosphere.return_value = (
             "path/to/interpolated_model"
@@ -184,10 +186,10 @@ class TestRunTurbospectrum(unittest.TestCase):
             config, stellar_parameters
         )
         mock_needs_interpolation.assert_called_once_with(
-            stellar_parameters, model_atmospheres
+            stellar_parameters, 0.1, model_atmospheres
         )
         mock_generate_interpolated_model_atmosphere.assert_called_once_with(
-            stellar_parameters, config
+            stellar_parameters, 0.1, config
         )
         mock_create_babsma.assert_called_once_with(
             config, mock_TurbospectrumConfiguration.return_value, stellar_parameters
@@ -224,7 +226,9 @@ class TestRunTurbospectrum(unittest.TestCase):
         mock_TurbospectrumConfiguration,
     ):
         # Set up mock return values
-        mock_TurbospectrumConfiguration.return_value = MagicMock()
+        mock_config_instance = MagicMock()
+        mock_TurbospectrumConfiguration.return_value = mock_config_instance
+        mock_config_instance.alpha = 0.1
         mock_needs_interpolation.return_value = (False, ["matching_model"])
 
         # Create mock configuration objects
@@ -241,7 +245,7 @@ class TestRunTurbospectrum(unittest.TestCase):
             config, stellar_parameters
         )
         mock_needs_interpolation.assert_called_once_with(
-            stellar_parameters, model_atmospheres
+            stellar_parameters, 0.1, model_atmospheres
         )
         mock_generate_interpolated_model_atmosphere.assert_not_called()
         mock_create_babsma.assert_called_once_with(

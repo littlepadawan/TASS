@@ -16,17 +16,18 @@ class TestConfiguration(unittest.TestCase):
         Test that the TurbospectrumConfiguration class is initialized correctly
         """
         config = Configuration()
+
         stellar_parameters = {
             "teff": 5210,
             "logg": 4.3,
             "z": 0.05,
-            "mg": 0.2,
-            "ca": 0.3,
+            "mg": 0.20,
+            "ca": 0.30,
         }
         ts_config = turbospectrum_config.TurbospectrumConfiguration(
             config, stellar_parameters
         )
-        expected_file_name = "p5210_g+4.3_z+0.05_mg+0.2_ca+0.3"
+        expected_file_name = "p5210_g+4.3_z+0.05_a+0.00_mg+0.20_ca+0.30"
         expected_alpha = 0.0
         self.assertEqual(ts_config.path_model_atmosphere, None)
         self.assertEqual(
