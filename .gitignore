@@ -17,6 +17,9 @@ input/linelist/*
 input/model_atmosphere/*
 !input/model_atmosphere/readme.md
 
+# Ignore file with generated stellar parameters
+input/generated_parameters.txt
+
 # Ignore coverage files
 .coverage
 .coveragerc
