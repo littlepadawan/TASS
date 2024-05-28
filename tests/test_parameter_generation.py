@@ -1,7 +1,7 @@
 import os
 import unittest
 from shutil import rmtree
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 import numpy as np
 import source.parameter_generation as parameter_generation
@@ -9,6 +9,14 @@ from source.configuration_setup import Configuration
 
 
 class TestParameterGeneration(unittest.TestCase):
+    MIN_PARAMETER_DELTA = {
+        "teff": 50,
+        "logg": 0.1,
+        "z": 0.1,
+        "mg": 0.1,
+        "ca": 0.1,
+    }
+
     @classmethod
     def setUpClass(cls):
         # Set up dummy directories and files for testing
@@ -72,6 +80,14 @@ class TestParameterGeneration(unittest.TestCase):
             f.write("3862  4.79 -1.686  0.00  0.05\n")
             f.write("6897  2.45 -0.636  0.10 -0.05\n")
             f.write("2920  3.03 -3.941 -0.20  0.00\n")
+
+        cls.existing_parameters = {
+            "teff": [5000, 5100, 5200],
+            "logg": [4.0, 4.1, 4.2],
+            "z": [-1.0, -0.9, -0.8],
+            "mg": [0.1, 0.2, 0.3],
+            "ca": [0.2, 0.3, 0.4],
+        }
 
     @classmethod
     def tearDownClass(cls):
@@ -268,10 +284,8 @@ class TestParameterGeneration(unittest.TestCase):
             {"teff": 5045, "logg": 5.00, "z": 0.500, "mg": 0.6, "ca": -0.4},
         ]
 
-        with patch(
-            "source.parameter_generation.random.randint", side_effect=randint_values
-        ), patch(
-            "source.parameter_generation.random.uniform", side_effect=uniform_values
+        with patch("source.parameter_generation.random.randint"), patch(
+            "source.parameter_generation.random.uniform"
         ):
             result = parameter_generation.generate_random_parameters(config)
             self.assertEqual(len(result), 10)
@@ -279,6 +293,110 @@ class TestParameterGeneration(unittest.TestCase):
                 all(len(parameter_set) == 5 for parameter_set in result)
             )  # Ensure all parameter sets have 5 parameters
 
+            self.assertEqual(result, expected)
+
+    @patch("source.parameter_generation.random.randint")
+    @patch("source.parameter_generation.random.uniform")
+    def test_generate_random_parameters_with_mixed_collisions(
+        self, mock_randint, mock_uniform
+    ):
+        """
+        Test that the function handles a mix of valid and conflicting parameter sets.
+        """
+        # Set up mock values to create a mix of valid and conflicting sets
+        randint_values = [
+            5000,
+            5005,
+            5000,
+            5010,
+            5000,
+            5015,
+            5020,
+            5025,
+            5030,
+            5035,
+            5040,
+            5050,
+            5060,
+        ]
+        # Logg, z, mg, and ca values, interleaved
+        uniform_values = [
+            4.00,
+            -1.000,
+            0.1,
+            0.2,  # Conflict
+            4.06,
+            -0.899,
+            0.2,
+            0.1,
+            4.00,
+            -1.000,
+            0.1,
+            0.2,  # Conflict
+            4.12,
+            -0.799,
+            0.3,
+            0.0,
+            4.00,
+            -1.000,
+            0.1,
+            0.2,  # Conflict
+            4.18,
+            -0.699,
+            0.0,
+            -0.1,
+            4.24,
+            -0.599,
+            -0.1,
+            -0.2,
+            4.30,
+            -0.499,
+            -0.2,
+            0.3,
+            4.36,
+            -0.399,
+            0.4,
+            -0.3,
+            4.42,
+            -0.299,
+            0.5,
+            0.4,
+            4.48,
+            -0.199,
+            -0.4,
+            0.5,
+            4.54,
+            -0.099,
+            0.6,
+            -0.4,  # Ensure we have enough unique values to reach 10 sets
+            4.60,
+            0.000,
+            0.7,
+            0.6,
+        ]
+
+        config = Configuration("tests/test_input/configuration.cfg")
+        expected = [
+            {"teff": 5000, "logg": 4.00, "z": -1.000, "mg": 0.1, "ca": 0.2},
+            {"teff": 5005, "logg": 4.06, "z": -0.899, "mg": 0.2, "ca": 0.1},
+            {"teff": 5010, "logg": 4.12, "z": -0.799, "mg": 0.3, "ca": 0.0},
+            {"teff": 5015, "logg": 4.18, "z": -0.699, "mg": 0.0, "ca": -0.1},
+            {"teff": 5020, "logg": 4.24, "z": -0.599, "mg": -0.1, "ca": -0.2},
+            {"teff": 5025, "logg": 4.30, "z": -0.499, "mg": -0.2, "ca": 0.3},
+            {"teff": 5030, "logg": 4.36, "z": -0.399, "mg": 0.4, "ca": -0.3},
+            {"teff": 5035, "logg": 4.42, "z": -0.299, "mg": 0.5, "ca": 0.4},
+            {"teff": 5040, "logg": 4.48, "z": -0.199, "mg": -0.4, "ca": 0.5},
+            {"teff": 5050, "logg": 4.54, "z": -0.099, "mg": 0.6, "ca": -0.4},
+        ]
+
+        with patch(
+            "source.parameter_generation.random.randint", side_effect=randint_values
+        ), patch(
+            "source.parameter_generation.random.uniform", side_effect=uniform_values
+        ):
+            result = parameter_generation.generate_random_parameters(config)
+            self.assertEqual(len(result), 10)
+            self.assertTrue(all(len(parameter_set) == 5 for parameter_set in result))
             self.assertEqual(result, expected)
 
     @patch("random.randint")
@@ -434,6 +552,53 @@ class TestParameterGeneration(unittest.TestCase):
             self.assertEqual(len(result), 10)
             self.assertTrue(all(len(parameter_set) == 5 for parameter_set in result))
             self.assertEqual(result, expected)
+
+    def test_validate_new_set_no_collision(self):
+        new_set = (5300, 4.3, -0.7, 0.4, 0.5)
+        result = parameter_generation._validate_new_set(
+            *new_set, self.existing_parameters
+        )
+        self.assertTrue(result, "The new set should be valid, no collisions expected.")
+
+    def test_validate_new_set_collision(self):
+        new_set = (5000, 4.0, -1.0, 0.1, 0.2)
+        result = parameter_generation._validate_new_set(
+            *new_set, self.existing_parameters
+        )
+        self.assertFalse(
+            result,
+            "The new set should be invalid due to collision with an existing set.",
+        )
+
+    def test_validate_new_set_partial_collision(self):
+        new_set = (5000, 4.1, -1.0, 0.1, 0.2)
+        result = parameter_generation._validate_new_set(
+            *new_set, self.existing_parameters
+        )
+        self.assertTrue(
+            result,
+            "The new set should be valid, only partial collision in teff and logg.",
+        )
+
+    def test_validate_new_set_almost_full_collision(self):
+        new_set = (5100, 4.1, -0.9, 0.2, 0.0)
+        result = parameter_generation._validate_new_set(
+            *new_set, self.existing_parameters
+        )
+        self.assertTrue(
+            result,
+            "The new set should be valid, ca is not within the minimum delta.",
+        )
+
+    def test_validate_new_set_close_but_no_collision(self):
+        new_set = (5050, 4.05, -0.95, 0.15, 0.25)
+        result = parameter_generation._validate_new_set(
+            *new_set, self.existing_parameters
+        )
+        self.assertTrue(
+            result,
+            "The new set should be valid, no parameter within the minimum delta.",
+        )
 
     @patch("source.parameter_generation.random.randint")
     @patch("source.parameter_generation.random.uniform")

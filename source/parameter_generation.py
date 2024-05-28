@@ -253,13 +253,18 @@ def generate_parameters(config: Configuration):
     Returns:
         list: List of tuples containing the generated stellar parameters
     """
+    print("Im being called")
+    print("Read stellar parameter from file ", config.read_stellar_parameters_from_file)
     parameters = []
     # TODO: Write to a file?
     if config.read_stellar_parameters_from_file:
+        print("Reading stellar parameters from file")
         parameters = read_parameters_from_file(config)
     elif config.random_parameters:
+        print("Generating random stellar parameters")
         parameters = generate_random_parameters(config)
     else:
+        print("Generating evenly spaced stellar parameters")
         parameters = generate_evenly_spaced_parameters(config)
 
     # Write parameters to a file in the output directory
