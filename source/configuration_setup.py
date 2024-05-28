@@ -263,7 +263,7 @@ class Configuration:
         self._validate_effective_temperature()
         self._validate_surface_gravity()
         self._validate_metallicity()
-        self._validate_magensium_abundance()
+        self._validate_magnesium_abundance()
         self._validate_calcium_abundance()
 
         if self.random_parameters == True:
@@ -340,7 +340,7 @@ class Configuration:
                 f"The minimum metallicity {self.z_min} must be smaller than the maximum metallicity {self.z_max}."
             )
 
-    def _validate_magensium_abundance(self):
+    def _validate_magnesium_abundance(self):
         """
         Check that the magnesium abundance range is valid.
 
