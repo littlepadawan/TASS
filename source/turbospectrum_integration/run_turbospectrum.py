@@ -1,3 +1,5 @@
+import concurrent.futures
+import copy
 from os import chdir, getcwd
 from subprocess import PIPE, run
 
@@ -109,12 +111,9 @@ def generate_one_spectrum(
             ts_config.path_model_atmosphere = generate_interpolated_model_atmosphere(
                 stellar_parameters, ts_config.alpha, config
             )
-            print(
-                f"Interpolated model atmosphere generated: {ts_config.path_model_atmosphere}"
-            )
         except Exception as e:
             print(
-                f"Error generating interpolated model atmosphere for stellar parameters: {stellar_parameters}. Moving on"
+                f"Error generating interpolated model atmosphere for stellar parameters: {stellar_parameters}.\n{e}\nMoving on"
             )
             return
             # raise e
@@ -145,7 +144,21 @@ def generate_all_spectra(
         model_atmospheres (DataFrame): The DataFrame containing the model atmospheres
         stellar_parameters (list): The list of stellar parameters for which to generate spectra
     """
-    for parameter_set in stellar_parameters:
-        generate_one_spectrum(config, parameter_set, model_atmospheres)
-        # TODO: If successful, add the parameters to a list of successful parameters
-        # TODO: If unsuccessful, add the parameters to a list of unsuccessful parameters (split by reasons)
+    # for parameter_set in stellar_parameters:
+    #     generate_one_spectrum(config, parameter_set, model_atmospheres)
+
+    def worker(parameter_set):
+        config_copy = copy.deepcopy(config)
+        generate_one_spectrum(config_copy, parameter_set, model_atmospheres)
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(worker, parameter_set)
+            for parameter_set in stellar_parameters
+        ]
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                future.result()
+            except Exception as e:
+                print(f"Error generating spectrum: {e}")
+                # raise e
