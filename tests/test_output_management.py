@@ -181,3 +181,18 @@ class TestOutputManagement(unittest.TestCase):
         file_handle.write.assert_any_call("----------------------------------------\n")
         file_handle.write.assert_any_call(f"{successful_parameters[0]}\n")
         file_handle.write.assert_any_call(f"{successful_parameters[1]}\n")
+
+    @patch("source.output_management.rmtree")
+    def test_remove_temp_files(self, mock_rmtree):
+        """
+        Test that the temp directory is removed
+        """
+        # Create a mock Configuration object
+        config = MagicMock(spec=Configuration)
+        config.path_output_directory = "/path/to/output"
+
+        # Call the function
+        output_management.remove_temp_files(config)
+
+        # Verify that os.rmdir was called with the correct arguments
+        output_management.rmtree.assert_called_once_with("/path/to/output/temp")
