@@ -130,7 +130,7 @@ class TestConfigurationSetup(unittest.TestCase):
         """
         Test that an error is raised if the path to the interpolator does not exist
         """
-        # TODO: Test passes but coverage does not acknowledge it
+        # !Test passes but coverage does not acknowledge it
         config = Configuration("tests/test_input/configuration.cfg")
         config.path_interpolator = "tests/turbospectrum/non_existing_interpolator"
         with self.assertRaises(FileNotFoundError):
@@ -424,6 +424,126 @@ class TestConfigurationSetup(unittest.TestCase):
         self.assertEqual(config.logg_min, 0)
         self.assertEqual(config.z_max, 0)
         self.assertEqual(config.z_min, 0)
+        self.assertEqual(config.num_points_teff, 0)
+        self.assertEqual(config.num_points_logg, 0)
+        self.assertEqual(config.num_points_z, 0)
+        self.assertEqual(config.num_points_mg, 0)
+        self.assertEqual(config.num_points_ca, 0)
+
+    def test_random_parameters_set_to_true(self):
+        """
+        Test that the number of spectra to generate is loaded if random parameters are set to True
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        self.assertTrue(config.random_parameters)
+        self.assertEqual(config.num_spectra, 10)
+
+    def test_random_parameters_set_to_false(self):
+        """
+        Test that the number of points in each parameter dimension is loaded if random parameters are set to False
+        """
+        with open(
+            "tests/test_input/configuration_evenly_spaced_parameters.cfg", "w"
+        ) as f:
+            f.write("[Turbospectrum_compiler]\n")
+            f.write("Compiler = gfortran\n")
+            f.write("[Paths]\n")
+            f.write("turbospectrum = ./tests/test_input/turbospectrum/\n")
+            f.write("interpolator = ./tests/test_input/turbospectrum/interpolator/\n")
+            f.write("linelists = ./tests/test_input/linelists/\n")
+            f.write("model_atmospheres = ./tests/test_input/model_atmospheres/\n")
+            f.write("input_parameters = ./tests/test_input/input_parameters.txt\n")
+            f.write("output_directory = ./tests/test_input/output\n")
+            f.write("[Atmosphere_parameters]\n")
+            f.write("wavelength_min = 5700\n")
+            f.write("wavelength_max = 7000\n")
+            f.write("wavelength_step = 0.05\n")
+            f.write("[Stellar_parameters]\n")
+            f.write("read_from_file = False\n")
+            f.write("random_parameters = False\n")  # This is the only difference
+            f.write("teff_min = 5000\n")
+            f.write("teff_max = 7000\n")
+            f.write("logg_min = 4.0\n")
+            f.write("logg_max = 5.0\n")
+            f.write("z_min = -1.0\n")
+            f.write("z_max = 0.5\n")
+            f.write("mg_min = -0.8\n")
+            f.write("mg_max = 1.2\n")
+            f.write("ca_min = -0.8\n")
+            f.write("ca_max = 1.2\n")
+            f.write("[Random_settings]\n")
+            f.write("num_spectra = 10\n")
+            f.write("[Even_settings]\n")
+            f.write("num_points_teff = 10\n")
+            f.write("num_points_logg = 8\n")
+            f.write("num_points_z = 5\n")
+            f.write("num_points_mg = 5\n")
+            f.write("num_points_ca = 5\n")
+            f.write("[Turbospectrum_settings]\n")
+            f.write("xit = 1.0\n")
+        config = Configuration(
+            "tests/test_input/configuration_evenly_spaced_parameters.cfg"
+        )
+
+        # Test that number of points in each parameter dimension is loaded
+        self.assertEqual(config.num_points_teff, 10)
+        self.assertEqual(config.num_points_logg, 8)
+        self.assertEqual(config.num_points_z, 5)
+        self.assertEqual(config.num_points_mg, 5)
+        self.assertEqual(config.num_points_ca, 5)
+
+        # Test that number of spextra is not loaded
+        self.assertEqual(config.num_spectra, 0)
+
+    def test_invalid_mg_range(self):
+        """
+        Test that an error is raised if the min magnesium abundance is greater than the max magnesium abundance
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.mg_min = 1.2
+        config.mg_max = -0.8
+        with self.assertRaises(ValueError):
+            config._validate_magnesium_abundance()
+
+    def test_invalid_ca_range(self):
+        """
+        Test that an error is raised if the min calcium abundance is greater than the max calcium abundance
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+        config.ca_min = 1.2
+        config.ca_max = -0.8
+        with self.assertRaises(ValueError):
+            config._validate_calcium_abundance()
+
+    def test_validate_evenly_spaced_parameter_points(self):
+        """
+        Test that an error is raised if the number of points in any parameter dimension is less than 1.
+        """
+        config = Configuration("tests/test_input/configuration.cfg")
+
+        config.num_points_teff = 0
+        with self.assertRaises(ValueError):
+            config._validate_evenly_spaced_parameters_points()
+
+        config.num_points_teff = 10
+        config.num_points_logg = 0
+        with self.assertRaises(ValueError):
+            config._validate_evenly_spaced_parameters_points()
+
+        config.num_points_logg = 8
+        config.num_points_z = 0
+        with self.assertRaises(ValueError):
+            config._validate_evenly_spaced_parameters_points()
+
+        config.num_points_z = 5
+        config.num_points_mg = 0
+        with self.assertRaises(ValueError):
+            config._validate_evenly_spaced_parameters_points()
+
+        config.num_points_mg = 5
+        config.num_points_ca = 0
+        with self.assertRaises(ValueError):
+            config._validate_evenly_spaced_parameters_points()
 
 
 if __name__ == "__main__":
