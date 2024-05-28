@@ -1,4 +1,5 @@
 import logging
+import time
 
 from configuration_setup import Configuration
 from output_management import (
@@ -19,7 +20,12 @@ from turbospectrum_integration.utils import collect_model_atmosphere_parameters
 def main():
     # TODO: Add functionality to read path from commandline
     # Set up logging
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+    )
+
+    start_time = time.time()
 
     try:
         # Initialize configuration
@@ -39,7 +45,6 @@ def main():
         # Generate stellar parameters
         stellar_parameters = generate_parameters(config)
 
-        print(f"Stellar parameters: {stellar_parameters}")
         # Compile Turbospectrum and interpolator
         compile_turbospectrum(config)
         compile_interpolator(config)
@@ -57,6 +62,10 @@ def main():
     # Toggle the function call below to access scripts
     # and intermediate files used during the process
     # remove_temp_files(config)
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    logging.info(f"Total execution time: {elapsed_time:.2f} seconds")
 
 
 if __name__ == "__main__":
