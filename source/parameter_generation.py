@@ -57,6 +57,7 @@ def read_parameters_from_file(config: Configuration):
         # Check that all required parameters are present in the file
         try:
             _check_required_parameters(header)
+            print("All required parameters are present in the input file")
         except ValueError as e:
             print(e)
             sys.exit(
@@ -70,11 +71,17 @@ def read_parameters_from_file(config: Configuration):
             # Split the line into a list of values
             values = line.strip().split()
 
+            float_values = [float(value) for value in values]
+
             # Create a dictionary with the header as keys and the values from this line
-            stellar_parameters = dict(zip(header, values))
+            stellar_parameters = dict(zip(header, float_values))
 
             # Add the dictionary to the list of all stellar parameters
             all_stellar_parameters.append(stellar_parameters)
+
+        # Convert teff values to integers
+        for parameter_set in all_stellar_parameters:
+            parameter_set["teff"] = int(parameter_set["teff"])
 
     return all_stellar_parameters
 
