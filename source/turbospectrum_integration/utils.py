@@ -84,10 +84,7 @@ def stellar_parameter_to_str(stellar_parameter, decimals):
     Returns:
         str: A string representation of the stellar parameter.
     """
-    if stellar_parameter < 0:
-        return f"{stellar_parameter:+.{decimals}f}"
-    else:
-        return f"{stellar_parameter:+.{decimals}f}"
+    return f"{stellar_parameter:+.{decimals}f}"
 
 
 def compose_filename(stellar_parameters: dict, alpha):
