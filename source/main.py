@@ -1,20 +1,22 @@
 import logging
 import time
 
-from configuration_setup import Configuration
-from output_management import (
+from source.configuration_setup import Configuration
+from source.output_management import (
     copy_config_file,
     remove_temp_files,
     set_up_output_directory,
 )
-from parameter_generation import generate_parameters
-from turbospectrum_integration.compilation import (
+from source.parameter_generation import generate_parameters
+from source.turbospectrum_integration.compilation import (
     compile_interpolator,
     compile_turbospectrum,
 )
-from turbospectrum_integration.interpolation import create_template_interpolator_script
-from turbospectrum_integration.run_turbospectrum import generate_all_spectra
-from turbospectrum_integration.utils import collect_model_atmosphere_parameters
+from source.turbospectrum_integration.interpolation import (
+    create_template_interpolator_script,
+)
+from source.turbospectrum_integration.run_turbospectrum import generate_all_spectra
+from source.turbospectrum_integration.utils import collect_model_atmosphere_parameters
 
 
 def main():

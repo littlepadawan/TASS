@@ -5,20 +5,17 @@ import sys
 import numpy as np
 from source.configuration_setup import Configuration
 
+# Parameters required in an input file provided by the user
 REQUIRED_PARAMETERS = ["teff", "logg", "z", "mg", "ca"]
+
+# Delta values for each parameter, if two parameter value are closer
+# than their corresponding delta, they are considered equal
 MIN_PARAMETER_DELTA = {
     "teff": 5,
     "logg": 0.05,
     "z": 0.001,
     "mg": 0.001,
     "ca": 0.001,
-}
-
-# TODO: This should be removed once loopsq
-MAX_PARAMETER_DISTANCE = {
-    "teff": 100,
-    "logg": 0.5,
-    "z": 0.01,
 }
 
 
@@ -46,7 +43,7 @@ def read_parameters_from_file(config: Configuration):
     Read stellar parameters from input file
 
     Args:
-        config (Configuration): Configuration object
+        config (Configuration): Configuration object containing the path to the input file
     Returns:
         list: List of dictionaries containing the stellar parameters
     """
@@ -57,7 +54,7 @@ def read_parameters_from_file(config: Configuration):
         # Check that all required parameters are present in the file
         try:
             _check_required_parameters(header)
-            print("All required parameters are present in the input file")
+
         except ValueError as e:
             print(e)
             sys.exit(
@@ -90,6 +87,10 @@ def _within_min_delta(new_parameter, existing, min_delta):
     """
     Check if the value of new_parameter is within the minimum delta of existing.
 
+    Args:
+        new_parameter (float): The new parameter value
+        existing (float): The existing parameter value
+        min_delta (float): The minimum delta between the two values
     Returns:
         bool: True if the value of new_parameter is within the minimum delta of existing, False otherwise
     """
@@ -102,6 +103,7 @@ def _validate_new_set(
     """
     Check if a new set of stellar parameters is valid, i.e. if it is outside the minimum distance of any existing set.
 
+    As long as not all parameters are within the minimum distance of an existing set, the new set is considered valid.
     Args:
         teff (int): Effective temperature
         logg (float): Surface gravity
@@ -253,18 +255,13 @@ def generate_parameters(config: Configuration):
     Returns:
         list: List of tuples containing the generated stellar parameters
     """
-    print("Im being called")
-    print("Read stellar parameter from file ", config.read_stellar_parameters_from_file)
+
     parameters = []
-    # TODO: Write to a file?
     if config.read_stellar_parameters_from_file:
-        print("Reading stellar parameters from file")
         parameters = read_parameters_from_file(config)
     elif config.random_parameters:
-        print("Generating random stellar parameters")
         parameters = generate_random_parameters(config)
     else:
-        print("Generating evenly spaced stellar parameters")
         parameters = generate_evenly_spaced_parameters(config)
 
     # Write parameters to a file in the output directory

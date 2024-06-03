@@ -39,6 +39,16 @@ def generate_parameter_file(
     no_files_found_for_interpolation: list,
     multiple_files_found_for_interpolation: list,
 ):
+    """
+    Create a file containing the stellar parameters for which spectra were generated
+
+    OBS: This function is not used
+    Args:
+        config (Configuration): Configuration object containing the path to the output directory
+        successful_parameters (list): List of dictionaries containing the successful parameter sets
+        no_files_found_for_interpolation (list): List of dictionaries containing the parameter sets for which no files were found for interpolation
+        multiple_files_found_for_interpolation (list): List of dictionaries containing the parameter sets for which multiple files were found for interpolation
+    """
     # Create a file in the output directory
     with open(f"{config.path_output_directory}/stellar_parameters.txt", "w") as file:
 

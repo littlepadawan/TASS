@@ -38,10 +38,12 @@ class TestRunTurbospectrum(unittest.TestCase):
         # Create mock configuration objects
         ts_config = MagicMock(spec=TurbospectrumConfiguration)
         ts_config.path_babsma = "path/to/babsma"
+        ts_config.file_name = "mock_file_name"
 
         config = MagicMock(spec=Configuration)
         config.path_turbospectrum = "path/to/turbospectrum"
         config.path_turbospectrum_compiled = "path/to/turbospectrum_compiled"
+        config.path_output_directory = "path/to/output"
 
         # Call the function
         run_babsma(ts_config, config)
@@ -72,10 +74,12 @@ class TestRunTurbospectrum(unittest.TestCase):
         # Create mock configuration objects
         ts_config = MagicMock(spec=TurbospectrumConfiguration)
         ts_config.path_babsma = "path/to/babsma"
+        ts_config.file_name = "mock_file_name"
 
         config = MagicMock(spec=Configuration)
         config.path_turbospectrum = "path/to/turbospectrum"
         config.path_turbospectrum_compiled = "path/to/turbospectrum_compiled"
+        config.path_output_directory = "path/to/output"
 
         # Use assertRaises to check for the exception
         with self.assertRaises(Exception) as context:
@@ -96,10 +100,12 @@ class TestRunTurbospectrum(unittest.TestCase):
         # Create mock configuration objects
         ts_config = MagicMock(spec=TurbospectrumConfiguration)
         ts_config.path_bsyn = "path/to/bsyn"
+        ts_config.file_name = "mock_file_name"
 
         config = MagicMock(spec=Configuration)
         config.path_turbospectrum = "path/to/turbospectrum"
         config.path_turbospectrum_compiled = "path/to/turbospectrum_compiled"
+        config.path_output_directory = "path/to/output"
 
         # Call the function
         run_bsyn(ts_config, config)
@@ -130,10 +136,12 @@ class TestRunTurbospectrum(unittest.TestCase):
         # Create mock configuration objects
         ts_config = MagicMock(spec=TurbospectrumConfiguration)
         ts_config.path_bsyn = "path/to/bsyn"
+        ts_config.file_name = "mock_file_name"
 
         config = MagicMock(spec=Configuration)
         config.path_turbospectrum = "path/to/turbospectrum"
         config.path_turbospectrum_compiled = "path/to/turbospectrum_compiled"
+        config.path_output_directory = "path/to/output"
 
         # Use assertRaises to check for the exception
         with self.assertRaises(Exception) as context:
@@ -169,14 +177,17 @@ class TestRunTurbospectrum(unittest.TestCase):
         mock_config_instance.alpha = 0.1
         mock_needs_interpolation.return_value = (True, ["matching_model"])
         mock_generate_interpolated_model_atmosphere.return_value = (
-            "path/to/interpolated_model"
+            "path/to/interpolated_model",
+            None,
         )
 
         # Create mock configuration objects
         config = MagicMock(spec=Configuration)
         config.path_output_directory = "path/to/output"
-        stellar_parameters = {"teff": 5700, "logg": 4.5, "z": 0.0}
-        model_atmospheres = ["model1", "model2"]
+        stellar_parameters = {"teff": 5700, "logg": 4.5, "z": 0.0, "mg": 0.1, "ca": 0.2}
+        model_atmospheres = pd.DataFrame(
+            {"teff": [5500, 5800], "logg": [4.3, 4.6], "z": [-0.5, 0.0]}
+        )
 
         # Call the function
         generate_one_spectrum(config, stellar_parameters, model_atmospheres)
@@ -189,7 +200,7 @@ class TestRunTurbospectrum(unittest.TestCase):
             stellar_parameters, 0.1, model_atmospheres
         )
         mock_generate_interpolated_model_atmosphere.assert_called_once_with(
-            stellar_parameters, 0.1, config
+            stellar_parameters, 0.1, config, model_atmospheres
         )
         mock_create_babsma.assert_called_once_with(
             config, mock_TurbospectrumConfiguration.return_value, stellar_parameters

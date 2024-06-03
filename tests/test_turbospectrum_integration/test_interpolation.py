@@ -204,28 +204,21 @@ class TestInterpolation(unittest.TestCase):
         self.assertEqual(8, len(result))
         # TODO: Check that each model follows the required pattern
 
-    def test_get_bracketing_models_failure(self):
-        """Test that the function raises a ValueError when there are no bracketing models."""
-        # stellar_parameters = {"teff": 2500, "logg": -3.0, "z": -5.00}
-        # alpha = 0.00
-        # with self.assertRaises(ValueError):
-        #     interpolation._get_bracketing_models(
-        #         stellar_parameters, alpha, self.MODEL_ATMOSPHERES
-        #     )
-        pass
-
     @patch("source.turbospectrum_integration.interpolation._get_bracketing_models")
-    @patch(
-        "source.turbospectrum_integration.interpolation.collect_model_atmosphere_parameters"
-    )
-    def test_get_models_for_interpolating(
-        self, mock_collect_models, mock_get_bracketing_models
-    ):
+    def test_get_models_for_interpolating(self, mock_get_bracketing_models):
         """Test that the function returns the bracketing models needed for interpolation."""
         stellar_parameters = {"teff": 5500, "logg": 4.25, "z": 0.10}
         directory = "/path/to/dummy-directory/"
-        mock_models_df = MagicMock(name="DataFrame of models")
-        mock_collect_models.return_value = mock_models_df
+        # Create a mock DataFrame with consistent structure
+        mock_models_df = pd.DataFrame(
+            {
+                "teff": [5000, 5200, 5400, 5600, 5800],
+                "logg": [4.0, 4.1, 4.2, 4.3, 4.4],
+                "z": [-1.0, -0.5, 0.0, 0.5, 1.0],
+                "turbulence_str": ["01"] * 5,
+            }
+        )
+
         bracketing_models = [
             MagicMock(name="Model 1"),
             MagicMock(name="Model 2"),
@@ -237,15 +230,21 @@ class TestInterpolation(unittest.TestCase):
             MagicMock(name="Model 8"),
         ]
         mock_get_bracketing_models.return_value = bracketing_models
-        result = interpolation._get_models_for_interpolation(
-            stellar_parameters, directory
+        result, error_message = interpolation._get_models_for_interpolation(
+            stellar_parameters, mock_models_df
         )
+        # Access the DataFrame passed to the function and print for debugging
+        called_args = mock_get_bracketing_models.call_args
 
-        mock_collect_models.assert_called_once_with(directory)
+        # Verify the function call with expected arguments
+        self.assertTrue(called_args[0][1].equals(mock_models_df))
         mock_get_bracketing_models.assert_called_once_with(
             stellar_parameters, mock_models_df
         )
+
+        # Ensure the function returns the expected result
         self.assertEqual(bracketing_models, result)
+        self.assertIsNone(error_message)
 
     @patch("builtins.open", new_callable=mock_open)
     def test_create_interpolator_script(self, mock_file):
@@ -263,8 +262,8 @@ set marcs_binary = '.false.'
 foreach Tref   ( {{PY_TREF}} )
 foreach loggref ( {{PY_LOGGREF}} )
 foreach zref ( {{PY_ZREF}} )
-set modele_out = {{PY_OUTPUT_PATH}}/p${Tref}_g${loggref}_z${zref}.interpol
-set modele_out2 = {{PY_OUTPUT_PATH}}/p${Tref}_g${loggref}_z${zref}.alt
+set modele_out = {{PY_OUTPUT_PATH}}/{{PY_FILENAME}}.interpol
+set modele_out2 = {{PY_OUTPUT_PATH}}/{{PY_FILENAME}}.alt
 
 #plane-parallel models
 set model1 = {{PY_MODEL1}}
@@ -362,8 +361,8 @@ set marcs_binary = '.false.'
 foreach Tref   ( {{PY_TREF}} )
 foreach loggref ( {{PY_LOGGREF}} )
 foreach zref ( {{PY_ZREF}} )
-set modele_out = {{PY_OUTPUT_PATH}}/p${Tref}_g${loggref}_z${zref}.interpol
-set modele_out2 = {{PY_OUTPUT_PATH}}/p${Tref}_g${loggref}_z${zref}.alt
+set modele_out = {{PY_OUTPUT_PATH}}/{{PY_FILENAME}}.interpol
+set modele_out2 = {{PY_OUTPUT_PATH}}/{{PY_FILENAME}}.alt
 
 #plane-parallel models
 set model1 = {{PY_MODEL1}}
@@ -437,9 +436,10 @@ end
         config = MagicMock(spec=Configuration)
         config.path_model_atmospheres = "/path/to/model/atmospheres"
         config.path_output_directory = "/path/to/output"
+        config.filename = "filename"
 
         interpolation._load_parameters_to_interpolator_script(
-            script_path, stellar_parameters, bracketing_models, config
+            script_path, stellar_parameters, bracketing_models, config, config.filename
         )
 
         # Check the written content
@@ -455,8 +455,8 @@ set marcs_binary = '.false.'
 foreach Tref   ( 5700 )
 foreach loggref ( 4.5 )
 foreach zref ( -0.2 )
-set modele_out = /path/to/output/temp/p${Tref}_g${loggref}_z${zref}.interpol
-set modele_out2 = /path/to/output/temp/p${Tref}_g${loggref}_z${zref}.alt
+set modele_out = /path/to/output/temp/filename.interpol
+set modele_out2 = /path/to/output/temp/filename.alt
 
 #plane-parallel models
 set model1 = model1.mod
@@ -502,14 +502,20 @@ end
     @patch("source.turbospectrum_integration.interpolation.chdir")
     @patch("source.turbospectrum_integration.interpolation.getcwd", return_value="cwd")
     @patch("source.turbospectrum_integration.interpolation.run")
-    def test_run_interpolator_script_success(self, mock_run, mock_getcwd, mock_chdir):
+    @patch("builtins.open", new_callable=mock_open)
+    def test_run_interpolator_script_success(
+        self, mock_open, mock_run, mock_getcwd, mock_chdir
+    ):
         """Test that the function runs the interpolator script correctly."""
+        self.config.path_output_directory = "/path/to/output"
         self.config.path_interpolator = "/path/to/interpolator"
+
         script_name = "test_script.sh"
+        name_logfile = "interpolate"  # Placeholder name for the log file
 
-        interpolation._run_interpolation_script(script_name, self.config)
+        interpolation._run_interpolation_script(script_name, self.config, name_logfile)
 
-        # Check if os.chdir eas called correctly
+        # Check if os.chdir is called correctly
         mock_chdir.assert_has_calls(
             [unittest.mock.call("/path/to/interpolator"), unittest.mock.call("cwd")]
         )
@@ -522,6 +528,15 @@ end
             ]
         )
 
+        # Verify that the log file was written
+        log_file_path = "/path/to/output/temp/interpolate_interpolate.log"
+        mock_open.assert_called_with(log_file_path, "w")
+        handle = mock_open()
+        handle.write.assert_any_call("Standard Output:\n")
+        handle.write.assert_any_call(mock_run.return_value.stdout)
+        handle.write.assert_any_call("\nStandard Error:\n")
+        handle.write.assert_any_call(mock_run.return_value.stderr)
+
     @patch("source.turbospectrum_integration.interpolation.chdir")
     @patch("source.turbospectrum_integration.interpolation.getcwd", return_value="cwd")
     @patch("source.turbospectrum_integration.interpolation.run")
@@ -533,9 +548,12 @@ end
         ]
         self.config.path_interpolator = "/path/to/interpolator"
         script_name = "test_script.sh"
+        name_logfile = "interpolate.log"  # Fake name, not used since the function is mocked to return error
 
         with self.assertRaises(CalledProcessError):
-            interpolation._run_interpolation_script(script_name, self.config)
+            interpolation._run_interpolation_script(
+                script_name, self.config, name_logfile
+            )
 
         # Ensure directory was changed back even on failure
         mock_chdir.assert_has_calls(
@@ -555,39 +573,55 @@ end
     )
     @patch(
         "source.turbospectrum_integration.interpolation._get_models_for_interpolation",
-        return_value=[
-            {"teff_str": "5500", "logg_str": "4.0", "z_str": "-0.5"},
-            {"teff_str": "6000", "logg_str": "5.0", "z_str": "0.5"},
-        ]
-        * 8,
+        return_value=(
+            [
+                {"teff_str": "5500", "logg_str": "4.0", "z_str": "-0.5"},
+                {"teff_str": "6000", "logg_str": "5.0", "z_str": "0.5"},
+            ]
+            * 8,
+            None,
+        ),
     )
     def test_generate_interpolated_model(
         self, mock_get_models, mock_copy_script, mock_load_params, mock_run_script
     ):
         """Test that the function generates an interpolated model atmosphere."""
-        stellar_parameters = {"teff": 5700, "logg": 4.5, "z": -0.2}
+        stellar_parameters = {
+            "teff": 5700,
+            "logg": 4.5,
+            "z": -0.2,
+            "mg": 0.20,
+            "ca": 0.30,
+        }
         alpha = 0.00
 
         config = MagicMock()
-        config.path_model_atmospheres = "/path/to/model/atmospheres"
         config.path_output_directory = "/path/to/output"
         config.path_interpolator = "/path/to/interpolator"
 
-        expected_output_path = "/path/to/output/temp/p5700_g4.5_z-0.2.interpol"
+        ts_config = MagicMock()
+        ts_config.file_name = "p5700_g+4.5_z-0.20_a+0.00_mg+0.20_ca+0.30"
 
-        result = interpolation.generate_interpolated_model_atmosphere(
-            stellar_parameters, alpha, config
+        expected_output_path = (
+            "/path/to/output/temp/p5700_g+4.5_z-0.20_a+0.00_mg+0.20_ca+0.30.interpol"
+        )
+
+        result, error_message = interpolation.generate_interpolated_model_atmosphere(
+            stellar_parameters, alpha, config, self.MODEL_ATMOSPHERES
         )
 
         self.assertEqual(result, expected_output_path)
-        mock_get_models.assert_called_once_with(
-            stellar_parameters, "/path/to/model/atmospheres"
-        )
+        self.assertIsNone(error_message)
         mock_copy_script.assert_called_once_with(config, alpha, stellar_parameters)
         mock_load_params.assert_called_once_with(
             "interpolator_script.sh",
             stellar_parameters,
-            mock_get_models.return_value,
+            mock_get_models.return_value[0],
             config,
+            ts_config.file_name,
         )
-        mock_run_script.assert_called_once_with("interpolator_script.sh", config)
+        mock_run_script.assert_called_once_with(
+            "interpolator_script.sh",
+            config,
+            f"p5700_g+4.5_z-0.20_a+0.00_mg+0.20_ca+0.30",
+        )

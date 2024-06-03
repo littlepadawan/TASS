@@ -9,10 +9,7 @@ def parse_model_atmosphere_filename(filename: str):
     Parse the filename of a model atmosphere and extract its parameters.
 
     The filename should not contain the full path, only the filename itself in the format:
-    'p<teff>_g<logg>_m<feh>_t<alpha>_st_z<z>_<anything>.mod'
-
-    After `<z>`, an underscore should be followed by any valid string, which
-    must end with the `.mod` file extension.
+    p<teff>_g<logg>_m<some number>_t<xit>_st_z<z>_a<alpha>_c<some number>_n<some number>_o<some number>_r<some number>_s<some number>.mod
 
     Example filename: p6000_g+4.0_m0.0_t02_st_z-2.00_a+0.40_c+0.00_n+0.00_o+0.40_r+0.00_s+0.00.mod
 
@@ -22,8 +19,7 @@ def parse_model_atmosphere_filename(filename: str):
     Returns:
         dict: A dictionary containing the parameters of the model atmosphere.
     """
-    # TODO: t value should be specified in config (microturbolunce, XIT, v_micro (km/s), check this in email), and read from the pattern
-    # TODO: Add alpha (a) to read from the patterm  (OBS a and o should have the same value, this can be assumed to be true though)
+    # TODO: t value should be specified in config (microturbolunce, XIT, v_micro (km/s), and read from the pattern
     pattern = r"p(\d+)_g([\+\-]\d+\.\d+)_m([\+\-]?\d+\.\d+)_t(\d+)_st_z([\+\-]\d+\.\d+)_a([\+\-]\d+\.\d+)_c([\+\-]\d+\.\d+)_n([\+\-]\d+\.\d+)_o([\+\-]\d+\.\d+)_r([\+\-]\d+\.\d+)_s([\+\-]\d+\.\d+)\.mod"
     # Check if the filename matches the pattern
     result = match(pattern, filename)
@@ -79,21 +75,21 @@ def stellar_parameter_to_str(stellar_parameter, decimals):
     Convert stellar parameters to a string.
 
     Args:
-        stellar_parameter: The stellar parameter to make a string of.
-
+        stellar_parameter: The stellar parameter to turn into a string.
+        decimals: The number of decimals to include in the string.
     Returns:
         str: A string representation of the stellar parameter.
     """
     return f"{stellar_parameter:+.{decimals}f}"
 
 
-def compose_filename(stellar_parameters: dict, alpha):
+def compose_filename(stellar_parameters: dict, alpha: float):
     """
     Generate a filename based on the stellar parameters.
 
     Args:
         stellar_parameters (dict): The stellar parameters for which to generate the filename.
-
+        alpha (float): The alpha enhancement.
     Returns:
         str: The filename
     """
