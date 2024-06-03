@@ -13,9 +13,10 @@ class TestOutputManagement(unittest.TestCase):
         """
         Test that the output directory is created with the correct name and a subdirectory for temp files
         """
+        print("Running output test")
         # Mock the current date and time
         mock_now = mock_datetime.now.return_value
-        mock_now.strftime.return_value = "2024-05-04@12:00"
+        mock_now.strftime.return_value = "2024-05-04_1200"
 
         # Create a mock Configuration object
         config = MagicMock(spec=Configuration)
@@ -25,8 +26,8 @@ class TestOutputManagement(unittest.TestCase):
         output_management.set_up_output_directory(config)
 
         # Versify that the paths are generated correctly
-        expected_output_directory = "/path/to/output/2024-05-04@12:00"
-        expected_temp_directory = "/path/to/output/2024-05-04@12:00/temp"
+        expected_output_directory = "/path/to/output/2024-05-04_1200"
+        expected_temp_directory = "/path/to/output/2024-05-04_1200/temp"
 
         self.assertEqual(config.path_output_directory, expected_output_directory)
 

@@ -12,8 +12,8 @@ def set_up_output_directory(config: Configuration):
     Args:
         config (Configuration): Configuration object contining the path to the output directory to be created
     """
-    # Get current date and time as YYYYMMDD_HH:MM
-    now = datetime.now().strftime("%Y-%m-%d@%H:%M")
+    # Get current date and time as YYYYMMDD_HHMM
+    now = datetime.now().strftime("%Y-%m-%d_%H%M")
 
     # Create the path to the output directory
     config.path_output_directory = f"{config.path_output_directory}/{now}"
