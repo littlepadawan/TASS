@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>source.configuration_setup API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>source.configuration_setup</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import os  # TODO: Is entire module needed?
+import sys  # TODO: Is entire module needed?
+from configparser import ConfigParser
+
+
+class Configuration:
+
+    def __init__(self, config_path=&#34;input/configuration.cfg&#34;):
+        &#34;&#34;&#34;
+        Initialize the configuration object.
+
+        Args:
+            self (Configuration): The configuration object.
+            config_path (str, optional): The path to the configuration file to use. Defaults to &#34;input/configuration.cfg&#34;.
+        Raises:
+            FileNotFoundError: If the configuration file does not exist.
+        &#34;&#34;&#34;
+        self.config_file = os.path.abspath(config_path)
+        if not os.path.exists(self.config_file):
+            raise FileNotFoundError(
+                f&#34;The config file {self.config_file} does not exist.&#34;
+            )
+
+        self.compiler = None
+        self.path_turbospectrum = None
+        self.path_turbospectrum_compiled = None
+        self.path_interpolator = None
+        self.path_linelists = None
+        self.path_model_atmospheres = None
+        self.path_input_parameters = None
+        self.path_output_directory = None
+        self.path_config = config_path
+
+        self.wavelength_min = 0
+        self.wavelength_max = 0
+        self.wavelength_step = 0
+
+        self.read_stellar_parameters_from_file = False
+        self.random_parameters = True
+        self.teff_min = 0
+        self.teff_max = 0
+        self.logg_min = 0
+        self.logg_max = 0
+        self.z_min = 0
+        self.z_max = 0
+        self.mg_min = 0
+        self.mg_max = 0
+        self.ca_min = 0
+        self.ca_max = 0
+
+        self.num_spectra = 0
+        self.num_points_teff = 0
+        self.num_points_logg = 0
+        self.num_points_z = 0
+        self.num_points_mg = 0
+        self.num_points_ca = 0
+
+        self.xit = 0
+
+        self._load_configuration_file()
+        try:
+            self._validate_configuration()
+        except (FileNotFoundError, ValueError) as e:
+            print(e)
+            sys.exit(1)
+
+    def _load_configuration_file(self):
+        &#34;&#34;&#34;
+        Load the configuration file and set the configuration parameters.
+
+        Parameters in the configuration file must be explicity set in this function,
+        meaning that additions to the configuration file will not be recognised by
+        the program unless they are loaded by this function.
+        Args:
+            self (Configuration): The configuration object.
+
+        Side effects: Sets the configuration parameters based on the configuration file.
+        &#34;&#34;&#34;
+        # Read configuration file
+        config_parser = ConfigParser()
+        config_parser.read(self.config_file)
+
+        # Set configuration parameters found in the configuration file
+        self.compiler = config_parser.get(&#34;Turbospectrum_compiler&#34;, &#34;compiler&#34;).lower()
+
+        self.path_turbospectrum = os.path.abspath(
+            config_parser.get(&#34;Paths&#34;, &#34;turbospectrum&#34;)
+        )
+        self.path_interpolator = os.path.abspath(
+            config_parser.get(&#34;Paths&#34;, &#34;interpolator&#34;)
+        )
+        self.path_linelists = os.path.abspath(config_parser.get(&#34;Paths&#34;, &#34;linelists&#34;))
+        self.path_model_atmospheres = os.path.abspath(
+            config_parser.get(&#34;Paths&#34;, &#34;model_atmospheres&#34;)
+        )
+        self.path_output_directory = os.path.abspath(
+            config_parser.get(&#34;Paths&#34;, &#34;output_directory&#34;)
+        )
+
+        self.wavelength_min = config_parser.getfloat(
+            &#34;Atmosphere_parameters&#34;, &#34;wavelength_min&#34;
+        )
+
+        self.wavelength_max = config_parser.getfloat(
+            &#34;Atmosphere_parameters&#34;, &#34;wavelength_max&#34;
+        )
+        self.wavelength_step = config_parser.getfloat(
+            &#34;Atmosphere_parameters&#34;, &#34;wavelength_step&#34;
+        )
+
+        self.read_stellar_parameters_from_file = config_parser.getboolean(
+            &#34;Stellar_parameters&#34;, &#34;read_from_file&#34;
+        )
+
+        # Only load these parameters if stellar parameters should be generated,
+        # since they&#39;re not needed if the stellar parameters are read from a file
+        if self.read_stellar_parameters_from_file == False:
+            self.random_parameters = config_parser.getboolean(
+                &#34;Stellar_parameters&#34;, &#34;random_parameters&#34;
+            )
+            self.teff_min = config_parser.getint(&#34;Stellar_parameters&#34;, &#34;teff_min&#34;)
+            self.teff_max = config_parser.getint(&#34;Stellar_parameters&#34;, &#34;teff_max&#34;)
+            self.logg_min = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;logg_min&#34;)
+            self.logg_max = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;logg_max&#34;)
+            self.z_min = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;z_min&#34;)
+            self.z_max = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;z_max&#34;)
+            self.mg_min = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;mg_min&#34;)
+            self.mg_max = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;mg_max&#34;)
+            self.ca_min = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;ca_min&#34;)
+            self.ca_max = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;ca_max&#34;)
+
+            # Load settings for parameter generation
+            # If random parameters are specified, the number of sets to generate is needed
+            if self.random_parameters == True:
+                self.num_spectra = config_parser.getint(
+                    &#34;Random_settings&#34;, &#34;num_spectra&#34;
+                )
+            # If evenly spaced parameters are specified, the number of points for each parameter is needed
+            else:
+                self.num_points_teff = config_parser.getint(
+                    &#34;Even_settings&#34;, &#34;num_points_teff&#34;
+                )
+                self.num_points_logg = config_parser.getint(
+                    &#34;Even_settings&#34;, &#34;num_points_logg&#34;
+                )
+                self.num_points_z = config_parser.getint(
+                    &#34;Even_settings&#34;, &#34;num_points_z&#34;
+                )
+                self.num_points_mg = config_parser.getint(
+                    &#34;Even_settings&#34;, &#34;num_points_mg&#34;
+                )
+                self.num_points_ca = config_parser.getint(
+                    &#34;Even_settings&#34;, &#34;num_points_ca&#34;
+                )
+        else:
+            self.path_input_parameters = os.path.abspath(
+                config_parser.get(&#34;Paths&#34;, &#34;input_parameters&#34;)
+            )
+
+        self.xit = config_parser.getfloat(&#34;Turbospectrum_settings&#34;, &#34;xit&#34;)
+
+    def _validate_turbospectrum_path(self):
+        &#34;&#34;&#34;
+        Check that the path to the Turbospectrum directory exists.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            FileNotFoundError: If the path to the Turbospectrum directory does not exist.
+        &#34;&#34;&#34;
+        if not os.path.exists(self.path_turbospectrum):
+            raise FileNotFoundError(
+                f&#34;The specified directory containing Turbospectrum {self.config_file} does not exist.&#34;
+            )
+
+    def _validate_interpolator_path(self):
+        &#34;&#34;&#34;
+        Check that the path to the interpolator directory exists.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            FileNotFoundError: If the path to the interpolator directory does not exist.
+        &#34;&#34;&#34;
+        if not os.path.exists(self.path_interpolator):
+            raise FileNotFoundError(
+                f&#34;The specified directory containing the interpolator {self.path_interpolator} does not exist.&#34;
+            )
+
+    def _validate_compiler(self):
+        &#34;&#34;&#34;
+        Check that the compiler is supported and set the path to the compiled Turbospectrum executable.
+
+        Suported compilers are &#34;intel&#34; and &#34;gfortran&#34;.
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the compiler is not supported.
+        &#34;&#34;&#34;
+        if self.compiler == &#34;intel&#34;:
+            self.path_turbospectrum_compiled = os.path.join(
+                self.path_turbospectrum, &#34;exec&#34;
+            )
+        elif self.compiler == &#34;gfortran&#34;:
+            self.path_turbospectrum_compiled = os.path.join(
+                self.path_turbospectrum, &#34;exec-gf&#34;
+            )
+        else:
+            raise ValueError(f&#34;Compiler {self.compiler} is not supported.&#34;)
+
+    def _validate_paths_to_directories(self):
+        &#34;&#34;&#34;
+        Check that all paths to directories exist.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            FileNotFoundError: If any of the paths to directories do not exist.
+        &#34;&#34;&#34;
+        paths = [
+            self.path_linelists,
+            self.path_model_atmospheres,
+            self.path_output_directory,
+        ]
+        for path in paths:
+            if not os.path.exists(path):
+                raise FileNotFoundError(
+                    f&#34;The specified directory {path} does not exist.&#34;
+                )
+
+    def _validate_path_to_input_parameters(self):
+        &#34;&#34;&#34;
+        Check that the path to the input parameters file exists.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            FileNotFoundError: If the path to the input parameters file does not exist.
+        &#34;&#34;&#34;
+        if not os.path.exists(self.path_input_parameters):
+            raise FileNotFoundError(
+                f&#34;The specified file {self.path_input_parameters} does not exist.&#34;
+            )
+
+    def _validate_wavelength_range(self):
+        &#34;&#34;&#34;
+        Check that the wavelength range is valid.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If any wavelength parameter is negative or if the minimum wavelength is greater than the maximum wavelength.
+        &#34;&#34;&#34;
+        if self.wavelength_min &gt;= self.wavelength_max:
+            raise ValueError(
+                f&#34;The minimum wavelength {self.wavelength_min} must be smaller than the maximum wavelength {self.wavelength_max}.&#34;
+            )
+
+        if (
+            self.wavelength_min &lt;= 0
+            or self.wavelength_max &lt;= 0
+            or self.wavelength_step &lt;= 0
+        ):
+            raise ValueError(f&#34;The wavelength parameters must be greater than 0.&#34;)
+
+    def _validate_stellar_parameters(self):
+        &#34;&#34;&#34;
+        A wrapper function that checks that the stellar parameters are valid.
+
+        Args:
+            self (Configuration): The configuration object.
+        &#34;&#34;&#34;
+        self._validate_effective_temperature()
+        self._validate_surface_gravity()
+        self._validate_metallicity()
+        self._validate_magnesium_abundance()
+        self._validate_calcium_abundance()
+
+        if self.random_parameters == True:
+            self._validate_number_of_spectra()
+        else:
+            self._validate_evenly_spaced_parameters_points()
+
+    def _validate_number_of_spectra(self):
+        &#34;&#34;&#34;
+        Check that the number of spectra to generate is at least 1.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the number of spectra is less than or equal to 0.
+        &#34;&#34;&#34;
+        if self.num_spectra &lt;= 0:
+            raise ValueError(
+                f&#34;The number of spectra {self.num_spectra} must be greater than 0.&#34;
+            )
+
+    def _validate_effective_temperature(self):
+        &#34;&#34;&#34;
+        Check that the effective temperature range is valid.
+
+        The temperature cannot be negative and the minimum temperature must be smaller than the maximum temperature.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If any effective temperature parameter is negative or if the minimum effective temperature is greater than the maximum effective temperature.
+        &#34;&#34;&#34;
+        if self.teff_min &lt; 0:
+            raise ValueError(
+                f&#34;The minimum effective temperature {self.teff_min} must be positive.&#34;
+            )
+
+        if self.teff_max &lt; 0:
+            raise ValueError(
+                f&#34;The maximum effective temperature {self.teff_max} must be positive.&#34;
+            )
+
+        if self.teff_min &gt;= self.teff_max:
+            raise ValueError(
+                f&#34;The minimum effective temperature {self.teff_min} must be smaller than the maximum effective temperature {self.teff_max}.&#34;
+            )
+
+    def _validate_surface_gravity(self):
+        &#34;&#34;&#34;
+        Check that the surface gravity range is valid.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If any surface gravity parameter is negative or if the minimum surface gravity is greater than the maximum surface gravity.
+        &#34;&#34;&#34;
+        # TODO: Change the limit to 2
+        # TODO: Don&#39;t raise error, print warning and let the program continuer.
+        if self.logg_min &lt; 0:
+            raise ValueError(
+                f&#34;The minimum surface gravity {self.logg_min} must be positive.&#34;
+            )
+
+        if self.logg_max &lt; 0:
+            raise ValueError(
+                f&#34;The maximum surface gravity {self.logg_max} must be positive.&#34;
+            )
+
+        if self.logg_min &gt;= self.logg_max:
+            raise ValueError(
+                f&#34;The minimum surface gravity {self.logg_min} must be smaller than the maximum surface gravity {self.logg_max}.&#34;
+            )
+
+    def _validate_metallicity(self):
+        &#34;&#34;&#34;
+        Check that the metallicity range is valid.
+
+        The minimum metallicity must be smaller than the maximum metallicity.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the minimum metallicity is greater than the maximum metallicity.
+        &#34;&#34;&#34;
+        if self.z_min &gt;= self.z_max:
+            raise ValueError(
+                f&#34;The minimum metallicity {self.z_min} must be smaller than the maximum metallicity {self.z_max}.&#34;
+            )
+
+    def _validate_magnesium_abundance(self):
+        &#34;&#34;&#34;
+        Check that the magnesium abundance range is valid.
+
+        The minimum magnesium abundance must be smaller than the maximum magnesium abundance.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the minimum magnesium abundance is greater than the maximum magnesium abundance.
+        &#34;&#34;&#34;
+        if self.mg_min &gt;= self.mg_max:
+            raise ValueError(
+                f&#34;The minimum magnesium abundance {self.mg_min} must be smaller than the maximum magnesium abundance {self.mg_max}.&#34;
+            )
+
+    def _validate_calcium_abundance(self):
+        &#34;&#34;&#34;
+        Check that the calcium abundance range is valid.
+
+        The minimum calcium abundance must be smaller than the maximum calcium abundance.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the minimum calcium abundance is greater than the maximum calcium abundance.
+        &#34;&#34;&#34;
+        if self.ca_min &gt;= self.ca_max:
+            raise ValueError(
+                f&#34;The minimum calcium abundance {self.ca_min} must be smaller than the maximum calcium abundance {self.ca_max}.&#34;
+            )
+
+    def _validate_evenly_spaced_parameters_points(self):
+        &#34;&#34;&#34;
+        Check that the number of points for each parameter is at least 1.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the number of points for any parameter is less than 1.
+        &#34;&#34;&#34;
+        if (
+            self.num_points_teff &lt; 1
+            or self.num_points_logg &lt; 1
+            or self.num_points_z &lt; 1
+            or self.num_points_mg &lt; 1
+            or self.num_points_ca &lt; 1
+        ):
+            raise ValueError(
+                f&#34;The number of points for each parameter must be at least 1.&#34;
+            )
+
+    def _validate_configuration(self):
+        &#34;&#34;&#34;
+        A wrapper function that checks if all required parameters are set and within range.
+
+        Args:
+            self (Configuration): The configuration object.
+        &#34;&#34;&#34;
+        self._validate_turbospectrum_path()
+        self._validate_compiler()
+        self._validate_paths_to_directories()
+        self._validate_wavelength_range()
+
+        if self.read_stellar_parameters_from_file == True:
+            self._validate_path_to_input_parameters()
+        else:
+            self._validate_stellar_parameters()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="source.configuration_setup.Configuration"><code class="flex name class">
+<span>class <span class="ident">Configuration</span></span>
+<span>(</span><span>config_path='input/configuration.cfg')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Initialize the configuration object.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>self</code></strong> :&ensp;<code><a title="source.configuration_setup.Configuration" href="#source.configuration_setup.Configuration">Configuration</a></code></dt>
+<dd>The configuration object.</dd>
+<dt><strong><code>config_path</code></strong> :&ensp;<code>str</code>, optional</dt>
+<dd>The path to the configuration file to use. Defaults to "input/configuration.cfg".</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>FileNotFoundError</code></dt>
+<dd>If the configuration file does not exist.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Configuration:
+
+    def __init__(self, config_path=&#34;input/configuration.cfg&#34;):
+        &#34;&#34;&#34;
+        Initialize the configuration object.
+
+        Args:
+            self (Configuration): The configuration object.
+            config_path (str, optional): The path to the configuration file to use. Defaults to &#34;input/configuration.cfg&#34;.
+        Raises:
+            FileNotFoundError: If the configuration file does not exist.
+        &#34;&#34;&#34;
+        self.config_file = os.path.abspath(config_path)
+        if not os.path.exists(self.config_file):
+            raise FileNotFoundError(
+                f&#34;The config file {self.config_file} does not exist.&#34;
+            )
+
+        self.compiler = None
+        self.path_turbospectrum = None
+        self.path_turbospectrum_compiled = None
+        self.path_interpolator = None
+        self.path_linelists = None
+        self.path_model_atmospheres = None
+        self.path_input_parameters = None
+        self.path_output_directory = None
+        self.path_config = config_path
+
+        self.wavelength_min = 0
+        self.wavelength_max = 0
+        self.wavelength_step = 0
+
+        self.read_stellar_parameters_from_file = False
+        self.random_parameters = True
+        self.teff_min = 0
+        self.teff_max = 0
+        self.logg_min = 0
+        self.logg_max = 0
+        self.z_min = 0
+        self.z_max = 0
+        self.mg_min = 0
+        self.mg_max = 0
+        self.ca_min = 0
+        self.ca_max = 0
+
+        self.num_spectra = 0
+        self.num_points_teff = 0
+        self.num_points_logg = 0
+        self.num_points_z = 0
+        self.num_points_mg = 0
+        self.num_points_ca = 0
+
+        self.xit = 0
+
+        self._load_configuration_file()
+        try:
+            self._validate_configuration()
+        except (FileNotFoundError, ValueError) as e:
+            print(e)
+            sys.exit(1)
+
+    def _load_configuration_file(self):
+        &#34;&#34;&#34;
+        Load the configuration file and set the configuration parameters.
+
+        Parameters in the configuration file must be explicity set in this function,
+        meaning that additions to the configuration file will not be recognised by
+        the program unless they are loaded by this function.
+        Args:
+            self (Configuration): The configuration object.
+
+        Side effects: Sets the configuration parameters based on the configuration file.
+        &#34;&#34;&#34;
+        # Read configuration file
+        config_parser = ConfigParser()
+        config_parser.read(self.config_file)
+
+        # Set configuration parameters found in the configuration file
+        self.compiler = config_parser.get(&#34;Turbospectrum_compiler&#34;, &#34;compiler&#34;).lower()
+
+        self.path_turbospectrum = os.path.abspath(
+            config_parser.get(&#34;Paths&#34;, &#34;turbospectrum&#34;)
+        )
+        self.path_interpolator = os.path.abspath(
+            config_parser.get(&#34;Paths&#34;, &#34;interpolator&#34;)
+        )
+        self.path_linelists = os.path.abspath(config_parser.get(&#34;Paths&#34;, &#34;linelists&#34;))
+        self.path_model_atmospheres = os.path.abspath(
+            config_parser.get(&#34;Paths&#34;, &#34;model_atmospheres&#34;)
+        )
+        self.path_output_directory = os.path.abspath(
+            config_parser.get(&#34;Paths&#34;, &#34;output_directory&#34;)
+        )
+
+        self.wavelength_min = config_parser.getfloat(
+            &#34;Atmosphere_parameters&#34;, &#34;wavelength_min&#34;
+        )
+
+        self.wavelength_max = config_parser.getfloat(
+            &#34;Atmosphere_parameters&#34;, &#34;wavelength_max&#34;
+        )
+        self.wavelength_step = config_parser.getfloat(
+            &#34;Atmosphere_parameters&#34;, &#34;wavelength_step&#34;
+        )
+
+        self.read_stellar_parameters_from_file = config_parser.getboolean(
+            &#34;Stellar_parameters&#34;, &#34;read_from_file&#34;
+        )
+
+        # Only load these parameters if stellar parameters should be generated,
+        # since they&#39;re not needed if the stellar parameters are read from a file
+        if self.read_stellar_parameters_from_file == False:
+            self.random_parameters = config_parser.getboolean(
+                &#34;Stellar_parameters&#34;, &#34;random_parameters&#34;
+            )
+            self.teff_min = config_parser.getint(&#34;Stellar_parameters&#34;, &#34;teff_min&#34;)
+            self.teff_max = config_parser.getint(&#34;Stellar_parameters&#34;, &#34;teff_max&#34;)
+            self.logg_min = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;logg_min&#34;)
+            self.logg_max = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;logg_max&#34;)
+            self.z_min = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;z_min&#34;)
+            self.z_max = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;z_max&#34;)
+            self.mg_min = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;mg_min&#34;)
+            self.mg_max = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;mg_max&#34;)
+            self.ca_min = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;ca_min&#34;)
+            self.ca_max = config_parser.getfloat(&#34;Stellar_parameters&#34;, &#34;ca_max&#34;)
+
+            # Load settings for parameter generation
+            # If random parameters are specified, the number of sets to generate is needed
+            if self.random_parameters == True:
+                self.num_spectra = config_parser.getint(
+                    &#34;Random_settings&#34;, &#34;num_spectra&#34;
+                )
+            # If evenly spaced parameters are specified, the number of points for each parameter is needed
+            else:
+                self.num_points_teff = config_parser.getint(
+                    &#34;Even_settings&#34;, &#34;num_points_teff&#34;
+                )
+                self.num_points_logg = config_parser.getint(
+                    &#34;Even_settings&#34;, &#34;num_points_logg&#34;
+                )
+                self.num_points_z = config_parser.getint(
+                    &#34;Even_settings&#34;, &#34;num_points_z&#34;
+                )
+                self.num_points_mg = config_parser.getint(
+                    &#34;Even_settings&#34;, &#34;num_points_mg&#34;
+                )
+                self.num_points_ca = config_parser.getint(
+                    &#34;Even_settings&#34;, &#34;num_points_ca&#34;
+                )
+        else:
+            self.path_input_parameters = os.path.abspath(
+                config_parser.get(&#34;Paths&#34;, &#34;input_parameters&#34;)
+            )
+
+        self.xit = config_parser.getfloat(&#34;Turbospectrum_settings&#34;, &#34;xit&#34;)
+
+    def _validate_turbospectrum_path(self):
+        &#34;&#34;&#34;
+        Check that the path to the Turbospectrum directory exists.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            FileNotFoundError: If the path to the Turbospectrum directory does not exist.
+        &#34;&#34;&#34;
+        if not os.path.exists(self.path_turbospectrum):
+            raise FileNotFoundError(
+                f&#34;The specified directory containing Turbospectrum {self.config_file} does not exist.&#34;
+            )
+
+    def _validate_interpolator_path(self):
+        &#34;&#34;&#34;
+        Check that the path to the interpolator directory exists.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            FileNotFoundError: If the path to the interpolator directory does not exist.
+        &#34;&#34;&#34;
+        if not os.path.exists(self.path_interpolator):
+            raise FileNotFoundError(
+                f&#34;The specified directory containing the interpolator {self.path_interpolator} does not exist.&#34;
+            )
+
+    def _validate_compiler(self):
+        &#34;&#34;&#34;
+        Check that the compiler is supported and set the path to the compiled Turbospectrum executable.
+
+        Suported compilers are &#34;intel&#34; and &#34;gfortran&#34;.
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the compiler is not supported.
+        &#34;&#34;&#34;
+        if self.compiler == &#34;intel&#34;:
+            self.path_turbospectrum_compiled = os.path.join(
+                self.path_turbospectrum, &#34;exec&#34;
+            )
+        elif self.compiler == &#34;gfortran&#34;:
+            self.path_turbospectrum_compiled = os.path.join(
+                self.path_turbospectrum, &#34;exec-gf&#34;
+            )
+        else:
+            raise ValueError(f&#34;Compiler {self.compiler} is not supported.&#34;)
+
+    def _validate_paths_to_directories(self):
+        &#34;&#34;&#34;
+        Check that all paths to directories exist.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            FileNotFoundError: If any of the paths to directories do not exist.
+        &#34;&#34;&#34;
+        paths = [
+            self.path_linelists,
+            self.path_model_atmospheres,
+            self.path_output_directory,
+        ]
+        for path in paths:
+            if not os.path.exists(path):
+                raise FileNotFoundError(
+                    f&#34;The specified directory {path} does not exist.&#34;
+                )
+
+    def _validate_path_to_input_parameters(self):
+        &#34;&#34;&#34;
+        Check that the path to the input parameters file exists.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            FileNotFoundError: If the path to the input parameters file does not exist.
+        &#34;&#34;&#34;
+        if not os.path.exists(self.path_input_parameters):
+            raise FileNotFoundError(
+                f&#34;The specified file {self.path_input_parameters} does not exist.&#34;
+            )
+
+    def _validate_wavelength_range(self):
+        &#34;&#34;&#34;
+        Check that the wavelength range is valid.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If any wavelength parameter is negative or if the minimum wavelength is greater than the maximum wavelength.
+        &#34;&#34;&#34;
+        if self.wavelength_min &gt;= self.wavelength_max:
+            raise ValueError(
+                f&#34;The minimum wavelength {self.wavelength_min} must be smaller than the maximum wavelength {self.wavelength_max}.&#34;
+            )
+
+        if (
+            self.wavelength_min &lt;= 0
+            or self.wavelength_max &lt;= 0
+            or self.wavelength_step &lt;= 0
+        ):
+            raise ValueError(f&#34;The wavelength parameters must be greater than 0.&#34;)
+
+    def _validate_stellar_parameters(self):
+        &#34;&#34;&#34;
+        A wrapper function that checks that the stellar parameters are valid.
+
+        Args:
+            self (Configuration): The configuration object.
+        &#34;&#34;&#34;
+        self._validate_effective_temperature()
+        self._validate_surface_gravity()
+        self._validate_metallicity()
+        self._validate_magnesium_abundance()
+        self._validate_calcium_abundance()
+
+        if self.random_parameters == True:
+            self._validate_number_of_spectra()
+        else:
+            self._validate_evenly_spaced_parameters_points()
+
+    def _validate_number_of_spectra(self):
+        &#34;&#34;&#34;
+        Check that the number of spectra to generate is at least 1.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the number of spectra is less than or equal to 0.
+        &#34;&#34;&#34;
+        if self.num_spectra &lt;= 0:
+            raise ValueError(
+                f&#34;The number of spectra {self.num_spectra} must be greater than 0.&#34;
+            )
+
+    def _validate_effective_temperature(self):
+        &#34;&#34;&#34;
+        Check that the effective temperature range is valid.
+
+        The temperature cannot be negative and the minimum temperature must be smaller than the maximum temperature.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If any effective temperature parameter is negative or if the minimum effective temperature is greater than the maximum effective temperature.
+        &#34;&#34;&#34;
+        if self.teff_min &lt; 0:
+            raise ValueError(
+                f&#34;The minimum effective temperature {self.teff_min} must be positive.&#34;
+            )
+
+        if self.teff_max &lt; 0:
+            raise ValueError(
+                f&#34;The maximum effective temperature {self.teff_max} must be positive.&#34;
+            )
+
+        if self.teff_min &gt;= self.teff_max:
+            raise ValueError(
+                f&#34;The minimum effective temperature {self.teff_min} must be smaller than the maximum effective temperature {self.teff_max}.&#34;
+            )
+
+    def _validate_surface_gravity(self):
+        &#34;&#34;&#34;
+        Check that the surface gravity range is valid.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If any surface gravity parameter is negative or if the minimum surface gravity is greater than the maximum surface gravity.
+        &#34;&#34;&#34;
+        # TODO: Change the limit to 2
+        # TODO: Don&#39;t raise error, print warning and let the program continuer.
+        if self.logg_min &lt; 0:
+            raise ValueError(
+                f&#34;The minimum surface gravity {self.logg_min} must be positive.&#34;
+            )
+
+        if self.logg_max &lt; 0:
+            raise ValueError(
+                f&#34;The maximum surface gravity {self.logg_max} must be positive.&#34;
+            )
+
+        if self.logg_min &gt;= self.logg_max:
+            raise ValueError(
+                f&#34;The minimum surface gravity {self.logg_min} must be smaller than the maximum surface gravity {self.logg_max}.&#34;
+            )
+
+    def _validate_metallicity(self):
+        &#34;&#34;&#34;
+        Check that the metallicity range is valid.
+
+        The minimum metallicity must be smaller than the maximum metallicity.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the minimum metallicity is greater than the maximum metallicity.
+        &#34;&#34;&#34;
+        if self.z_min &gt;= self.z_max:
+            raise ValueError(
+                f&#34;The minimum metallicity {self.z_min} must be smaller than the maximum metallicity {self.z_max}.&#34;
+            )
+
+    def _validate_magnesium_abundance(self):
+        &#34;&#34;&#34;
+        Check that the magnesium abundance range is valid.
+
+        The minimum magnesium abundance must be smaller than the maximum magnesium abundance.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the minimum magnesium abundance is greater than the maximum magnesium abundance.
+        &#34;&#34;&#34;
+        if self.mg_min &gt;= self.mg_max:
+            raise ValueError(
+                f&#34;The minimum magnesium abundance {self.mg_min} must be smaller than the maximum magnesium abundance {self.mg_max}.&#34;
+            )
+
+    def _validate_calcium_abundance(self):
+        &#34;&#34;&#34;
+        Check that the calcium abundance range is valid.
+
+        The minimum calcium abundance must be smaller than the maximum calcium abundance.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the minimum calcium abundance is greater than the maximum calcium abundance.
+        &#34;&#34;&#34;
+        if self.ca_min &gt;= self.ca_max:
+            raise ValueError(
+                f&#34;The minimum calcium abundance {self.ca_min} must be smaller than the maximum calcium abundance {self.ca_max}.&#34;
+            )
+
+    def _validate_evenly_spaced_parameters_points(self):
+        &#34;&#34;&#34;
+        Check that the number of points for each parameter is at least 1.
+
+        Args:
+            self (Configuration): The configuration object.
+        Raises:
+            ValueError: If the number of points for any parameter is less than 1.
+        &#34;&#34;&#34;
+        if (
+            self.num_points_teff &lt; 1
+            or self.num_points_logg &lt; 1
+            or self.num_points_z &lt; 1
+            or self.num_points_mg &lt; 1
+            or self.num_points_ca &lt; 1
+        ):
+            raise ValueError(
+                f&#34;The number of points for each parameter must be at least 1.&#34;
+            )
+
+    def _validate_configuration(self):
+        &#34;&#34;&#34;
+        A wrapper function that checks if all required parameters are set and within range.
+
+        Args:
+            self (Configuration): The configuration object.
+        &#34;&#34;&#34;
+        self._validate_turbospectrum_path()
+        self._validate_compiler()
+        self._validate_paths_to_directories()
+        self._validate_wavelength_range()
+
+        if self.read_stellar_parameters_from_file == True:
+            self._validate_path_to_input_parameters()
+        else:
+            self._validate_stellar_parameters()</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="source" href="index.html">source</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="source.configuration_setup.Configuration" href="#source.configuration_setup.Configuration">Configuration</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>source.parameter_generation API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>source.parameter_generation</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import os
+import random
+import sys
+
+import numpy as np
+from source.configuration_setup import Configuration
+
+# Parameters required in an input file provided by the user
+REQUIRED_PARAMETERS = [&#34;teff&#34;, &#34;logg&#34;, &#34;z&#34;, &#34;mg&#34;, &#34;ca&#34;]
+
+# Delta values for each parameter, if two parameter value are closer
+# than their corresponding delta, they are considered equal
+MIN_PARAMETER_DELTA = {
+    &#34;teff&#34;: 5,
+    &#34;logg&#34;: 0.05,
+    &#34;z&#34;: 0.001,
+    &#34;mg&#34;: 0.001,
+    &#34;ca&#34;: 0.001,
+}
+
+
+def _check_required_parameters(parameters: list):
+    &#34;&#34;&#34;
+    Check that all required parameters specified in REQUIRED_PARAMETERS are present in the parameters.
+
+    Args:
+        parameters (list): List of parameters to check
+
+    Raises:
+        ValueError: If any of the required parameters are missing
+    &#34;&#34;&#34;
+    missing_parameters = [
+        parameter for parameter in REQUIRED_PARAMETERS if parameter not in parameters
+    ]
+    if missing_parameters:
+        raise ValueError(
+            f&#34;Missing required stellar parameters in input parameters: {&#39;, &#39;.join(missing_parameters)}&#34;,
+        )
+
+
+def read_parameters_from_file(config: Configuration):
+    &#34;&#34;&#34;
+    Read stellar parameters from input file
+
+    Args:
+        config (Configuration): Configuration object containing the path to the input file
+    Returns:
+        list: List of dictionaries containing the stellar parameters
+    &#34;&#34;&#34;
+    with open(config.path_input_parameters, &#34;r&#34;, newline=&#34;&#34;) as file:
+        # Read the header to get column names
+        header = file.readline().strip().split()
+
+        # Check that all required parameters are present in the file
+        try:
+            _check_required_parameters(header)
+
+        except ValueError as e:
+            print(e)
+            sys.exit(
+                1
+            )  # We don&#39;t want to continue if the required parameters are missing
+
+        all_stellar_parameters = []
+
+        # Read file content
+        for line in file:
+            # Split the line into a list of values
+            values = line.strip().split()
+
+            float_values = [float(value) for value in values]
+
+            # Create a dictionary with the header as keys and the values from this line
+            stellar_parameters = dict(zip(header, float_values))
+
+            # Add the dictionary to the list of all stellar parameters
+            all_stellar_parameters.append(stellar_parameters)
+
+        # Convert teff values to integers
+        for parameter_set in all_stellar_parameters:
+            parameter_set[&#34;teff&#34;] = int(parameter_set[&#34;teff&#34;])
+
+    return all_stellar_parameters
+
+
+def _within_min_delta(new_parameter, existing, min_delta):
+    &#34;&#34;&#34;
+    Check if the value of new_parameter is within the minimum delta of existing.
+
+    Args:
+        new_parameter (float): The new parameter value
+        existing (float): The existing parameter value
+        min_delta (float): The minimum delta between the two values
+    Returns:
+        bool: True if the value of new_parameter is within the minimum delta of existing, False otherwise
+    &#34;&#34;&#34;
+    return abs(new_parameter - existing) &lt; min_delta
+
+
+def _validate_new_set(
+    teff: int, logg: float, z: float, mg: float, ca: float, parameters: dict
+):
+    &#34;&#34;&#34;
+    Check if a new set of stellar parameters is valid, i.e. if it is outside the minimum distance of any existing set.
+
+    As long as not all parameters are within the minimum distance of an existing set, the new set is considered valid.
+    Args:
+        teff (int): Effective temperature
+        logg (float): Surface gravity
+        z (float): Metallicity
+        mg (float): Abundance of magnesium
+        ca (float): Abundance of calcium
+        parameters (dict): A dictionary containing lists of existing parameters
+
+    Returns:
+        bool: True if the new set is valid, False otherwise
+    &#34;&#34;&#34;
+    # Get all parameter sets who&#39;s teff value are within the minimum distance from teff
+    teff_collisions = [
+        i
+        for i, existing_teff in enumerate(parameters[&#34;teff&#34;])
+        if _within_min_delta(teff, existing_teff, MIN_PARAMETER_DELTA[&#34;teff&#34;])
+    ]
+
+    # In the subset of parameter sets that have &#34;the same&#34; teff value as the candidate set,
+    # check if any of them have logg values within the minimum distance from logg
+    teff_logg_collisions = [
+        i
+        for i in teff_collisions
+        if _within_min_delta(logg, parameters[&#34;logg&#34;][i], MIN_PARAMETER_DELTA[&#34;logg&#34;])
+    ]
+
+    # In the subset of parameter sets that have &#34;the same&#34; teff and logg values as the candidate set,
+    # check if any of them have z values within the minimum distance from z
+    teff_logg_z_collisions = [
+        i
+        for i in teff_logg_collisions
+        if _within_min_delta(z, parameters[&#34;z&#34;][i], MIN_PARAMETER_DELTA[&#34;z&#34;])
+    ]
+
+    # In the subset of parameter sets that have &#34;the same&#34; teff, logg and z values as the candidate set,
+    # check if any of them have mg values within the minimum distance from mg
+    teff_logg_z_mg_collisions = [
+        i
+        for i in teff_logg_z_collisions
+        if _within_min_delta(mg, parameters[&#34;mg&#34;][i], MIN_PARAMETER_DELTA[&#34;mg&#34;])
+    ]
+
+    # In the subset of parameter sets that have &#34;the same&#34; teff, logg, z and mg values as the candidate set,
+    # check if any of them have ca values within the minimum distance from ca
+    for i in teff_logg_z_mg_collisions:
+        if _within_min_delta(ca, parameters[&#34;ca&#34;][i], MIN_PARAMETER_DELTA[&#34;ca&#34;]):
+            # There was a collision in all parameters, meaning there exists a set with &#34;the same&#34; parameters
+            return False
+
+    # No full set collision found, or no collision at all
+    return True
+
+
+def generate_random_parameters(config: Configuration):
+    &#34;&#34;&#34;
+    Generate random stellar parameters
+
+    Args:
+        config (Configuration): Configuration object containing ranges and step sizes for the parameters to be generated
+
+    Returns:
+        list: List of dictionaries containing the generated stellar parameters
+    &#34;&#34;&#34;
+    teff_range = (config.teff_min, config.teff_max)
+    logg_range = (config.logg_min, config.logg_max)
+    z_range = (config.z_min, config.z_max)
+    mg_range = (config.mg_min, config.mg_max)
+    ca_range = (config.ca_min, config.ca_max)
+
+    # Storage for parameters and links between them (index)
+    parameters = {&#34;teff&#34;: [], &#34;logg&#34;: [], &#34;z&#34;: [], &#34;ca&#34;: [], &#34;mg&#34;: []}
+
+    # Storage for generated sets
+    completed_sets = []
+
+    while len(completed_sets) &lt; config.num_spectra:
+        teff = random.randint(*teff_range)
+        logg = round(random.uniform(*logg_range), 2)
+        z = round(random.uniform(*z_range), 3)
+        mg = round(random.uniform(*mg_range), 3)
+        ca = round(random.uniform(*ca_range), 3)
+
+        if _validate_new_set(teff, logg, z, mg, ca, parameters):
+            parameters[&#34;teff&#34;].append(teff)
+            parameters[&#34;logg&#34;].append(logg)
+            parameters[&#34;z&#34;].append(z)
+            parameters[&#34;mg&#34;].append(mg)
+            parameters[&#34;ca&#34;].append(ca)
+            completed_sets.append(
+                {&#34;teff&#34;: teff, &#34;logg&#34;: logg, &#34;z&#34;: z, &#34;mg&#34;: mg, &#34;ca&#34;: ca}
+            )
+
+    return completed_sets
+
+
+def generate_evenly_spaced_parameters(config: Configuration):
+    &#34;&#34;&#34;
+    Generate evenly spaced stellar parameters
+
+    Args:
+        config (Configuration): Configuration object containing ranges and step sizes for the parameters to be generated
+
+    Returns:
+        list: List of dictionaries containing the generated stellar parameters
+    &#34;&#34;&#34;
+    # Generate evenly spaced values for each parameter
+    teff_values = np.round(
+        np.linspace(config.teff_min, config.teff_max, config.num_points_teff)
+    )
+    logg_values = np.round(
+        np.linspace(config.logg_min, config.logg_max, config.num_points_logg), 2
+    )
+    z_values = np.round(np.linspace(config.z_min, config.z_max, config.num_points_z), 3)
+    mg_values = np.round(
+        np.linspace(config.mg_min, config.mg_max, config.num_points_mg), 3
+    )
+    ca_values = np.round(
+        np.linspace(config.ca_min, config.ca_max, config.num_points_ca), 3
+    )
+
+    # Generate all combinations of the parameter values
+    parameter_sets = []
+    for t in teff_values:
+        for logg in logg_values:
+            for z in z_values:
+                for mg in mg_values:
+                    for ca in ca_values:
+                        parameter_sets.append(
+                            {
+                                &#34;teff&#34;: t,
+                                &#34;logg&#34;: round(logg, 2),
+                                &#34;z&#34;: round(z, 3),
+                                &#34;mg&#34;: round(mg, 3),
+                                &#34;ca&#34;: round(ca, 3),
+                            }
+                        )
+    return parameter_sets
+
+
+def generate_parameters(config: Configuration):
+    &#34;&#34;&#34;
+    Generate stellar parameters based on the settings in configuration.
+
+    Based on what the user specified in the configuation file, this function will either read stellar parameters from a file,
+    generate random stellar parameters or generate evenly spaced stellar parameters.
+    Args:
+        config (Configuration): Configuration object
+
+    Returns:
+        list: List of tuples containing the generated stellar parameters
+    &#34;&#34;&#34;
+
+    parameters = []
+    if config.read_stellar_parameters_from_file:
+        parameters = read_parameters_from_file(config)
+    elif config.random_parameters:
+        parameters = generate_random_parameters(config)
+    else:
+        parameters = generate_evenly_spaced_parameters(config)
+
+    # Write parameters to a file in the output directory
+    output_file = os.path.join(config.path_output_directory, &#34;generated_parameters.txt&#34;)
+    with open(output_file, &#34;w&#34;) as file:
+        # Write the header
+        headers = parameters[0].keys()
+        file.write(&#34; &#34;.join(headers) + &#34;\n&#34;)
+        # Write the parameters
+        for param in parameters:
+            file.write(&#34; &#34;.join(str(param[key]) for key in headers) + &#34;\n&#34;)
+
+    return parameters</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="source.parameter_generation.generate_evenly_spaced_parameters"><code class="name flex">
+<span>def <span class="ident">generate_evenly_spaced_parameters</span></span>(<span>config: <a title="source.configuration_setup.Configuration" href="configuration_setup.html#source.configuration_setup.Configuration">Configuration</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate evenly spaced stellar parameters</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>config</code></strong> :&ensp;<code>Configuration</code></dt>
+<dd>Configuration object containing ranges and step sizes for the parameters to be generated</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>List of dictionaries containing the generated stellar parameters</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_evenly_spaced_parameters(config: Configuration):
+    &#34;&#34;&#34;
+    Generate evenly spaced stellar parameters
+
+    Args:
+        config (Configuration): Configuration object containing ranges and step sizes for the parameters to be generated
+
+    Returns:
+        list: List of dictionaries containing the generated stellar parameters
+    &#34;&#34;&#34;
+    # Generate evenly spaced values for each parameter
+    teff_values = np.round(
+        np.linspace(config.teff_min, config.teff_max, config.num_points_teff)
+    )
+    logg_values = np.round(
+        np.linspace(config.logg_min, config.logg_max, config.num_points_logg), 2
+    )
+    z_values = np.round(np.linspace(config.z_min, config.z_max, config.num_points_z), 3)
+    mg_values = np.round(
+        np.linspace(config.mg_min, config.mg_max, config.num_points_mg), 3
+    )
+    ca_values = np.round(
+        np.linspace(config.ca_min, config.ca_max, config.num_points_ca), 3
+    )
+
+    # Generate all combinations of the parameter values
+    parameter_sets = []
+    for t in teff_values:
+        for logg in logg_values:
+            for z in z_values:
+                for mg in mg_values:
+                    for ca in ca_values:
+                        parameter_sets.append(
+                            {
+                                &#34;teff&#34;: t,
+                                &#34;logg&#34;: round(logg, 2),
+                                &#34;z&#34;: round(z, 3),
+                                &#34;mg&#34;: round(mg, 3),
+                                &#34;ca&#34;: round(ca, 3),
+                            }
+                        )
+    return parameter_sets</code></pre>
+</details>
+</dd>
+<dt id="source.parameter_generation.generate_parameters"><code class="name flex">
+<span>def <span class="ident">generate_parameters</span></span>(<span>config: <a title="source.configuration_setup.Configuration" href="configuration_setup.html#source.configuration_setup.Configuration">Configuration</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate stellar parameters based on the settings in configuration.</p>
+<p>Based on what the user specified in the configuation file, this function will either read stellar parameters from a file,
+generate random stellar parameters or generate evenly spaced stellar parameters.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>config</code></strong> :&ensp;<code>Configuration</code></dt>
+<dd>Configuration object</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>List of tuples containing the generated stellar parameters</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_parameters(config: Configuration):
+    &#34;&#34;&#34;
+    Generate stellar parameters based on the settings in configuration.
+
+    Based on what the user specified in the configuation file, this function will either read stellar parameters from a file,
+    generate random stellar parameters or generate evenly spaced stellar parameters.
+    Args:
+        config (Configuration): Configuration object
+
+    Returns:
+        list: List of tuples containing the generated stellar parameters
+    &#34;&#34;&#34;
+
+    parameters = []
+    if config.read_stellar_parameters_from_file:
+        parameters = read_parameters_from_file(config)
+    elif config.random_parameters:
+        parameters = generate_random_parameters(config)
+    else:
+        parameters = generate_evenly_spaced_parameters(config)
+
+    # Write parameters to a file in the output directory
+    output_file = os.path.join(config.path_output_directory, &#34;generated_parameters.txt&#34;)
+    with open(output_file, &#34;w&#34;) as file:
+        # Write the header
+        headers = parameters[0].keys()
+        file.write(&#34; &#34;.join(headers) + &#34;\n&#34;)
+        # Write the parameters
+        for param in parameters:
+            file.write(&#34; &#34;.join(str(param[key]) for key in headers) + &#34;\n&#34;)
+
+    return parameters</code></pre>
+</details>
+</dd>
+<dt id="source.parameter_generation.generate_random_parameters"><code class="name flex">
+<span>def <span class="ident">generate_random_parameters</span></span>(<span>config: <a title="source.configuration_setup.Configuration" href="configuration_setup.html#source.configuration_setup.Configuration">Configuration</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generate random stellar parameters</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>config</code></strong> :&ensp;<code>Configuration</code></dt>
+<dd>Configuration object containing ranges and step sizes for the parameters to be generated</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>List of dictionaries containing the generated stellar parameters</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_random_parameters(config: Configuration):
+    &#34;&#34;&#34;
+    Generate random stellar parameters
+
+    Args:
+        config (Configuration): Configuration object containing ranges and step sizes for the parameters to be generated
+
+    Returns:
+        list: List of dictionaries containing the generated stellar parameters
+    &#34;&#34;&#34;
+    teff_range = (config.teff_min, config.teff_max)
+    logg_range = (config.logg_min, config.logg_max)
+    z_range = (config.z_min, config.z_max)
+    mg_range = (config.mg_min, config.mg_max)
+    ca_range = (config.ca_min, config.ca_max)
+
+    # Storage for parameters and links between them (index)
+    parameters = {&#34;teff&#34;: [], &#34;logg&#34;: [], &#34;z&#34;: [], &#34;ca&#34;: [], &#34;mg&#34;: []}
+
+    # Storage for generated sets
+    completed_sets = []
+
+    while len(completed_sets) &lt; config.num_spectra:
+        teff = random.randint(*teff_range)
+        logg = round(random.uniform(*logg_range), 2)
+        z = round(random.uniform(*z_range), 3)
+        mg = round(random.uniform(*mg_range), 3)
+        ca = round(random.uniform(*ca_range), 3)
+
+        if _validate_new_set(teff, logg, z, mg, ca, parameters):
+            parameters[&#34;teff&#34;].append(teff)
+            parameters[&#34;logg&#34;].append(logg)
+            parameters[&#34;z&#34;].append(z)
+            parameters[&#34;mg&#34;].append(mg)
+            parameters[&#34;ca&#34;].append(ca)
+            completed_sets.append(
+                {&#34;teff&#34;: teff, &#34;logg&#34;: logg, &#34;z&#34;: z, &#34;mg&#34;: mg, &#34;ca&#34;: ca}
+            )
+
+    return completed_sets</code></pre>
+</details>
+</dd>
+<dt id="source.parameter_generation.read_parameters_from_file"><code class="name flex">
+<span>def <span class="ident">read_parameters_from_file</span></span>(<span>config: <a title="source.configuration_setup.Configuration" href="configuration_setup.html#source.configuration_setup.Configuration">Configuration</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read stellar parameters from input file</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>config</code></strong> :&ensp;<code>Configuration</code></dt>
+<dd>Configuration object containing the path to the input file</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>List of dictionaries containing the stellar parameters</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_parameters_from_file(config: Configuration):
+    &#34;&#34;&#34;
+    Read stellar parameters from input file
+
+    Args:
+        config (Configuration): Configuration object containing the path to the input file
+    Returns:
+        list: List of dictionaries containing the stellar parameters
+    &#34;&#34;&#34;
+    with open(config.path_input_parameters, &#34;r&#34;, newline=&#34;&#34;) as file:
+        # Read the header to get column names
+        header = file.readline().strip().split()
+
+        # Check that all required parameters are present in the file
+        try:
+            _check_required_parameters(header)
+
+        except ValueError as e:
+            print(e)
+            sys.exit(
+                1
+            )  # We don&#39;t want to continue if the required parameters are missing
+
+        all_stellar_parameters = []
+
+        # Read file content
+        for line in file:
+            # Split the line into a list of values
+            values = line.strip().split()
+
+            float_values = [float(value) for value in values]
+
+            # Create a dictionary with the header as keys and the values from this line
+            stellar_parameters = dict(zip(header, float_values))
+
+            # Add the dictionary to the list of all stellar parameters
+            all_stellar_parameters.append(stellar_parameters)
+
+        # Convert teff values to integers
+        for parameter_set in all_stellar_parameters:
+            parameter_set[&#34;teff&#34;] = int(parameter_set[&#34;teff&#34;])
+
+    return all_stellar_parameters</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="source" href="index.html">source</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="source.parameter_generation.generate_evenly_spaced_parameters" href="#source.parameter_generation.generate_evenly_spaced_parameters">generate_evenly_spaced_parameters</a></code></li>
+<li><code><a title="source.parameter_generation.generate_parameters" href="#source.parameter_generation.generate_parameters">generate_parameters</a></code></li>
+<li><code><a title="source.parameter_generation.generate_random_parameters" href="#source.parameter_generation.generate_random_parameters">generate_random_parameters</a></code></li>
+<li><code><a title="source.parameter_generation.read_parameters_from_file" href="#source.parameter_generation.read_parameters_from_file">read_parameters_from_file</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
