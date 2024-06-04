@@ -3,7 +3,8 @@ This file contains an overview of the file structure, and as short comment about
 .
 ├── docs                            # Contains documentation about the program
 │   ├── configuration_setup.html    # API documentation generated using pdocs
-│   ├── index.html                  # -"-
+│   ├── file_structure.md           # This file, an overview of the file structure
+│   ├── index.html                  # API documentation generated using pdocs
 │   ├── instructions.txt            # -"-
 │   ├── main.html                   # -"-
 │   ├── output_management.html      # -"-
