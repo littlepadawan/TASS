@@ -44,3 +44,9 @@ If no changes are made to the `configuration.cfg` file, the program will generat
 
 ## Documentation
 For details on how to modify the configuration or how the program works, refer to the `docs` directory.
+
+## License
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/littlepadawan/TASS/blob/main/docs/LICENSE) file for details.
+
+## Acknowledgments
+If you use this software in a publication or presentation, please acknowledge the original author by citing the project.
