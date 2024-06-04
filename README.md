@@ -36,11 +36,11 @@ Additionally:
 
 *You can modify the file paths for Turbospectrum, model atmospheres, and linelists in the `configuration.cfg` file if you prefer not to place them in the default directories*
 
-If no changes are made to the `configuration.cfg` file, the program will generate 10 randomly spaced parameter sets and invoke Turbospectrum once per parameter set.
-
 ## Running the Program
 To run the program using the default settings in the provided configuration file, navigate to the rote of the project and execute the following command: <br>
 `python3 -m source.main`
+
+If no changes are made to the `configuration.cfg` file, the program will generate 10 randomly spaced parameter sets and invoke Turbospectrum once per parameter set.
 
 ## Documentation
 For details on how to modify the configuration or how the program works, refer to the `docs` directory.
