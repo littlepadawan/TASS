@@ -1,6 +1,6 @@
 # Program Overview
 
-This file contains a highlevel description of how the program works.
+This file contains a highlevel description of how the program works. For more information about how the program was developed, refer to the thesis report [TBI once it have been published]
 
 ## Program Flow
 
@@ -28,11 +28,14 @@ The following steps outline the overall flow of the program:
 ## Interpolation
 An overview of the logic of the function that gets the bracketing models used for interpolation:
 
-![Get bracketing models](/docs/get_bracketing_models.png "Flowchart of the function that gets bracketing models for interpolation"
-
-## Running the Program
+![Get bracketing models](/docs/get_bracketing_models.png "Flowchart of the function that gets bracketing models for interpolation")
 
 ## Running the Tests
 
+This command have been used to run the tests and measure code and branch coverage: </br>
+`coverage run --rcfile=.coveragerc --branch -m unittest discover -s tests`
 
-For more information about how the program was developed, refer to the thesis report [TBI once it have been published]
+This requires having the coverage library installed. The following command should run the tests without coverage: </br>
+`python3 -m unittest discover`
+
+
